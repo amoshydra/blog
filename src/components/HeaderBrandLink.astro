@@ -1,5 +1,4 @@
 ---
-import { SITE_TITLE } from "../consts";
 import { withBase } from "../utils/basePath";
 
 interface Props {}
@@ -11,7 +10,7 @@ const accessibleText = "Back to root";
 
 <a href={withBase("/")} title={accessibleText}>
     <span class="sr-only">{accessibleText}</span>
-    {SITE_TITLE}
+    /
 </a>
 
 <style>
