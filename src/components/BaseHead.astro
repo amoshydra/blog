@@ -3,6 +3,8 @@
 // all pages through the use of the <BaseHead /> component.
 import "../styles/global.css";
 import { SITE_TITLE } from "../consts";
+import "@fontsource/sansation/400.css";
+import "@fontsource/sansation/700.css";
 
 interface Props {
     title: string;
@@ -27,22 +29,6 @@ const { title, description, image = "/blog-placeholder-1.jpg" } = Astro.props;
     href={new URL("rss.xml", Astro.site)}
 />
 <meta name="generator" content={Astro.generator} />
-
-<!-- Font preloads -->
-<link
-    rel="preload"
-    href="/fonts/atkinson-regular.woff"
-    as="font"
-    type="font/woff"
-    crossorigin
-/>
-<link
-    rel="preload"
-    href="/fonts/atkinson-bold.woff"
-    as="font"
-    type="font/woff"
-    crossorigin
-/>
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
