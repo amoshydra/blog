@@ -1,0 +1,26 @@
+---
+import { SITE_TITLE } from "../consts";
+import { withBase } from "../utils/basePath";
+
+interface Props {}
+
+const {} = Astro.props;
+
+const accessibleText = "Back to root";
+---
+
+<a href={withBase("/")} title={accessibleText}>
+    <span class="sr-only">{accessibleText}</span>
+    {SITE_TITLE}
+</a>
+
+<style>
+    a {
+        color: currentColor;
+        padding: 0.25rem 1.25rem;
+    }
+    a,
+    a.active {
+        text-decoration: none;
+    }
+</style>
