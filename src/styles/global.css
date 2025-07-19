@@ -2,7 +2,7 @@
   The CSS in this style tag is based off of Bear Blog's default CSS.
   https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
   License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
- */
+*/
 
 :root {
     --accent: #2337ff;
@@ -185,4 +185,79 @@ a[data-footnote-ref] {
     clip-path: inset(50%);
     /* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
     white-space: nowrap;
+}
+
+/* Mermaid diagram loading shim */
+.mermaid:not([data-processed="true"]) {
+  position: relative;
+  overflow: hidden;
+  cursor: progress;
+}
+
+.mermaid:not([data-processed="true"])::before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  --left: 0%;
+  background-image: linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0) 20%,
+    rgba(255, 255, 255, 0.8) 45%,
+    rgba(255, 255, 255, 0.8) 55%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  animation: mermaid-shimmer 2s infinite ease-in-out;
+}
+
+.mermaid:not([data-processed="true"])::after {
+  content: "";
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: block;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0.5rem;
+  position: absolute;
+}
+
+@keyframes mermaid-shimmer {
+  from {
+    left: -200%;
+  }
+  to {
+    left: 200%;
+  }
+}
+
+
+html {
+  scroll-behavior: smooth;
+}
+
+h1,h2,h3,h4,h5,h6 {
+    > a[href] {
+        text-decoration: none;
+        color: rgb(var(--gray-dark));
+        transition: opacity 0.5s ease-in-out;
+        opacity: 0.05;
+    }
+    &:hover > a[href] {
+        opacity: 1;
+    }
+    a[href]:hover {
+        text-decoration: underline;
+    }
+}
+span.icon-link::before {
+  content: '#';
+  font-size: 0.8em;
+  margin-left: -1.125em;
 }
