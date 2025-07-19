@@ -2,6 +2,7 @@
 title: "ES Module Import Syntax Change: From `assert` to `with`"
 description: "An of the syntax change from assert to with in ES module imports"
 pubDate: "2025-07-18"
+updatedDate: "2025-07-19"
 heroImage: "./hero.png"
 ---
 

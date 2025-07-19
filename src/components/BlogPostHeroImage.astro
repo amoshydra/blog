@@ -1,0 +1,28 @@
+---
+interface Props {
+  class?: string;
+  image: {
+    src: string
+  }
+}
+
+const { image, class: className = ""} = Astro.props;
+---
+
+<img
+  class={"hero-image " + className}
+  src={image.src}
+  alt=""
+/>
+
+<style>
+.hero-image {
+  max-width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: var(--box-shadow);
+}
+</style>
