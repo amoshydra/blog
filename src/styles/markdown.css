@@ -1,0 +1,236 @@
+.markdown > * {
+  width: 56rem;
+  max-width: calc(100% - 2rem);
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+.markdown {
+  color: rgb(var(--gray-dark));
+}
+
+.markdown {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0 0 0.5rem 0;
+    margin-left: auto;
+    margin-right: auto;
+    color: rgb(var(--black));
+    line-height: 1.2;
+    text-wrap: balance;
+    > * {
+      display: ruby-base-container;
+    }
+    font-weight: 600;
+
+    > a[href] {
+      text-decoration: none;
+      color: rgb(var(--gray-dark));
+      transition: opacity 0.5s ease-in-out;
+      opacity: 0.05;
+    }
+    &:hover > a[href] {
+      opacity: 1;
+    }
+    a[href]:hover {
+      text-decoration: underline;
+    }
+
+    span.icon-link::before {
+      content: '#';
+      font-size: 0.8em;
+      margin-left: -1.125em;
+    }
+  }
+  h1 {
+    font-size: 3.052em;
+    margin-bottom: 6rem;
+  }
+  h2 {
+    font-size: 2.441em;
+    margin-top: 6rem;
+    margin-bottom: 4rem;
+  }
+  h3 {
+    font-size: 1.953em;
+    margin-top: 4rem;
+    margin-bottom: 2rem;
+  }
+  h4 {
+    font-size: 1.563em;
+  }
+  h5 {
+    font-size: 1.25em;
+  }
+  strong,
+  b {
+    font-weight: 700;
+  }
+  a {
+    color: var(--accent);
+  }
+  a:hover {
+    color: var(--accent);
+  }
+  p {
+    margin-bottom: 2em;
+  }
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+  input {
+    font-size: 16px;
+  }
+  /* Table styling */
+  table {
+    border-collapse: collapse;
+    margin-bottom: 2em;
+  }
+
+  th, td {
+    padding: 0.75em 1em;
+    text-align: left;
+    border-bottom: 1px solid rgba(var(--gray-light), 0.6);
+  }
+
+  thead th {
+    background-color: rgba(var(--gray-light), 0.3);
+    font-weight: bold;
+  }
+
+  tbody tr:nth-child(odd) {
+    background-color: rgba(var(--gray-light), 0.1);
+  }
+
+  tbody tr:hover {
+    background-color: rgba(var(--accent), 0.1);
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  pre {
+    padding: 1.5em;
+    border-radius: 8px;
+  }
+
+  code:not(.expressive-code code) {
+    font-weight: 500;
+    padding: 0 5px;
+    background-color: rgb(var(--gray-light));
+    opacity: 0.9;
+    border-radius: 0.25em;
+    font-size: 0.8em;
+    letter-spacing: -0.005em;
+  }
+
+  ol {
+    padding-left: 1.5em;
+    padding-top: 1rem;
+    list-style: decimal;
+  }
+
+  ul {
+    padding-left: 1.5em;
+    padding-top: 1rem;
+    list-style: disc;
+  }
+
+  li {
+    margin-bottom: 0.8em;
+    line-height: 1.5;
+  }
+
+  blockquote {
+    border-left: 4px solid var(--accent);
+    padding: 0 0 0 20px;
+    font-size: 1.333em;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid rgb(var(--gray-light));
+  }
+
+  /* Footnotes */
+  .footnotes {
+    p {
+      margin: 0;
+    }
+    .data-footnote-backref {
+      padding: 0.2rem 0.4rem;
+      background: rgba(142, 65, 255, 0.17);
+      border-radius: 0.25rem;
+      color: currentColor;
+      font-size: 1rem;
+    }
+  }
+  a[data-footnote-ref] {
+    padding: 0.1rem 0.2rem;
+    background: rgba(142, 65, 255, 0.17);
+    border-radius: 0.25rem;
+    color: currentColor;
+  }
+
+  /* Mermaid */
+  .mermaid:not([data-processed="true"]) {
+    position: relative;
+    overflow: hidden;
+    cursor: progress;
+  }
+
+  .mermaid:not([data-processed="true"])::before {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    --left: 0%;
+    background-image: linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0) 20%,
+      rgba(255, 255, 255, 0.8) 45%,
+      rgba(255, 255, 255, 0.8) 55%,
+      rgba(255, 255, 255, 0) 80%
+    );
+    animation: mermaid-shimmer 2s infinite ease-in-out;
+  }
+
+  .mermaid:not([data-processed="true"])::after {
+    content: "";
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: block;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0.5rem;
+    position: absolute;
+  }
+
+  .mermaid {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @keyframes mermaid-shimmer {
+    from {
+      left: -200%;
+    }
+    to {
+      left: 200%;
+    }
+  }
+}

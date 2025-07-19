@@ -1,5 +1,6 @@
 ---
 import { withBase } from "../utils/basePath";
+import HeaderItem from "./HeaderItem.astro";
 
 interface Props {}
 
@@ -9,17 +10,18 @@ const accessibleText = "Back to root";
 ---
 
 <a href={withBase("/")} title={accessibleText}>
+  <HeaderItem>
     <span class="sr-only">{accessibleText}</span>
-    /
+    &lt; back
+  </HeaderItem>
 </a>
 
 <style>
-    a {
-        color: currentColor;
-        padding: 0.25rem 1.25rem;
-    }
-    a,
-    a.active {
-        text-decoration: none;
-    }
+  a {
+    color: currentColor;
+  }
+  a,
+  a.active {
+    text-decoration: none;
+  }
 </style>

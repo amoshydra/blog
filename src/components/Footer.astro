@@ -3,13 +3,43 @@ const today = new Date();
 ---
 
 <footer>
-    &copy; {today.getFullYear()} amoshydra. All rights reserved.
+  &copy; {today.getFullYear()}
+  <a
+    class="profile-link"
+    href="https://github.com/amoshydra"
+    title="Visit Amos' Github Profile"
+  >
+    amoshydra
+    <span class="sr-only">Visit Amos' Github profile</span>
+  </a>.
+  All rights reserved.
 </footer>
 <style>
-    footer {
-        padding: 2em 1em 6em 1em;
-        background: linear-gradient(var(--gray-gradient)) no-repeat;
-        color: rgb(var(--gray));
-        text-align: center;
+footer {
+  padding: 2em 1em 6em 1em;
+  background: linear-gradient(var(--gray-gradient)) no-repeat;
+  color: rgb(var(--gray));
+  text-align: center;
+}
+
+.profile-link {
+  display: inline-block;
+  text-decoration: none;
+  padding: 0.125;
+  color: currentColor;
+  padding: 0.25rem 0.25rem;
+  border-radius: 0.25rem;
+  line-height: 1;
+  margin: -0.125rem;
+
+  background-color: rgb(217, 225, 252);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background-color: rgb(194, 207, 248);
     }
+  }
+  &:active {
+    background-color: rgb(173, 190, 243);
+  }
+}
 </style>

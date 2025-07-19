@@ -1,0 +1,65 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { marked } from 'marked';
+import FormattedDate from "./FormattedDate.astro";
+
+interface Props {
+  post: CollectionEntry<"posts">["data"];
+}
+
+const { post } = Astro.props;
+const markedTitle = await marked.parseInline(post.title);
+---
+
+<div class="header">
+  <h1 set:html={markedTitle} />
+  <div class="dates">
+    <span>
+      Published on <FormattedDate date={post.pubDate} />
+    </span>
+    {
+      post.updatedDate && (
+        <span class="date-dash" aria-hidden role="presentation">—</span>
+        <span class="last-updated-on">
+          Updated on <FormattedDate date={post.updatedDate} />
+        </span>
+      )
+    }
+  </div>
+</div>
+
+<style>
+.header {
+  margin-bottom: 1em;
+  padding: 2em 0;
+  text-align: center;
+  line-height: 1;
+}
+.header h1 {
+  margin: 0.5em 0;
+}
+.dates {
+  margin: auto;
+  margin-bottom: 0.5em;
+  color: rgb(var(--gray));
+
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-direction: column;
+
+  .date-dash {
+    display: none;
+  }
+
+  @media screen and (min-width: 40rem) {
+    flex-direction: row;
+    .date-dash {
+      display: inline-block;
+    }
+  }
+
+  line-height: 1.125;
+}
+
+</style>

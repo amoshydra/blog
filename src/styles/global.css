@@ -4,6 +4,30 @@
   License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
 */
 
+html {
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body, h1, h2, h3, h4, h5, h6, p, ol, ul {
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+ol, ul {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
 :root {
     --accent: #2337ff;
     --accent-dark: #000d8a;
@@ -15,9 +39,10 @@
     --box-shadow:
         0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
         0 16px 32px rgba(var(--gray), 33%);
+    --font-family-mono: 'IBM Plex Mono', Menlo, Consolas, Monaco, Adwaita Mono, Liberation Mono, Lucida Console, monospace;
 }
 body {
-    font-family: Sansation, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, Adwaita Sans, Cantarell, Ubuntu, roboto, noto, helvetica, arial, sans-serif;
     margin: 0;
     padding: 0;
     text-align: left;
@@ -35,131 +60,7 @@ main {
     padding: 2rem;
     margin: auto;
 }
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    margin: 0 0 0.5rem 0;
-    color: rgb(var(--black));
-    line-height: 1.2;
-}
-h1 {
-    font-size: 3.052em;
-    margin-bottom: 6rem;
-}
-h2 {
-    font-size: 2.441em;
-    margin-top: 6rem;
-    margin-bottom: 4rem;
-}
-h3 {
-    font-size: 1.953em;
-    margin-top: 4rem;
-    margin-bottom: 2rem;
-}
-h4 {
-    font-size: 1.563em;
-}
-h5 {
-    font-size: 1.25em;
-}
-strong,
-b {
-    font-weight: 700;
-}
-a {
-    color: var(--accent);
-}
-a:hover {
-    color: var(--accent);
-}
-p {
-    margin-bottom: 1em;
-}
-.prose p {
-    margin-bottom: 2em;
-}
-textarea {
-    width: 100%;
-    font-size: 16px;
-}
-input {
-    font-size: 16px;
-}
-/* Table styling */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 2em;
-}
 
-th, td {
-    padding: 0.75em 1em;
-    text-align: left;
-    border-bottom: 1px solid rgba(var(--gray-light), 0.6);
-}
-
-thead th {
-    background-color: rgba(var(--gray-light), 0.3);
-    font-weight: bold;
-}
-
-tbody tr:nth-child(odd) {
-    background-color: rgba(var(--gray-light), 0.1);
-}
-
-tbody tr:hover {
-    background-color: rgba(var(--accent), 0.1);
-}
-img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-}
-code {
-    padding: 0 5px;
-    background-color: rgb(var(--gray-light));
-    opacity: 0.9;
-    border-radius: 0.25em;
-    letter-spacing: -0.005em;
-}
-pre {
-    padding: 1.5em;
-    border-radius: 8px;
-}
-pre > code {
-    all: unset;
-}
-blockquote {
-    border-left: 4px solid var(--accent);
-    padding: 0 0 0 20px;
-    margin: 0px;
-    font-size: 1.333em;
-}
-hr {
-    border: none;
-    border-top: 1px solid rgb(var(--gray-light));
-}
-.footnotes {
-    p {
-        margin: 0;
-    }
-    .data-footnote-backref {
-        padding: 0.2rem 0.4rem;
-        background: rgba(142, 65, 255, 0.17);
-        border-radius: 0.25rem;
-        color: currentColor;
-        font-size: 1rem;
-    }
-}
-a[data-footnote-ref] {
-    padding: 0.1rem 0.2rem;
-    background: rgba(142, 65, 255, 0.17);
-    border-radius: 0.25rem;
-    color: currentColor;
-}
 @media (max-width: 720px) {
     body {
         font-size: 18px;
@@ -187,77 +88,11 @@ a[data-footnote-ref] {
     white-space: nowrap;
 }
 
-/* Mermaid diagram loading shim */
-.mermaid:not([data-processed="true"]) {
-  position: relative;
-  overflow: hidden;
-  cursor: progress;
-}
-
-.mermaid:not([data-processed="true"])::before {
-  content: "";
-  display: block;
-  position: absolute;
-  left: 0;
-  width: 200%;
-  height: 100%;
-  --left: 0%;
-  background-image: linear-gradient(
-    -45deg,
-    rgba(255, 255, 255, 0) 20%,
-    rgba(255, 255, 255, 0.8) 45%,
-    rgba(255, 255, 255, 0.8) 55%,
-    rgba(255, 255, 255, 0) 80%
-  );
-  animation: mermaid-shimmer 2s infinite ease-in-out;
-}
-
-.mermaid:not([data-processed="true"])::after {
-  content: "";
-  display: flex;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.8);
-  display: block;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  padding: 0.5rem;
-  position: absolute;
-}
-
-@keyframes mermaid-shimmer {
-  from {
-    left: -200%;
-  }
-  to {
-    left: 200%;
-  }
-}
-
 
 html {
   scroll-behavior: smooth;
 }
 
-h1,h2,h3,h4,h5,h6 {
-    > a[href] {
-        text-decoration: none;
-        color: rgb(var(--gray-dark));
-        transition: opacity 0.5s ease-in-out;
-        opacity: 0.05;
-    }
-    &:hover > a[href] {
-        opacity: 1;
-    }
-    a[href]:hover {
-        text-decoration: underline;
-    }
-}
-span.icon-link::before {
-  content: '#';
-  font-size: 0.8em;
-  margin-left: -1.125em;
+code {
+  font-family: var(--font-family-mono);
 }
