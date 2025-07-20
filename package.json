@@ -16,6 +16,7 @@
     "@astrojs/sitemap": "^3.3.1",
     "@fontsource/ibm-plex-mono": "^5.2.6",
     "astro": "^5.7.9",
+    "astro-expressive-code": "^0.41.3",
     "astro-mermaid": "^1.0.4",
     "marked": "^16.1.1",
     "mermaid": "^11.9.0",
