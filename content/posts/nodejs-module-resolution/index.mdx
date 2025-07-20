@@ -200,6 +200,173 @@ When `require('react')` is called, Node.js:
 By resolving symlinks to their real paths, Node.js ensures that if multiple symlinks point to the exact same physical package directory, that package is effectively a singleton from the perspective of `require()`. This is crucial for preventing duplicate copies of packages that are meant to be singletons (like React) when using package managers that leverage symlinking. However, if different versions of a package are physically located in different places (even if symlinked into a project), they will still be treated as separate modules. The key is that symlinks themselves don't create new instances; they are transparently resolved to the underlying real path.
 
 
+### Symlinks via `npm link`
+
+Modern package managers rely heavily on symlinks, but the oldest and most common source of symlink-related confusion is still `npm link`.
+Understanding what `npm link` *actually* does under the hood is essential to avoid subtle runtime errors.
+
+#### What npm link does, step by step
+
+Suppose we have two projects on disk:
+
+```
+~/code/
+├─ my-lib/          # the package we are developing
+│  └─ package.json  # name: "my-lib"
+└─ consumer/        # the app that will consume it
+   ├─ package.json  # no dependency on my-lib yet
+   └─ src/index.js  # will do require('my-lib')
+```
+
+Inside my-lib:
+
+
+```
+# 1. Create a *global* symlink in $npm_config_prefix/lib/node_modules
+$ cd ~/code/my-lib
+$ npm link
+```
+
+Inside consumer:
+
+```
+# 2. Create a *local* symlink inside consumer/node_modules that
+#    points to the global one created in step 1
+$ cd ~/code/consumer
+$ npm link my-lib
+```
+
+After these two commands the filesystem looks like:
+
+```
+~/.npm/lib/node_modules/my-lib -> ~/code/my-lib
+~/code/consumer/node_modules/my-lib -> ~/.npm/lib/node_modules/my-lib
+```
+
+Node's resolution algorithm now sees:
+
+```
+consumer/
+├─ node_modules/
+│  └─ my-lib -> ~/.npm/lib/node_modules/my-lib
+└─ src/
+   └─ index.js
+```
+
+When `consumer/src/index.js` executes `require('my-lib')`, Node follows the chain of symlinks, resolves `fs.realpathSync('consumer/node_modules/my-lib')` to `~/code/my-lib`, and loads the real source directory instead of a published tarball.
+
+
+#### The hidden pitfall: dependency mis-alignment
+
+The diagram above hides a critical detail: where do the dependencies of my-lib come from?
+
+##### Case A – missing dependencies
+
+Assume my-lib depends on `lodash@4`, but is not published yet.
+The consumer project has never installed lodash itself.
+
+```
+~/code/my-lib/
+├─ package.json   # { "dependencies": { "lodash": "^4" } }
+└─ index.js       # uses lodash
+```
+
+`consumer/` has no `lodash` in any of its `node_modules` directories.
+
+When `consumer/src/index.js` runs:
+
+```javascript
+require('my-lib');   // my-lib/index.js executed
+```
+
+Node resolves `my-lib` correctly via the symlink, but the very next step is to resolve `require('lodash')` from the perspective of `~/code/my-lib/index.js`.
+
+The algorithm begins its ascent from `~/code/my-lib/`, finds no `node_modules/lodash`, and eventually throws:
+
+```
+Error: Cannot find module 'lodash'
+```
+
+The fix is often misunderstood: it is not enough to run `npm install` inside consumer; you must run it inside `~/code/my-lib` so that `~/code/my-lib/node_modules/lodash` exists and can be found by the resolution algorithm.
+
+##### Case B – duplicated singletons
+
+Now assume both consumer and `my-lib` use React, but with mismatched versions.
+
+```
+~/code/my-lib/
+├─ package.json   # { "peerDependencies": { "react": "^17" } }
+└─ src/...
+```
+
+```
+~/code/consumer/
+├─ package.json   # { "dependencies": { "react": "^18" } }
+└─ node_modules/react@18
+```
+
+If `my-lib` also has React also installed via `devDependencies` (*usually the case as a copy of React is also required for `my-lib`'s local development*):
+
+```
+~/code/my-lib/node_modules/react@17   # installed during dev
+```
+
+Then at runtime:
+
+```
+consumer/src/index.js → require('react') → resolves to consumer/node_modules/react@18.
+my-lib/src/index.js → require('react') → resolves to ~/code/my-lib/node_modules/react@17.
+```
+
+Two distinct copies of React are loaded, violating the singleton requirement and triggering:
+
+```
+Warning: Invalid hook call. Hooks can only be called inside of the body of a function component...
+```
+
+The symlink did not cause the duplication, but it made the problem harder to detect because the local `node_modules/react@17` is invisible to the consumer's lock-file and bundler configuration.
+
+##### Case C – hoisting surprises in a monorepo
+
+In a workspace monorepo (Yarn, pnpm, or npm workspaces) the hoisting logic may place `my-lib`'s dependencies in the root `node_modules`.
+
+After running:
+
+```bash
+# inside monorepo root
+npm install
+npm link ~/code/my-lib
+```
+
+the tree becomes:
+
+```
+monorepo/
+├─ node_modules/
+│  ├─ my-lib -> ~/code/my-lib
+│  └─ lodash@4          # hoisted for all packages
+└─ packages/
+   └─ consumer/
+       └─ src/index.js
+```
+
+Now `require('lodash')` from inside `~/code/my-lib/index.js` resolves to `monorepo/node_modules/lodash@4`, not `~/code/my-lib/node_modules/lodash@4`.
+This can mask the missing-dependency error mentioned in Case A during local development, but the package will fail when installed from the registry (where no hoisting occurs).
+
+### Safe practices checklist for npm link
+
+
+Checklist Item | Rationale
+-- | --
+`npm install` inside the linked package before linking | Ensures its own `node_modules` are populated.
+Declare singleton libraries as `peerDependencies` | Prevents accidental duplication when the host project already provides the peer.
+Run CI or `npm pack` tests that skip `npm link` | Verifies that the package works without the hoisting side-effects seen during local linking.
+Prefer workspace features (`yarn workspace`, `pnpm -r`) over `npm link` in monorepos | Workspaces use symlinks internally but maintain deterministic hoisting, reducing drift between dev and production resolution.
+Use `npm ls <pkg>` or `node -p "require.resolve('pkg')"` in both projects to verify which physical directory is resolved. | Quickly detects duplicate or missing dependency paths.
+
+
+By treating `npm link` not as magic but as two symlinks that obey the same resolution rules as every other directory, you can avoid the subtle runtime mismatches that often appear only after publishing.
+
 
 ## Package.json “exports”: The Final Hurdle
 
