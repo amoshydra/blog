@@ -422,6 +422,8 @@ By being aware of these common issues, developers can navigate the `node_modules
 
 For quick reference, here's a summary of the Node.js `require()` resolution algorithm:
 
+<div style="width: 100%; overflow: auto;">
+
 ```mermaid
 flowchart LR
     A["Start in caller's directory"] --> B{"node_modules/module exists?"}
@@ -434,6 +436,8 @@ flowchart LR
     G --> H["Check package.json exports/main"]
     H --> I["Load final file"]
 ```
+
+</div>
 
 1. **Start Local**: Begin in the directory of the file that called `require('module_name')`.
 2. **Check `node_modules`**: Look for `./node_modules/module_name`.
