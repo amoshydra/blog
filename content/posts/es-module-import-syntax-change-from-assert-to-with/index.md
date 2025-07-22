@@ -72,7 +72,7 @@ The following table details Node.js version support for `import... assert` versu
 
 - Node.js versions 16.14.0 and 17.1.0 were the first to introduce experimental support for `import assertions`. [^12]
 - Node.js version 18.20.0 added support for `import attributes`, facilitating migration. [^13]
-- Node.js version 22.0.0 and later have removed support for `assert` in favor of `with`.
+- Node.js version 22.0.0 and later have removed support for `assert` in favor of `with`. [^22]
 
 This created an overlap period where certain Node.js versions might have recognized both syntaxes.
 
@@ -204,3 +204,4 @@ For projects requiring broad compatibility, consider alternative strategies like
 [^19]: [Using CSS Module Scripts to import stylesheets](https://web.dev/articles/css-module-scripts)
 [^20]: [TC39 GitHub: proposal-source-phase-imports](https://github.com/tc39/proposal-source-phase-imports)
 [^21]: [2ality Blog: ECMAScript feature: import attributes - css modules](https://2ality.com/2025/01/import-attributes.html#css-modules)
+[^22]: [Node.js Release Blog: Node v20.18.0 (LTS)](https://nodejs.org/en/blog/release/v22.0.0)
