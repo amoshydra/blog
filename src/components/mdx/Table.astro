@@ -1,0 +1,21 @@
+---
+const props = Astro.props;
+---
+
+<div class="scrollable-table">
+  <table {...props}>
+    <slot />
+  </table>
+</div>
+
+<style>
+.scrollable-table {
+  overflow: auto;
+  margin: auto;
+
+  > table {
+    width: max-content;
+    max-width: max(64rem, 100%);
+  }
+}
+</style>
