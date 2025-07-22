@@ -96,3 +96,17 @@ html {
 code {
   font-family: var(--font-family-mono);
 }
+
+/* Components */
+
+.button.plain {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 0.25rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .button.plain:hover {
+    background-color: rgb(var(--gray-light));
+  }
+}

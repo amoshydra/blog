@@ -1,0 +1,53 @@
+---
+import { withBase } from "../utils/basePath";
+import IconBackChevronLeft from "./IconBackChevronLeft.astro";
+---
+
+<div class="container">
+  <div>
+    <IconBackChevronLeft />
+    <a href={withBase("/")} title="Back to root">
+      back
+    </a>
+  </div>
+
+  <div>
+    <button class="button plain js-share" data-ready="false">
+      Share
+    </button>
+  </div>
+</div>
+
+<script>
+  const buttons = Array.from(document.querySelectorAll('js-share')) as HTMLElement[];
+
+  buttons.forEach((button) => {
+    if ('share' in navigator) {
+      button.dataset.ready = "true";
+    }
+    button.addEventListener('click', () => {
+      navigator.share({
+        title: document.title,
+        text: (document.head.querySelector(`meta[name="description"]`) as HTMLMetaElement | null)?.content || "",
+        url: location.href,
+      });
+    });
+  });
+</script>
+
+<style>
+.container {
+  width: 56rem;
+  max-width: calc(100% - 2rem);
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 12rem;
+  padding-bottom: 4rem;
+
+  display: flex;
+  justify-content: space-between;
+}
+*[data-ready="false"] {
+  display: none;
+}
+</style>
