@@ -2,6 +2,7 @@
 title: "A visual guide of Node.js module resolution"
 description: "Node.js resolves modules by walking up the directory tree looking for `node_modules/package` folder. This post illustrates the different folder structure influence module resolution, why symlinks (npm link, pnpm) can flip the result."
 pubDate: "2025-07-21"
+updatedDate: "2025-07-23"
 heroImage: "./hero.jpg"
 ---
 
@@ -43,7 +44,7 @@ The process begins by looking for the module in the **current directory's `node_
 | -- | -- |
 | <code style="color:blue" data-ansi="34">file.js</code> | JavaScript file calling `require()`
 | <code style="color:green" data-ansi="32">node_modules</code> | `node_modules` directory `require()`
-| <code style="color:maroon" data-ansi="31">symlink</code> | Symbolic link to another path
+| <code style="color:brown" data-ansi="31">symlink</code> | Symbolic link to another path
 
 The directory tree diagrams in the following sections will be marked with different colors to illustrate the file or folder of interest.
 
@@ -59,7 +60,7 @@ The simplest scenario to illustrate is a **flat repository structure**, often fo
 
 ```ansi
 [37mproject/[30m
-├─ [34mapp.js[30m
+├─ [36mapp.js[30m
 └─ [32mnode_modules/[30m
   └─ [37mlodash/[30m
 ```
@@ -81,7 +82,7 @@ Moving to a slightly more complex structure, we consider a monorepo with **one l
 [37mmonorepo/[30m
 ├─ [37mpackages/[30m
 │  └─ [37mapi/[30m
-│     ├─ [34mindex.js[30m
+│     ├─ [36mindex.js[30m
 │     └─ [32mnode_modules/[30m
 │        └─ [37mdebug/[30m
 └─ [32mnode_modules/[30m
@@ -120,7 +121,7 @@ This section addresses a more complex scenario often referred to as **“transit
 │  └─ [37mlodash@4.17.21[30m
 └─ [37mpackages[30m
   └─ [37mapi[30m
-    ├─ [34mindex.js[30m
+    ├─ [36mindex.js[30m
     └─ [32mnode_modules[30m
       ├─ [37mdebug[30m
       └─ [37m@scope[30m
@@ -183,9 +184,9 @@ The example below illustrates `pnpm` managing packages using symlinks.
 ```ansi
 [37mproject/[30m
 └─ [32mnode_modules/[30m
-   ├─ [31m.pnpm/[30m -> [37m~/.pnpm-store/v3/...[35m (links to global store)[30m
-   ├─ [31mreact[30m -> [37m.pnpm/react@18.0.0/node_modules/react[30m
-   └─ [31mreact-dom[30m -> [37m.pnpm/react-dom@18.0.0/node_modules/react-dom[30m
+   ├─ [33m.pnpm/[30m -> [37m~/.pnpm-store/v3/...[35m (links to global store)[30m
+   ├─ [33mreact[30m -> [37m.pnpm/react@18.0.0/node_modules/react[30m
+   └─ [33mreact-dom[30m -> [37m.pnpm/react-dom@18.0.0/node_modules/react-dom[30m
 ```
 
 When Node.js encounters a symlink during module resolution, it **resolves the symlink to its "real" path** using `fs.realpathSync()` before continuing the search.
@@ -209,27 +210,28 @@ Understanding what `npm link` *actually* does under the hood is essential to avo
 
 Suppose we have two projects on disk:
 
-```
-~/code/
-├─ my-lib/          # the package we are developing
-│  └─ package.json  # name: "my-lib"
-└─ consumer/        # the app that will consume it
-   ├─ package.json  # no dependency on my-lib yet
-   └─ src/index.js  # will do require('my-lib')
+
+```ansi
+[37m~/code/[30m
+├─ [37mmy-lib/          [35m# the package we are developing[30m
+│  └─ [37mpackage.json  [35m# name: "my-lib"[30m
+└─ [37mconsumer/        [35m# the app that will consume it[30m
+   ├─ [37mpackage.json  [35m# no dependency on my-lib yet[30m
+   └─ [36msrc/index.js  [35m# will do require('my-lib')[30m
 ```
 
-Inside my-lib:
+Inside `my-lib`:
 
 
-```
+```bash
 # 1. Create a *global* symlink in $npm_config_prefix/lib/node_modules
 $ cd ~/code/my-lib
 $ npm link
 ```
 
-Inside consumer:
+Inside `consumer`:
 
-```
+```bash
 # 2. Create a *local* symlink inside consumer/node_modules that
 #    points to the global one created in step 1
 $ cd ~/code/consumer
@@ -238,19 +240,19 @@ $ npm link my-lib
 
 After these two commands the filesystem looks like:
 
-```
-~/.npm/lib/node_modules/my-lib -> ~/code/my-lib
-~/code/consumer/node_modules/my-lib -> ~/.npm/lib/node_modules/my-lib
+```ansi
+[33m~/.npm/lib/node_modules/my-lib[30m -> [37m~/code/my-lib
+[33m~/code/consumer/node_modules/my-lib[30m -> [37m~/.npm/lib/node_modules/my-lib
 ```
 
 Node's resolution algorithm now sees:
 
-```
-consumer/
-├─ node_modules/
-│  └─ my-lib -> ~/.npm/lib/node_modules/my-lib
-└─ src/
-   └─ index.js
+```ansi
+[37mconsumer/[30m
+├─ [32mnode_modules/[30m
+│  └─ [33mmy-lib[30m -> [37m~/.npm/lib/node_modules/my-lib[30m
+└─ [37msrc/[30m
+   └─ [36mindex.js[30m
 ```
 
 When `consumer/src/index.js` executes `require('my-lib')`, Node follows the chain of symlinks, resolves `fs.realpathSync('consumer/node_modules/my-lib')` to `~/code/my-lib`, and loads the real source directory instead of a published tarball.
@@ -258,17 +260,17 @@ When `consumer/src/index.js` executes `require('my-lib')`, Node follows the chai
 
 #### The hidden pitfall: dependency mis-alignment
 
-The diagram above hides a critical detail: where do the dependencies of my-lib come from?
+The diagram above hides a critical detail: where do the dependencies of `my-lib` come from?
 
 ##### Case A – missing dependencies
 
 Assume my-lib depends on `lodash@4`, but is not published yet.
 The consumer project has never installed lodash itself.
 
-```
-~/code/my-lib/
-├─ package.json   # { "dependencies": { "lodash": "^4" } }
-└─ index.js       # uses lodash
+```ansi
+[37m~/code/my-lib/[30m
+├─ [37mpackage.json   [35m# { "dependencies": { "lodash": "^4" } }[30m
+└─ [36mindex.js       [35m# uses lodash[30m
 ```
 
 `consumer/` has no `lodash` in any of its `node_modules` directories.
@@ -293,22 +295,23 @@ The fix is often misunderstood: it is not enough to run `npm install` inside con
 
 Now assume both consumer and `my-lib` use React, but with mismatched versions.
 
-```
-~/code/my-lib/
-├─ package.json   # { "peerDependencies": { "react": "^17" } }
-└─ src/...
+```ansi
+[37m~/code/my-lib/[30m
+├─ [37mpackage.json   [35m# { "peerDependencies": { "react": "^17" } }[30m
+└─ [37msrc/...[30m
 ```
 
-```
-~/code/consumer/
-├─ package.json   # { "dependencies": { "react": "^18" } }
-└─ node_modules/react@18
+```ansi
+[37m~/code/consumer/[30m
+├─ [37mpackage.json   [35m# { "dependencies": { "react": "^18" } }[30m
+└─ [32mnode_modules[30m
+  └─ [37mreact@18[30m
 ```
 
 If `my-lib` also has React also installed via `devDependencies` (*usually the case as a copy of React is also required for `my-lib`'s local development*):
 
-```
-~/code/my-lib/node_modules/react@17   # installed during dev
+```ansi
+~/code/my-lib/node_modules/react@17   [35m# installed during dev
 ```
 
 Then at runtime:
@@ -340,14 +343,15 @@ npm link ~/code/my-lib
 
 the tree becomes:
 
-```
-monorepo/
-├─ node_modules/
-│  ├─ my-lib -> ~/code/my-lib
-│  └─ lodash@4          # hoisted for all packages
-└─ packages/
-   └─ consumer/
-       └─ src/index.js
+```ansi
+[37mmonorepo/[30m
+├─ [32mnode_modules/[30m
+│  ├─ [33mmy-lib[30m -> [37m~/code/my-lib[30m
+│  └─ [37mlodash@4          [35m# hoisted for all packages[30m
+└─ [37mpackages/[30m
+   └─ [37mconsumer/[30m
+       └─ [37msrc/[30m
+           └─ [36mindex.js[30m
 ```
 
 Now `require('lodash')` from inside `~/code/my-lib/index.js` resolves to `monorepo/node_modules/lodash@4`, not `~/code/my-lib/node_modules/lodash@4`.
@@ -380,6 +384,7 @@ The `"exports"` field **does not influence the *climb up* the directory tree to 
 
 **Example:**
 If `node_modules/some_module/package.json` contains:
+
 ```json
 {
   "name": "some_module",
@@ -389,9 +394,10 @@ If `node_modules/some_module/package.json` contains:
   }
 }
 ```
+
 Then:
-*   `require('some_module')` will resolve to `node_modules/some_module/lib/index.js`.
-*   `require('some_module/utils')` will resolve to `node_modules/some_module/lib/utils.js`.
+* `require('some_module')` will resolve to `node_modules/some_module/lib/index.js`.
+* `require('some_module/utils')` will resolve to `node_modules/some_module/lib/utils.js`.
 
 If a requested subpath is not defined in `"exports"`, Node.js will throw an error (ERR_PACKAGE_PATH_NOT_EXPORTED), even if the file physically exists. This provides package authors with **strong encapsulation, preventing users from relying on internal, undocumented files**. The `"exports"` field is a powerful tool for defining clear and robust package APIs.
 
