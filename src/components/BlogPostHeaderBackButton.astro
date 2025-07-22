@@ -1,18 +1,17 @@
 ---
 import { withBase } from "../utils/basePath";
 import HeaderItem from "./HeaderItem.astro";
+import IconBackChevronLeft from "./IconBackChevronLeft.astro";
 
 interface Props {}
 
 const {} = Astro.props;
-
-const accessibleText = "Back to root";
 ---
 
-<a href={withBase("/")} title={accessibleText}>
+<a href={withBase("/")} title="Back to root">
   <HeaderItem>
-    <span class="sr-only">{accessibleText}</span>
-    &lt; back
+    <IconBackChevronLeft /> back
+    <span class="sr-only">to root</span>
   </HeaderItem>
 </a>
 
