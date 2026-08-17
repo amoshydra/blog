@@ -34,17 +34,42 @@ const { title, description, image = cover.src } = Astro.props;
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
 
-<!-- Sync color-scheme with system preference so third-party integrations
-     (e.g. astro-mermaid) can pick up a theme via the [data-theme] hook. -->
+<!-- Resolve the effective color scheme before first paint so the page
+     never flashes the wrong theme. Reads the user's preference
+     (light | dark | system) from localStorage; falls back to the OS
+     preference. Exposes window.__setThemePref() for the toggle UI. -->
 <script is:inline>
   (() => {
+    const STORAGE_KEY = "theme-pref";
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const sync = () => {
-      if (mq.matches) document.documentElement.dataset.theme = "dark";
-      else document.documentElement.removeAttribute("data-theme");
+    const root = document.documentElement;
+
+    const apply = () => {
+      const pref = localStorage.getItem(STORAGE_KEY) || "system";
+      const effective = pref === "system" ? (mq.matches ? "dark" : "light") : pref;
+      root.dataset.colorScheme = effective;
+      if (effective === "dark") root.dataset.theme = "dark";
+      else root.removeAttribute("data-theme");
+      root.dataset.themePref = pref;
     };
-    sync();
-    mq.addEventListener("change", sync);
+
+    apply();
+
+    mq.addEventListener("change", () => {
+      if ((localStorage.getItem(STORAGE_KEY) || "system") === "system") apply();
+    });
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === STORAGE_KEY) apply();
+    });
+
+    window.__setThemePref = (pref) => {
+      try {
+        localStorage.setItem(STORAGE_KEY, pref);
+      } catch (_) {}
+      apply();
+      window.dispatchEvent(new CustomEvent("themechange"));
+    };
   })();
 </script>
 

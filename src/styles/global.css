@@ -58,28 +58,29 @@ img {
   --font-family-mono: 'IBM Plex Mono', Menlo, Consolas, Monaco, Adwaita Mono, Liberation Mono, Lucida Console, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --accent: #8094ff;
-    --accent-tint: rgba(128, 148, 255, 0.12);
-    --note-tint: rgba(142, 65, 255, 0.18);
-    --white: 15, 18, 25;
-    --black: 229, 233, 240;
-    --gray: 150, 165, 200;
-    --gray-light: 45, 51, 66;
-    --gray-dark: 207, 216, 232;
-    --gray-gradient: rgba(var(--gray-light), 40%), rgb(var(--white));
+:root[data-color-scheme="dark"] {
+  --accent: #8094ff;
+  --accent-tint: rgba(128, 148, 255, 0.12);
+  --note-tint: rgba(142, 65, 255, 0.18);
+  --white: 15, 18, 25;
+  --black: 229, 233, 240;
+  --gray: 150, 165, 200;
+  --gray-light: 45, 51, 66;
+  --gray-dark: 207, 216, 232;
+  --gray-gradient: rgba(var(--gray-light), 40%), rgb(var(--white));
 
-    --profile-link-bg: rgb(40, 50, 86);
-    --profile-link-bg-hover: rgb(52, 64, 108);
-    --profile-link-bg-active: rgb(64, 78, 130);
+  --profile-link-bg: rgb(40, 50, 86);
+  --profile-link-bg-hover: rgb(52, 64, 108);
+  --profile-link-bg-active: rgb(64, 78, 130);
 
-    --surface-hover: rgb(55, 61, 78);
-    --surface-active: rgb(70, 78, 100);
-    --border-subtle: rgba(255, 255, 255, 0.12);
-    --shimmer-bg: rgba(15, 18, 25, 0.6);
-    --shimmer-band: rgba(229, 233, 240, 0.22);
-  }
+  --surface-hover: rgb(55, 61, 78);
+  --surface-active: rgb(70, 78, 100);
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --shimmer-bg: rgba(15, 18, 25, 0.6);
+  --shimmer-band: rgba(229, 233, 240, 0.22);
+  --box-shadow:
+    0 2px 6px rgba(0, 0, 0, 40%), 0 8px 24px rgba(0, 0, 0, 50%),
+    0 16px 32px rgba(0, 0, 0, 50%);
 }
 
 body {

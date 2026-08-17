@@ -1,8 +1,12 @@
 ---
+import ThemeToggle from "./ThemeToggle.astro";
 ---
 
 <header class="header">
-  <slot />
+  <div class="header-slot">
+    <slot />
+  </div>
+  <ThemeToggle />
 </header>
 
 <style>
@@ -15,5 +19,15 @@
   position: sticky;
   top: 0;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3rem;
+}
+.header-slot {
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 </style>

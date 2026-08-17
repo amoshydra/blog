@@ -1,0 +1,92 @@
+---
+---
+
+<button class="theme-toggle" type="button" aria-label="Color theme: auto. Click to switch.">
+  <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2"></path>
+    <path d="M12 20v2"></path>
+    <path d="m4.93 4.93 1.41 1.41"></path>
+    <path d="m17.66 17.66 1.41 1.41"></path>
+    <path d="M2 12h2"></path>
+    <path d="M20 12h2"></path>
+    <path d="m6.34 17.66-1.41 1.41"></path>
+    <path d="m19.07 4.93-1.41 1.41"></path>
+  </svg>
+  <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+  <svg class="icon icon-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+    <path d="M8 21h8"></path>
+    <path d="M12 17v4"></path>
+  </svg>
+</button>
+
+<style>
+.theme-toggle {
+  background-color: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.375rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgb(var(--gray-dark));
+  padding: 0;
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out;
+}
+
+.theme-toggle:hover {
+  background-color: var(--surface-hover);
+}
+
+.theme-toggle:focus-visible {
+  outline: 0.125rem solid var(--focus-ring);
+  outline-offset: 0.125rem;
+}
+
+.theme-toggle .icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  display: none;
+}
+
+:root[data-theme-pref="light"] .theme-toggle .icon-sun,
+:root[data-theme-pref="dark"] .theme-toggle .icon-moon,
+:root[data-theme-pref="system"] .theme-toggle .icon-auto,
+:root:not([data-theme-pref]) .theme-toggle .icon-auto {
+  display: block;
+}
+</style>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".theme-toggle");
+  const order = ["system", "light", "dark"] as const;
+  type Pref = (typeof order)[number];
+
+  const updateLabel = () => {
+    const pref = (document.documentElement.dataset.themePref as Pref) || "system";
+    const labels: Record<Pref, string> = {
+      system: "auto (follow system)",
+      light: "light",
+      dark: "dark",
+    };
+    for (const btn of buttons) {
+      btn.setAttribute("aria-label", `Color theme: ${labels[pref]}. Click to switch.`);
+    }
+  };
+
+  for (const btn of buttons) {
+    btn.addEventListener("click", () => {
+      const current = (document.documentElement.dataset.themePref as Pref) || "system";
+      const next = order[(order.indexOf(current) + 1) % order.length];
+      window.__setThemePref?.(next);
+    });
+  }
+
+  window.addEventListener("themechange", updateLabel);
+  updateLabel();
+</script>
