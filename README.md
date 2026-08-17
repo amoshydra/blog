@@ -6,6 +6,8 @@
 
 - 2025-07-18 [ES Module Import Syntax Change: From `assert` to `with`](https://amoshydra.github.io/blog/posts/es-module-import-syntax-change-from-assert-to-with/)
 
+- 2026-08-18 [HTTP cache validators: ETag vs Last-Modified (a hands-on study)](https://amoshydra.github.io/blog/posts/http-etag-last-modified-study/)
+
 <!-- POSTS:END -->
 
 <br /><br /><br /><br />
