@@ -34,6 +34,20 @@ const { title, description, image = cover.src } = Astro.props;
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
 
+<!-- Sync color-scheme with system preference so third-party integrations
+     (e.g. astro-mermaid) can pick up a theme via the [data-theme] hook. -->
+<script is:inline>
+  (() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const sync = () => {
+      if (mq.matches) document.documentElement.dataset.theme = "dark";
+      else document.documentElement.removeAttribute("data-theme");
+    };
+    sync();
+    mq.addEventListener("change", sync);
+  })();
+</script>
+
 <!-- Primary Meta Tags -->
 <title>{title}</title>
 <meta name="title" content={title} />

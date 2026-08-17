@@ -98,7 +98,7 @@
   th, td {
     padding: 0.75em 1em;
     text-align: left;
-    border-bottom: 1px solid rgba(var(--gray-light), 0.6);
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   thead th {
@@ -111,7 +111,7 @@
   }
 
   tbody tr:hover {
-    background-color: rgba(var(--accent), 0.1);
+    background-color: var(--accent-tint);
   }
   img {
     max-width: 100%;
@@ -128,7 +128,6 @@
     font-weight: 500;
     padding: 0 5px;
     background-color: rgb(var(--gray-light));
-    opacity: 0.9;
     border-radius: 0.25em;
     font-size: 0.8em;
     letter-spacing: -0.005em;
@@ -162,7 +161,7 @@
   }
   hr {
     border: none;
-    border-top: 1px solid rgb(var(--gray-light));
+    border-top: 1px solid var(--border-subtle);
   }
 
   /* Footnotes */
@@ -172,7 +171,7 @@
     }
     .data-footnote-backref {
       padding: 0.2rem 0.4rem;
-      background: rgba(142, 65, 255, 0.17);
+      background: var(--note-tint);
       border-radius: 0.25rem;
       color: currentColor;
       font-size: 1rem;
@@ -180,7 +179,7 @@
   }
   a[data-footnote-ref] {
     padding: 0.1rem 0.2rem;
-    background: rgba(142, 65, 255, 0.17);
+    background: var(--note-tint);
     border-radius: 0.25rem;
     color: currentColor;
   }
@@ -199,13 +198,12 @@
     left: 0;
     width: 200%;
     height: 100%;
-    --left: 0%;
     background-image: linear-gradient(
       -45deg,
-      rgba(255, 255, 255, 0) 20%,
-      rgba(255, 255, 255, 0.8) 45%,
-      rgba(255, 255, 255, 0.8) 55%,
-      rgba(255, 255, 255, 0) 80%
+      transparent 20%,
+      var(--shimmer-band) 45%,
+      var(--shimmer-band) 55%,
+      transparent 80%
     );
     animation: mermaid-shimmer 2s infinite ease-in-out;
   }
@@ -216,7 +214,7 @@
     text-align: center;
     justify-content: center;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--shimmer-bg);
     display: block;
     top: 0;
     left: 0;
@@ -231,12 +229,18 @@
     margin-right: auto;
   }
 
-  @keyframes mermaid-shimmer {
-    from {
-      left: -200%;
-    }
-    to {
-      left: 200%;
-    }
+@keyframes mermaid-shimmer {
+  from {
+    left: -200%;
   }
+  to {
+    left: 200%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mermaid:not([data-processed="true"])::before {
+    animation: none;
+  }
+}
 }

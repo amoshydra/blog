@@ -29,24 +29,66 @@ img {
 }
 
 :root {
-    --accent: #2337ff;
-    --accent-dark: #000d8a;
-    --black: 15, 18, 25;
-    --gray: 96, 115, 159;
-    --gray-light: 229, 233, 240;
-    --gray-dark: 34, 41, 57;
-    --gray-gradient: rgba(var(--gray-light), 50%), #fff;
-    --box-shadow:
-        0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
-        0 16px 32px rgba(var(--gray), 33%);
-    --font-family-mono: 'IBM Plex Mono', Menlo, Consolas, Monaco, Adwaita Mono, Liberation Mono, Lucida Console, monospace;
+  color-scheme: light dark;
+
+  --accent: #2337ff;
+  --accent-tint: rgba(35, 55, 255, 0.1);
+  --note-tint: rgba(142, 65, 255, 0.17);
+  --focus-ring: rgb(151, 188, 247);
+  --white: 255, 255, 255;
+  --black: 15, 18, 25;
+  --gray: 96, 115, 159;
+  --gray-light: 229, 233, 240;
+  --gray-dark: 34, 41, 57;
+  --gray-gradient: rgba(var(--gray-light), 50%), #fff;
+  --box-shadow:
+    0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
+    0 16px 32px rgba(var(--gray), 33%);
+
+  --profile-link-bg: rgb(217, 225, 252);
+  --profile-link-bg-hover: rgb(194, 207, 248);
+  --profile-link-bg-active: rgb(173, 190, 243);
+
+  --surface-hover: rgb(235, 235, 235);
+  --surface-active: rgb(220, 220, 220);
+  --border-subtle: rgba(0, 0, 0, 0.12);
+  --shimmer-bg: rgba(255, 255, 255, 0.8);
+  --shimmer-band: rgba(255, 255, 255, 0.8);
+
+  --font-family-mono: 'IBM Plex Mono', Menlo, Consolas, Monaco, Adwaita Mono, Liberation Mono, Lucida Console, monospace;
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: #8094ff;
+    --accent-tint: rgba(128, 148, 255, 0.12);
+    --note-tint: rgba(142, 65, 255, 0.18);
+    --white: 15, 18, 25;
+    --black: 229, 233, 240;
+    --gray: 150, 165, 200;
+    --gray-light: 45, 51, 66;
+    --gray-dark: 207, 216, 232;
+    --gray-gradient: rgba(var(--gray-light), 40%), rgb(var(--white));
+
+    --profile-link-bg: rgb(40, 50, 86);
+    --profile-link-bg-hover: rgb(52, 64, 108);
+    --profile-link-bg-active: rgb(64, 78, 130);
+
+    --surface-hover: rgb(55, 61, 78);
+    --surface-active: rgb(70, 78, 100);
+    --border-subtle: rgba(255, 255, 255, 0.12);
+    --shimmer-bg: rgba(15, 18, 25, 0.6);
+    --shimmer-band: rgba(229, 233, 240, 0.22);
+  }
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, Adwaita Sans, Cantarell, Ubuntu, roboto, noto, helvetica, arial, sans-serif;
     margin: 0;
     padding: 0;
     text-align: left;
     background: linear-gradient(var(--gray-gradient)) no-repeat;
+    background-color: rgb(var(--white));
     background-size: 100% 600px;
     word-wrap: break-word;
     overflow-wrap: break-word;

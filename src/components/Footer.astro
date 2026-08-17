@@ -25,21 +25,22 @@ footer {
 .profile-link {
   display: inline-block;
   text-decoration: none;
-  padding: 0.125;
-  color: currentColor;
   padding: 0.25rem 0.25rem;
+  color: currentColor;
   border-radius: 0.25rem;
   line-height: 1;
   margin: -0.125rem;
 
-  background-color: rgb(217, 225, 252);
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      background-color: rgb(194, 207, 248);
-    }
+  background-color: var(--profile-link-bg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .profile-link:hover {
+    background-color: var(--profile-link-bg-hover);
   }
-  &:active {
-    background-color: rgb(173, 190, 243);
-  }
+}
+
+.profile-link:active {
+  background-color: var(--profile-link-bg-active);
 }
 </style>

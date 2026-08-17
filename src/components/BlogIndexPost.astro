@@ -47,17 +47,17 @@ const markedDescription = await marked.parseInline(post.description);
 
   cursor: pointer;
   transition: background-color 0.15s ease-out;
-  background-color: rgba(235,235,235, 0);
+  background-color: transparent;
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      background-color: rgba(235,235,235, 1);
+      background-color: var(--surface-hover);
     }
     &:active {
-      background-color: rgba(220,220,220, 1);
+      background-color: var(--surface-active);
     }
   }
   &:focus-visible {
-    outline: 0.25rem solid rgb(151, 188, 247);
+    outline: 0.25rem solid var(--focus-ring);
   }
 }
 .post :global(*) {
