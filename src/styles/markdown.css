@@ -95,6 +95,16 @@
     font-size: 1rem;
   }
 
+  /* Plain-markdown tables are not wrapped in .scrollable-table (that only applies
+     to MDX via the Table component override), so make them scroll on small screens
+     instead of overflowing the page horizontally. */
+  > table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   th, td {
     padding: 0.75em 1em;
     text-align: left;
