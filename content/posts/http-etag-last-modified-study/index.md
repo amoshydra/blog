@@ -2,6 +2,7 @@
 title: "HTTP cache validators: ETag vs Last-Modified (a hands-on study)"
 description: "How Apache generates ETag and Last-Modified, how it evaluates If-None-Match and If-Modified-Since (the RFC 9110 rule vs Apache's actual AND logic), what happens when the two validators disagree, and the CDN mystery where If-None-Match unexpectedly did nothing."
 pubDate: "2026-08-18"
+updatedDate: "2026-08-21"
 heroImage: "./hero.webp"
 ---
 
@@ -32,7 +33,7 @@ For a static file, Apache reads `stat(2)` metadata and produces two headers.
 ### Last-Modified
 
 ```http
-Last-Modified: Mon, 10 Aug 2026 12:00:00 GMT
+Last-Modified: Mon, 10 Aug 2025 12:00:00 GMT
 ```
 
 - Derived from the file **mtime**, formatted as an
@@ -133,10 +134,10 @@ A rewrite inside the same second moves the microsecond mtime — the **ETag chan
 the **Last-Modified header does not**:
 
 ```sh
-$ touch -d '2026-08-10 12:00:00.500000 UTC' app.js
+$ touch -d '2025-08-10 12:00:00.500000 UTC' app.js
 $ curl -sI http://localhost:18080/default-mtimesize/app.js | grep -iE 'etag|last-modified'
 ETag: "4-658b018017120"          # was "4-658b017f9d000"
-Last-Modified: Mon, 10 Aug 2026 12:00:00 GMT   # unchanged
+Last-Modified: Mon, 10 Aug 2025 12:00:00 GMT   # unchanged
 ```
 
 Consequences:
@@ -184,7 +185,7 @@ behind a CDN**:
 $ curl -sI 'https://cdn.example/assets/js/auth.9f31a2c7.js' | grep -iE 'server|etag|last-modified|x-cache'
 HTTP/2 200
 server: Apache
-last-modified: Mon, 03 Aug 2026 04:58:30 GMT
+last-modified: Mon, 03 Aug 2025 04:58:30 GMT
 etag: "a17c2-6581b2f4a8100"
 x-cache-status: Miss from child, Miss from parent
 ```
@@ -280,7 +281,7 @@ Method notes and caveats:
 ```sh
 URL="https://your-site.example/assets/your-file.js"
 LM=$(curl -sI "$URL" | tr -d '\r' | grep -i '^last-modified' | sed 's/^[Ll]ast-Modified: //')
-OLD="Mon, 01 Aug 2026 04:58:30 GMT"   # older than Last-Modified
+OLD="Mon, 01 Aug 2025 04:58:30 GMT"   # older than Last-Modified
 
 # exact INM: capture and echo in the same cycle (freshly captured = no false negatives)
 E=$(curl -sI "$URL" | tr -d '\r' | grep -i '^etag' | cut -d' ' -f2)
@@ -289,6 +290,44 @@ curl -s -o /dev/null -w '#INM *          -> %{http_code}\n' "$URL" -H 'If-None-M
 curl -s -o /dev/null -w '#IMS OLD only   -> %{http_code}\n' "$URL" -H "If-Modified-Since: $OLD"
 curl -s -o /dev/null -w '#IMS LM only    -> %{http_code}\n' "$URL" -H "If-Modified-Since: $LM"
 ```
+
+You can run the same probes from a browser with `fetch`. The browser sends its own
+`Accept-Encoding`, but for this test the important part is that we read the `ETag` and
+`Last-Modified` from the first response and echo them back as conditional headers — the
+resulting status code tells you whether your edge honours them:
+
+```js
+// Run this in the browser DevTools console (same-origin asset, or fix CORS).
+async function probe(url) {
+  const first = await fetch(url);
+  const etag     = first.headers.get('etag');
+  const lastMod  = first.headers.get('last-modified');
+  const old      = new Date(new Date(lastMod) - 2 * 864e5).toUTCString(); // 2 days earlier
+  console.log('baseline', first.status, { etag, 'last-modified': lastMod });
+
+  const code = async (name, headers) =>
+    console.log(name, '->', (await fetch(url, { headers })).status);
+
+  // exact If-None-Match (freshly captured, echoed in the same cycle)
+  await code('#exact INM only', { 'If-None-Match': etag });
+  await code('#INM *',          { 'If-None-Match': '*' });
+  await code('#IMS OLD only',   { 'If-Modified-Since': old });
+  await code('#IMS LM only',    { 'If-Modified-Since': lastMod });
+}
+// probe('https://your-site.example/assets/your-file.js');
+```
+
+Reading the results is identical to the curl version:
+
+- `#INM *` should be **304** on any spec-compliant server (`*` matches every
+  representation). A **200** here means `If-None-Match` isn't being processed.
+- `#exact INM only` **304** means your ETag reaches the origin and works.
+- If those two come back **200** while `#IMS LM only` returns **304**, your edge is
+  revalidating purely on timestamps.
+
+Two browser caveats: the HTTP cache can intercept conditional requests, so run it with
+Cache-Control disabled or a cache-busting cache mode, and confirm CORS allows reading
+the response headers if the script and asset are cross-origin.
 
 Interpretation:
 
@@ -343,7 +382,7 @@ mkdir -p htdocs/default-mtimesize htdocs/size htdocs/digest
 printf 'AAAA' > htdocs/default-mtimesize/app.js
 printf 'AAAA' > htdocs/size/app.js
 printf 'AAAA' > htdocs/digest/app.js
-touch -d '2026-08-10 12:00:00 UTC' htdocs/*/app.js   # fixed mtime (GNU coreutils)
+touch -d '2025-08-10 12:00:00 UTC' htdocs/*/app.js   # fixed mtime (GNU coreutils)
 ```
 
 ### 2. httpd.conf
@@ -397,10 +436,10 @@ podman run -d --name httpd-etag \
 
 # default mode -> size-mtime ETag, no inode
 curl -sI http://localhost:18080/default-mtimesize/app.js | grep -iE 'etag|last-modified'
-#   ETag: "4-658b017f9d000"   Last-Modified: Mon, 10 Aug 2026 12:00:00 GMT
+#   ETag: "4-658b017f9d000"   Last-Modified: Mon, 10 Aug 2025 12:00:00 GMT
 
 E='"4-658b017f9d000"'
-T1="Mon, 10 Aug 2026 12:00:00 GMT"; OLD="Mon, 09 Aug 2026 12:00:00 GMT"
+T1="Mon, 10 Aug 2025 12:00:00 GMT"; OLD="Mon, 09 Aug 2025 12:00:00 GMT"
 
 # both validators present -> Apache ANDs them
 curl -s -o /dev/null -w 'both match     -> %{http_code}\n' http://localhost:18080/default-mtimesize/app.js \
@@ -411,19 +450,19 @@ curl -s -o /dev/null -w 'INM wrong+IMS   -> %{http_code}\n' http://localhost:180
      -H 'If-None-Match: "wrong"' -H "If-Modified-Since: $T1"            # 200 (RFC 9110: 304)
 
 # sub-second mtime rewrite: ETag changes, Last-Modified does not
-touch -d '2026-08-10 12:00:00.500000 UTC' htdocs/default-mtimesize/app.js
+touch -d '2025-08-10 12:00:00.500000 UTC' htdocs/default-mtimesize/app.js
 curl -sI http://localhost:18080/default-mtimesize/app.js | grep -i etag  # ETag has changed
 
 # metadata blind spot: same size + restored mtime -> identical ETag, different bytes
 printf '????' > htdocs/default-mtimesize/app.js
-touch -d '2026-08-10 12:00:00 UTC' htdocs/default-mtimesize/app.js
+touch -d '2025-08-10 12:00:00 UTC' htdocs/default-mtimesize/app.js
 curl -s -o /dev/null -w 'cached INM -> %{http_code}\n' http://localhost:18080/default-mtimesize/app.js \
      -H "If-None-Match: $E"                                            # 304 -> stale content
 
 # the same rewrite under FileETag Digest IS detected
 D1=$(curl -sI http://localhost:18080/digest/app.js | tr -d '\r' | grep -i '^etag' | cut -d' ' -f2)
 printf '????' > htdocs/digest/app.js
-touch -d '2026-08-10 12:00:00 UTC' htdocs/digest/app.js
+touch -d '2025-08-10 12:00:00 UTC' htdocs/digest/app.js
 curl -s -o /dev/null -w 'digest rewrite -> %{http_code}\n' http://localhost:18080/digest/app.js \
      -H "If-None-Match: $D1"                                           # 200 -> new body served
 ```
