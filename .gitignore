@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # local studies (not published)
 .study/
+
+# generated hero image candidates
+.hero-candidates/

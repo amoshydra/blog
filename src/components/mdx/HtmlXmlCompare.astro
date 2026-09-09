@@ -1,0 +1,134 @@
+---
+import Code from "astro/components/Code.astro";
+
+interface Props {
+  label?: string;
+  note?: string;
+  html: string;
+  xml: string;
+}
+
+const { label, note, html, xml } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 10);
+---
+
+<div class="hx">
+  {label && <strong class="hx__label">{label}</strong>}
+  {note && <p class="hx__note" set:html={note} />}
+  <div class="hx__tabs" role="tablist" aria-label="Switch between HTML and XML">
+    <label class="hx__tab" for={`${uid}-h`} role="tab">HTML</label>
+    <label class="hx__tab" for={`${uid}-x`} role="tab">XML</label>
+  </div>
+  <input class="hx__radio" type="radio" name={uid} id={`${uid}-h`} data-side="html" checked />
+  <input class="hx__radio" type="radio" name={uid} id={`${uid}-x`} data-side="xml" />
+  <section class="hx__pane hx__pane--html">
+    <Code
+      code={html}
+      lang="html"
+      themes={{ light: "github-light", dark: "github-dark" }}
+      defaultColor={false}
+      wrap
+    />
+  </section>
+  <section class="hx__pane hx__pane--xml">
+    <Code
+      code={xml}
+      lang="xml"
+      themes={{ light: "github-light", dark: "github-dark" }}
+      defaultColor={false}
+      wrap
+    />
+  </section>
+</div>
+
+<style>
+  .hx {
+    margin: 1rem 0 1.5rem;
+  }
+  .hx__label {
+    display: block;
+    font-weight: 600;
+  }
+  .hx__note {
+    margin: 0.25rem 0 0.5rem;
+    color: rgb(var(--gray));
+  }
+  .hx__radio {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+  }
+  .hx__pane {
+    min-width: 0;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .hx__pane :global(pre.astro-code) {
+    margin: 0;
+    height: 100%;
+    background-color: rgb(var(--gray-light));
+  }
+
+  /* Desktop: side by side */
+  @media (min-width: 768px) {
+    .hx {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      align-items: stretch;
+    }
+    .hx__label,
+    .hx__note {
+      grid-column: 1 / -1;
+    }
+    .hx__tabs {
+      display: none;
+    }
+    .hx__pane {
+      display: block;
+    }
+  }
+
+  /* Mobile: tabs switch between HTML and XML */
+  @media (max-width: 767px) {
+    .hx__tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .hx__tab {
+      flex: 0 0 auto;
+      padding: 0.25rem 0.75rem;
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: rgb(var(--gray));
+      background-color: transparent;
+      user-select: none;
+    }
+    .hx__pane {
+      display: none;
+    }
+    .hx__radio[data-side="html"]:checked ~ .hx__pane--html {
+      display: block;
+    }
+    .hx__radio[data-side="xml"]:checked ~ .hx__pane--xml {
+      display: block;
+    }
+  }
+</style>
+
+<style is:global>
+  .hx pre.astro-code,
+  .hx pre.astro-code span {
+    color: var(--shiki-light, inherit);
+  }
+  [data-theme="dark"] .hx pre.astro-code,
+  [data-theme="dark"] .hx pre.astro-code span {
+    color: var(--shiki-dark, inherit);
+  }
+</style>

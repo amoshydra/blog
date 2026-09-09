@@ -1,0 +1,42 @@
+---
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<details class="collapsible">
+  <summary class="collapsible__summary">{label}</summary>
+  <div class="collapsible__body">
+    <slot />
+  </div>
+</details>
+
+<style>
+  .collapsible {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 70rem;
+    margin-bottom: 4rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+  .collapsible__summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    color: rgb(var(--gray-dark));
+  }
+  .collapsible__summary::marker {
+    color: rgb(var(--gray));
+  }
+  .collapsible__body {
+    padding: 0 1rem 1rem;
+  }
+</style>

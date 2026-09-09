@@ -1,6 +1,8 @@
 ---
 import { type CollectionEntry, getCollection, render } from "astro:content";
 import Table from "../../components/mdx/Table.astro";
+import Collapsible from "../../components/mdx/Collapsible.astro";
+import HtmlXmlCompare from "../../components/mdx/HtmlXmlCompare.astro";
 import BlogPost from "../../layouts/BlogPost.astro";
 
 export async function getStaticPaths() {
@@ -19,7 +21,9 @@ const { Content } = await render(post);
 <BlogPost {...post.data}>
   <Content
     components={{
-      table: Table
+      table: Table,
+      Collapsible,
+      HtmlXmlCompare
     }}
   />
 </BlogPost>
