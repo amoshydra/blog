@@ -1,7 +1,8 @@
 ---
 title: "HTTP ETags and content-encoding: how Apache's gzip breaks revalidation (a hands-on study)"
-description: "What happens to the ETag when you enable gzip/brotli in Apache? Why ETag revalidation silently stops working for compressed content, the three places Apache 2.4.68 violates RFC 9110, the version history behind it, and the one-line config that fixes it."
+description: "Why does enabling gzip/brotli in Apache silently break ETag revalidation? The tag you're given never matches the one Apache compares, and the 304 it does send is malformed. A diagram-first walkthrough of the three RFC 9110 violations, with before/after HAR files you can import into your own Network tab, and the one-line config that fixes it."
 pubDate: "2026-08-27"
+updatedDate: "2026-09-09"
 heroImage: "./hero.webp"
 ---
 
@@ -13,21 +14,44 @@ That one covered how Apache generates its two validators and how it evaluates
 > (`mod_deflate`) or brotli (`mod_brotli`) — and does the result still comply with
 > [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110)?
 
-The short answer: **no.** With the default configuration, Apache 2.4.68 breaks
-`ETag` revalidation for compressed content in three distinct ways, each of which
-contradicts a `MUST` in the spec. It's a known, partly-documented trade-off, and it
-has a version history that goes back to 2.4.0.
-
 All Apache results below were verified empirically against **2.4.68** in a podman
-container. A fully reproducible setup is included at the end.
+container. The traffic is captured as
+[before-fix and after-fix HAR files](#see-it-for-yourself-import-the-hars-into-your-network-tab)
+you can drop into your own Network tab.
+
+## TL;DR
+
+Enabling gzip/br makes Apache rewrite the `ETag` (append `-gzip` / `-br`). That
+rewrite happens **after** the `If-None-Match` check, so the tag a client is given and
+echoed back never matches what Apache compares against: revalidation of compressed
+content returns `200` instead of `304`. And the rare `304` that *does* come back is
+malformed (identity `ETag`, no `Vary`, no `Content-Encoding`). It's three
+`MUST`-level violations of RFC 9110. Fix: `DeflateAlterETag NoChange` /
+`BrotliAlterETag NoChange`.
 
 ---
 
-## The default: Apache appends `-gzip` / `-br` to the ETag
+## How revalidation is *supposed* to work
 
-When a response is content-encoded on the fly, Apache rewrites the `ETag` before it
-leaves the server. For a 315-byte file whose identity (unencoded) tag is
-`"13b-658b017f9d000"`:
+A client that has a cached copy revalidates by echoing the validator it was given:
+
+```text
+1. GET  /big.txt            -> 200, ETag: "abc"
+2. GET  /big.txt            -> 304   (client sends If-None-Match: "abc")
+   If-None-Match: "abc"
+```
+
+If the tag still matches, the server answers **304 Not Modified** and sends no body;
+the client keeps using its cached copy. That's the whole point of an `ETag`.
+
+The subtlety is **what the tag means**. `If-None-Match` is compared against the
+*selected representation* — the exact bytes that would be sent for *this* request.
+If the response is gzip-compressed, the selected representation is the gzip one, and
+its tag must be distinct from the uncompressed one's.
+
+## Compression changes the tag
+
+For a 315-byte file whose identity (unencoded) tag is `"13b-658b017f9d000"`:
 
 ```sh
 $ curl -sI http://localhost:18080/plain/big.txt -H 'Accept-Encoding: gzip' | tr -d '\r' | grep -iE 'HTTP|etag|vary|content-encoding|content-length'
@@ -38,165 +62,97 @@ Content-Encoding: gzip
 Content-Length: 69
 ```
 
-The tag is now `"13b-658b017f9d000-gzip"` — the identity tag with `-gzip` appended.
-Brotli does the same with `-br`. This is the `AddSuffix` behaviour, which is the
-**default** for both `DeflateAlterETag` and `BrotliAlterETag`.
+The tag is now `"13b-658b017f9d000-gzip"`: the identity tag with `-gzip` appended.
+Brotli does the same with `-br`. This is the `AddSuffix` behaviour, the **default** for
+both `DeflateAlterETag` and `BrotliAlterETag`.
 
-The reason is sound: a gzip body and an identity body are *different
-representations*, so they should have *different* validators. (More on that in a
-moment — the RFC agrees.)
-
-### The two encoders don't even agree on small files
-
-The suffix is only added when the filter actually compresses the response. And the
-two modules have different thresholds. For a 4-byte file:
-
-```sh
-$ curl -sI http://localhost:18080/plain/small.txt -H 'Accept-Encoding: gzip' | tr -d '\r' | grep -iE 'content-encoding|content-length|etag'
-ETag: "4-658b017f9d000"          # not compressed -> identity tag
-Content-Length: 4
-
-$ curl -sI http://localhost:18080/plain/small.txt -H 'Accept-Encoding: br' | tr -d '\r' | grep -iE 'content-encoding|content-length|etag'
-ETag: "4-658b017f9d000-br"       # compressed -> suffixed tag
-Content-Encoding: br
-Content-Length: 8
-```
-
-`mod_deflate` skips the 4-byte body (below its minimum), leaving the identity tag,
-while `mod_brotli` has no minimum and compresses it, adding `-br`. Same file, same
-request path, two different ETags depending on which encoder fires. The suffix is a
-property of the *representation that was actually sent*, not of the file.
-
----
-
-## The RFC already covers this exact case
-
-This isn't an edge case the spec forgot. RFC 9110
-[§8.8.3.3](https://www.rfc-editor.org/rfc/rfc9110#section-8.8.3.3),
-*"Example: Entity Tags Varying on Content-Negotiated Resources"*, walks through a
-resource whose representations vary on `Accept-Encoding`:
-
-```
->> Response (identity):
-ETag: "123-a"
-Vary: Accept-Encoding
-
->> Response (gzip):
-ETag: "123-b"
-Vary: Accept-Encoding
-Content-Encoding: gzip
-```
-
-and adds this note:
+The RFC endorses exactly this. [RFC 9110 §8.8.3.3](https://www.rfc-editor.org/rfc/rfc9110#section-8.8.3.3)
+(*"Entity Tags Varying on Content-Negotiated Resources"*) shows the identity and gzip
+representations carrying different tags (`"123-a"` vs `"123-b"`), both with
+`Vary: Accept-Encoding`, and notes:
 
 > Content codings are a property of the representation data, so a strong entity tag
 > for a content-encoded representation **has to be distinct** from the entity tag of
 > an unencoded representation to prevent potential conflicts during cache updates and
 > range requests.
 
-So Apache's *200* behaviour — a distinct `ETag` plus `Vary: Accept-Encoding` plus
-`Content-Encoding` for the compressed representation — is **exactly what the RFC
-prescribes**. Up to here, everything is correct.
+So the `200` here is **correct**. The client caches the gzip body under
+`ETag: "13b-658b017f9d000-gzip"`.
 
-The problem starts the instant a client tries to *revalidate* that cached
-representation.
+> **Small files.** The suffix is only added when the filter actually compresses, and
+> the two modules disagree on thresholds: `mod_deflate` skips a 4-byte body (identity
+> tag, no suffix), while `mod_brotli` compresses it (`"4-…-br"`). Same file, two
+> different tags depending on which encoder fires.
 
----
+## The problem in one picture
 
-## Where it breaks: revalidation
+Now the client revalidates the gzip representation. It faithfully echoes the tag it
+was **given** — `"13b-658b017f9d000-gzip"`:
 
-A client that cached the gzip representation now holds `ETag: "13b-658b017f9d000-gzip"`.
-To revalidate it sends that tag back:
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Client (cache)
+    participant A as Apache 2.4.68
+    Note over C,A: Request 2 — client echoes the tag it was GIVEN
+    C->>A: GET /big.txt<br/>If-None-Match: "13b-658b017f9d000-gzip"
+    Note right of A: Apache compares the INM tag against the<br/>IDENTITY tag "13b-658b017f9d000"<br/>(set before compression runs)
+    Note right of A: "…-gzip" ≠ "…" → no match
+    A->>C: 200 OK + full 69-byte gzip body AGAIN<br/>(NOT 304 — revalidation fails)
+```
+
+And that's exactly what happens:
 
 ```sh
 $ curl -sI http://localhost:18080/plain/big.txt -H 'Accept-Encoding: gzip' \
-    -H 'If-None-Match: "13b-658b017f9d000-gzip"' | tr -d '\r' | grep -iE 'HTTP|etag|content-length'
+    -H 'If-None-Match: "13b-658b017f9d000-gzip"' | tr -d '\r' | grep -iE 'HTTP|content-length'
 HTTP/1.1 200 OK
-ETag: "13b-658b017f9d000-gzip"
-Content-Length: 69
+Content-Length: 69          # the body is sent again
 ```
 
-**200, with the full body re-sent.** The client already had these bytes.
+The tag the client is **given** and the tag Apache **compares against** are two
+different strings that never match. So revalidation of compressed content is dead:
+every "is my copy still valid?" request re-downloads the whole body.
 
-What the RFC says a server must do here, from
-[§13.1.2](https://www.rfc-editor.org/rfc/rfc9110#section-13.1.2) (`If-None-Match`):
+## Why: Apache decides before it transforms
 
-> 2. If the field value is a list of entity tags, the condition is **false** if one
->    of the listed tags matches the entity tag of the selected representation.
->
-> An origin server that evaluates an If-None-Match condition MUST NOT perform the
-> requested method if the condition evaluates to false; instead, the origin server
-> MUST respond with either a) the **304 (Not Modified)** status code if the request
-> method is GET or HEAD …
+The root cause is *ordering*. Apache sets the identity `ETag` and evaluates
+`If-None-Match` **before** the compression filter runs; the filter rewrites the tag
+afterward. The client only ever sees the post-filter tag, but the decision was made
+on the pre-filter one.
 
-The selected representation (the gzip one) has entity tag
-`"13b-658b017f9d000-gzip"` — that's the value Apache itself sent in the 200. The
-client listed exactly that tag. The condition is false. The server **MUST** respond
-`304`. Apache responds `200`.
+## And the 304 that does come back is also malformed
 
-### Why it happens
+The only way to get a `304` is to send the **identity** tag (which the client never
+received). When you do, the filter — which would have added `Vary`,
+`Content-Encoding`, and the `-gzip` suffix — is skipped entirely:
 
-In `default_handler()` (`server/core.c`), Apache computes the identity `ETag` and
-evaluates `If-None-Match` **before** the output filters run. The content filter then
-runs *after* and rewrites the tag to add `-gzip`. So:
+```mermaid
+flowchart TD
+    REQ["GET /big.txt<br/>Accept-Encoding: gzip"] --> ETAG["Apache sets identity ETag<br/>#quot;13b-658b017f9d000#quot;"]
+    ETAG --> COND{If-None-Match<br/>matches identity tag?}
+    COND -- "no<br/>(e.g. client sent #quot;…-gzip#quot;)" --> FILTER["run content filter<br/>compress body + add -gzip, Vary, CE"]
+    FILTER --> R200["200 OK<br/>ETag #quot;…-gzip#quot; · Vary · CE"]
+    COND -- "yes<br/>(client sent the identity tag)" --> R304["304 Not Modified<br/>content filter is dropped"]
+    R304 -.-> BUG["malformed 304:<br/>identity ETag, no Vary, no CE"]
+```
 
-- the tag the **client is given** is `"13b-658b017f9d000-gzip"`;
-- the tag the server **compares against** is `"13b-658b017f9d000"`.
-
-Those two never match, so a client that faithfully echoes back the tag it was handed
-can never get a `304`. ETag revalidation is simply dead for compressed content.
-
-| # | Request | Apache 2.4.68 | RFC 9110 |
-|---|---------|---------------|----------|
-| 1 | `GET` + `AE: gzip` | 200 · `ETag: "…-gzip"` · `Vary` · `CE: gzip` | 200 ✓ |
-| 2 | `GET` + `AE: gzip` + `INM: "…-gzip"` | **200** + body | **304** ✗ |
-| 3 | `GET` + `AE: gzip` + `INM: "…"` (identity) | **304** · `ETag: "…"` · no `Vary` · no `CE` | 304 · `ETag: "…-gzip"` · `Vary` · `CE` ✗ |
-
-Row 2 is the revalidation break. Row 3 is the next problem.
-
----
-
-## The 304 that does come back is also wrong
-
-The only way to coax a `304` out of Apache for a compressed asset is to revalidate
-with the *identity* tag — the one the client never actually received:
+Live proof: revalidating with the identity tag returns a `304`, but look at what it
+carries:
 
 ```sh
 $ curl -sI http://localhost:18080/plain/big.txt -H 'Accept-Encoding: gzip' \
     -H 'If-None-Match: "13b-658b017f9d000"' | tr -d '\r'
 HTTP/1.1 304 Not Modified
-Date: Thu, 27 Aug 2026 05:02:26 GMT
+Date: Wed, 09 Sep 2026 02:44:50 GMT
 Server: Apache/2.4.68 (Unix)
 Last-Modified: Mon, 10 Aug 2026 12:00:00 GMT
-ETag: "13b-658b017f9d000"
-Accept-Ranges: bytes
+ETag: "13b-658b017f9d000"        # identity tag, NOT "…-gzip"
+Accept-Ranges: bytes             # no Vary, no Content-Encoding
 ```
 
-Compare that against the 200 to the *same* request (row 1). The 304:
-
-- sends `ETag: "13b-658b017f9d000"` (identity) instead of `ETag: "13b-658b017f9d000-gzip"`;
-- has **no** `Vary: Accept-Encoding`;
-- has **no** `Content-Encoding: gzip`.
-
-RFC 9110
-[§15.4.5](https://www.rfc-editor.org/rfc/rfc9110#section-15.4.5) (`304 Not Modified`)
-is explicit about what a 304 must carry:
-
-> The server generating a 304 response **MUST generate any of the following header
-> fields that would have been sent in a 200 (OK) response to the same request**:
->
-> \* Content-Location, Date, **ETag**, and **Vary**
->
-> \* Cache-Control and Expires
-
-The 200 to the same request sent `ETag: "…-gzip"` and `Vary: Accept-Encoding`. The
-304 sent neither. Two more `MUST` violations.
-
-### Why it happens
-
-The `304` path never re-runs the content filter. In `modules/filters/mod_filter.c`,
-`filter_harness()` removes the filter for any response whose status is not `200`
-(unless `filter-errordocs` is set):
+Why is the filter dropped on a 304? In `modules/filters/mod_filter.c`,
+`filter_harness()` removes the output filter for any non-`200` response:
 
 ```c
 if (f->r->status != 200
@@ -206,17 +162,81 @@ if (f->r->status != 200
 }
 ```
 
-So the filter that would have added `Vary`, `Content-Encoding`, and the `-gzip`
-suffix never runs on a 304 — the response keeps the pre-filter, identity headers.
-Apache *did* try to fix this in 2.4.36 (a dedicated 304 branch in
-`mod_deflate`/`mod_brotli`), but that branch is unreachable because the harness
-strips the filter first. It's dead code.
+So a 304 never re-runs the filter that would have added the headers the 200 had.
+(A 2.4.36 fix tried to handle 304s specially, but it's unreachable behind this check:
+dead code.)
 
----
+## The three RFC violations
+
+| # | Request | Apache 2.4.68 | RFC 9110 requires |
+|---|---------|---------------|-------------------|
+| 1 | `GET` + `AE: gzip` | 200 · `ETag: "…-gzip"` · `Vary` · `CE: gzip` | 200 ✓ |
+| 2 | `GET` + `AE: gzip` + `INM: "…-gzip"` | **200** + body | **304** ([§13.1.2](https://www.rfc-editor.org/rfc/rfc9110#section-13.1.2)) |
+| 3 | `GET` + `AE: gzip` + `INM: "…"` | **304** · `ETag: "…"` · no `Vary` · no `CE` | 304 · `ETag: "…-gzip"` · `Vary` · `CE` ([§15.4.5](https://www.rfc-editor.org/rfc/rfc9110#section-15.4.5)) |
+
+Row 1 is the control and is fine. Rows 2 and 3 are the violations; row 3 bundles two
+of them (a wrong `ETag` *and* a missing `Vary`), which is where the "three" in the
+TL;DR comes from.
+
+- **Row 2 — revalidation returns 200, not 304.** [§13.1.2](https://www.rfc-editor.org/rfc/rfc9110#section-13.1.2)
+  (`If-None-Match`): the condition is *false* when a listed tag "matches the entity
+  tag of the selected representation", and then the server "MUST respond with … 304".
+  The selected representation (gzip) has tag `"…-gzip"` — Apache sent it — so a `304`
+  is required. Apache returns `200`.
+- **Row 3 — the 304 sends the wrong `ETag` and drops `Vary`.** [§15.4.5](https://www.rfc-editor.org/rfc/rfc9110#section-15.4.5)
+  (`304 Not Modified`): the server "MUST generate any of the following header fields
+  that would have been sent in a 200 (OK) response to the same request: …
+  **ETag**, and **Vary**". The 200 sends `"…-gzip"` and `Vary`; the 304 sends neither.
+
+There is a real tension *inside* the RFC here: §8.8.3.3 wants **distinct** tags (to
+avoid cache-update conflicts), §13.1.2 wants revalidation to **work**, and §15.4.5
+wants the 304 to **mirror** the 200. A compliant server does all three: give the gzip
+rep a distinct tag, accept it on revalidation, and echo it on the 304. Apache does
+only the first, because it evaluates the condition before the filter rewrites the tag.
+It's an implementation limitation, not something the spec makes impossible.
+
+## See it for yourself: import the HARs into your Network tab
+
+Both traces below were captured live against Apache 2.4.68. To watch them in **your
+own browser's Network tab**: download the `.har`, open DevTools (`F12`) → **Network**,
+then drag the file onto the panel and drop it (or right-click → *Import HAR file*).
+Click each `big.txt` request and read the **Headers**.
+
+**Before the fix**: default config (`DeflateAlterETag AddSuffix`) — revalidation of
+the compressed copy fails.
+
+<a class="download" href="artifact/etag-revalidation-before-fix.har" download>Download before-fix HAR</a>
+
+| # | Request | Status | What to look at |
+|---|---------|:------:|-----------------|
+| 1 | `GET /big.txt` | 200 | identity body; `ETag: "13b-658b017f9d000"` — the pre-compression tag |
+| 2 | `GET /big.txt` + `AE: gzip` | 200 | `ETag: "13b-658b017f9d000-gzip"`, `Vary: Accept-Encoding`, `Content-Encoding: gzip` — **the tag the client caches** |
+| 3 | `GET` + `AE: gzip` + `INM: "…-gzip"` | **200** | echoes the tag from entry 2, yet the full 69-byte gzip body is **re-sent — should be 304** |
+| 4 | `GET` + `AE: gzip` + `INM: "…"` | **304** | identity `ETag`, **no `Vary`, no `Content-Encoding`** — the only 304 Apache will give, and it's malformed |
+
+Entry 3 is the wasteful re-download: a correct revalidation that a compliant server
+would answer with `304` (RFC 9110 §13.1.2). Entry 4 only happens if the client sends
+the *identity* tag it was never given — and the `304` carries the wrong `ETag` and
+drops `Vary`/`Content-Encoding` (§15.4.5).
+
+**After the fix**: `DeflateAlterETag NoChange` / `BrotliAlterETag NoChange` — the
+compressed copy keeps the identity tag, so revalidation works.
+
+<a class="download" href="artifact/etag-revalidation-after-fix.har" download>Download after-fix HAR</a>
+
+| # | Request | Status | What to look at |
+|---|---------|:------:|-----------------|
+| 1 | `GET /big.txt` | 200 | identity body; `ETag: "13b-658b017f9d000"` |
+| 2 | `GET /big.txt` + `AE: gzip` | 200 | `ETag: "13b-658b017f9d000"` (**same** — no `-gzip`), `Vary`, `Content-Encoding: gzip` |
+| 3 | `GET` + `AE: gzip` + `INM: "…"` | **304** | **no body — the cache is revalidated correctly** |
+
+Compare entry 3 in the two files: it's `200` in the before-fix trace and `304` in the
+after-fix trace — the whole bug in one row. (The after-fix `304` still omits `Vary`/
+`Content-Encoding`, but that's now harmless because the `ETag` matches.)
 
 ## Is this a bug?
 
-Partly. It splits into two different things:
+It splits into two different things:
 
 1. **The revalidation break is a documented trade-off.** The
    [`DeflateAlterETag`](https://httpd.apache.org/docs/2.4/mod/mod_deflate.html) and
@@ -226,22 +246,9 @@ Partly. It splits into two different things:
    Apache knows, and ships `NoChange`/`Remove` as the escape hatches. It's a
    deliberate choice — but it's still a deviation from a `MUST`, and it's the
    *default*.
-
-2. **The malformed 304 is a genuine latent bug.** When you *do* get a 304 (via the
-   identity tag), it is not the 304 the RFC requires: wrong `ETag`, no `Vary`, no
-   `Content-Encoding`. This isn't documented as intended — it's the shadowed 2.4.36
-   fix described above.
-
-There's also a real tension *inside* the RFC worth naming. §8.8.3.3 wants **distinct**
-ETags for content-encoded representations (to avoid cache-update and range-request
-conflicts). §13.1.2 wants revalidation to **work** (304 when the tag matches). §15.4.5
-wants the 304 to carry the **same** `ETag`/`Vary` as the 200. A compliant server does
-all three: give the gzip rep a distinct tag, accept that tag on revalidation, and echo
-it back on the 304. Apache does only the first, because it evaluates the condition
-before the filter rewrites the tag. It's an implementation limitation, not something
-the spec makes impossible.
-
----
+2. **The malformed 304 is a genuine latent bug.** When you *do* get a 304, it is not
+   the 304 the RFC requires: wrong `ETag`, no `Vary`, no `Content-Encoding`. This
+   isn't documented as intended — it's the shadowed 2.4.36 fix described above.
 
 ## A short version history
 
@@ -256,8 +263,6 @@ the spec makes impossible.
 
 So updating Apache does not fix this — the behaviour is present in every current
 release and in trunk.
-
----
 
 ## What to do about it
 
@@ -288,8 +293,6 @@ representation's mtime/size. Note the 304 still lacks `Vary`/`Content-Encoding` 
 `Remove` is the nuclear option: it eliminates the inconsistency by removing the ETag
 from compressed responses, at the cost of dropping ETag validation for them.
 
----
-
 ## Practical checklist
 
 1. **Know that enabling gzip/br changes your ETags.** With the default `AddSuffix`,
@@ -310,8 +313,6 @@ from compressed responses, at the cost of dropping ETag validation for them.
 6. **Updating Apache won't help.** The behaviour is the default in 2.4.68 and is
    unchanged in trunk.
 
----
-
 ## Reproducing the results
 
 Everything above was produced with a clean podman container
@@ -321,8 +322,8 @@ Everything above was produced with a clean podman container
 
 ```sh
 mkdir -p htdocs/plain
-printf 'x%.0s' {1..315} > htdocs/plain/big.txt     # 315 bytes
-printf 'AAAA' > htdocs/plain/small.txt             # 4 bytes
+printf 'The quick brown fox jumps over the lazy dog. %.0s' {1..7} > htdocs/plain/big.txt   # 315 bytes
+printf 'AAAA' > htdocs/plain/small.txt   # 4 bytes
 touch -d '2026-08-10 12:00:00 UTC' htdocs/plain/big.txt htdocs/plain/small.txt
 ```
 
@@ -398,8 +399,18 @@ curl -sI "$B" -H 'Accept-Encoding: gzip' -H "If-None-Match: \"${ID}\"" | tr -d '
 #    HTTP/1.1 304 Not Modified   ETag: "13b-658b017f9d000"   (no Vary, no Content-Encoding)
 ```
 
-With `DeflateAlterETag NoChange` / `BrotliAlterETag NoChange` uncommented, case 2
-returns **304** and the ETag is `"13b-658b017f9d000"` for both the 200 and the 304.
+With `DeflateAlterETag NoChange` / `BrotliAlterETag NoChange` uncommented, probe 1
+returns the **plain identity ETag** (`"13b-658b017f9d000"`, no `-gzip`), and revalidating
+with that tag — probe 3, the tag a real client would now hold — returns **304**. (Probe 2
+still 200s: it sends a `-gzip` suffix that `NoChange` never issues.)
+
+The traces shown in the post were captured live against this setup. You can
+<a href="artifact/etag-revalidation-before-fix.har" download>download the before-fix
+HAR</a> and the
+<a href="artifact/etag-revalidation-after-fix.har" download>after-fix HAR</a> and drop
+them into your DevTools Network tab to inspect them without running anything. If you
+run the probes above against your own server, your responses should match them line
+for line.
 
 ---
 
@@ -409,4 +420,6 @@ returns **304** and the ETag is `"13b-658b017f9d000"` for both the 200 and the 3
 [Apache `DeflateAlterETag`](https://httpd.apache.org/docs/2.4/mod/mod_deflate.html) ·
 [Apache `BrotliAlterETag`](https://httpd.apache.org/docs/2.4/mod/mod_brotli.html) ·
 [Apache `mod_filter` source](https://github.com/apache/httpd/blob/2.4.68/modules/filters/mod_filter.c) ·
+[before-fix HAR](artifact/etag-revalidation-before-fix.har) ·
+[after-fix HAR](artifact/etag-revalidation-after-fix.har) ·
 Companion post: [HTTP cache validators: ETag vs Last-Modified](../http-etag-last-modified-study/)
