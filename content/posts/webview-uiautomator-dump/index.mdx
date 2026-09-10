@@ -484,23 +484,19 @@ A common screen-reader requirement is one clean announcement — *"Contact James
 
 The announcement is perfect. The problem: `aria-hidden="true"` removes the entire breakdown from the accessibility tree, so neither a screen reader nor a11y-tree automation can reach the individual values. Verified in the WebView dump: the tree contains the `sr-only` sentence and nothing else from the breakdown — no `Contact:`, no `23`.
 
-The fix keeps *both* the sentence and the data — but not by putting the announcement on the container. `aria-label` on a `<dl>` is exposed in the accessibility tree (that's why the dump shows it), yet a screen reader won't announce it: `<dl>` maps to a generic role that doesn't support author-provided names, so TalkBack skips the label. A container-level `aria-label` only works on roles that can be named (widgets, landmarks, `group`, …).
+Is this a bad pattern? First, notice that *"Contact James Roger has 23 unread emails"* is not the same utterance as the four pieces: the sentence carries the meaning — the relationship, the count — while the pieces are a fragmented visual rendering. So the `sr-only` sentence is not duplicating the visible content; it is the coherent statement the visual design otherwise hides. If that statement is the whole story, `sr-only` + `aria-hidden` is a legitimate pattern, and automation can still target the sentence — it is in the tree, as the dump above shows. The pattern only becomes a problem when an individual value is itself data someone needs to address — a count, a name, a link — because `aria-hidden` removes it for real users too, not just for automation. There is no separate "automation tree" to compromise: `uiautomator dump` reads the same tree TalkBack reads, so the decision is never "users vs. tests" — it is what belongs in the tree, decided for users.
 
-The pattern that keeps both is to keep the announcement as *real text* and stop hiding the data:
+Can you have both — the clean announcement *and* individually reachable values? We tested the candidates with TalkBack, and in this WebView the answer is no:
 
-```html
-<span class="sr-only">Contact James Roger has 23 unread emails</span>
-<dl>
-  <dt>Contact</dt><dd>James Roger</dd>
-  <dt>Emails</dt><dd>23</dd>
-</dl>
-```
+- **`aria-label` on the `<dl>` itself** — not announced at all: `<dl>` isn't nameable, so TalkBack skips the label.
+- **`role="group" aria-label` wrapping the `<dl>`** — the tree carries the sentence on the group node and the values as discrete nodes, but TalkBack does not speak the group's label. It reads only the `<dl>` values, with the structure: `Contact` *term*, `James Roger` *definition*, `Emails` *term*, `23` *definition*. The constructed line is never said.
+- **`sr-only` sentence next to a visible `<dl>`** — the sentence *is* spoken, but then the values are read too, so it is not one clean announcement.
 
-The `sr-only` sentence is real content — it stays in the tree and *is* read aloud. The `<dl>` still surfaces as a `ListView`, and every `<dt>`/`<dd>` keeps its own node — `Contact`, `James Roger`, `Emails`, `23` — the same structural mapping case 33 verified, minus a container label nobody announces anyway. Both goals met: one clean announcement, and every value reachable.
+The reason is structural: the accessibility tree is the single source for both TalkBack and automation. Anything in it can be announced, and TalkBack does not reliably speak container labels (groups, definition lists) during normal navigation. There is no HTML pattern that announces the constructed line *and* keeps the values silent-but-reachable.
 
-`role="group"` + `aria-label` on plain spans is a different failure: the container keeps the sentence as its text (and `group` *does* support naming), but the individual values collapse away, so `23` is unreachable as a discrete value. The structure has to be real (`<dl>`, lists, table rows), not roles layered onto generic `div`s.
+The practical conclusion is to keep the `sr-only` + `aria-hidden` pattern when the clean announcement is the goal — it is the one pattern that actually delivers it, and automation can still target the sentence, because the sentence *is* in the tree (the dump above shows it). If a specific value must be individually reachable, that conflicts with the clean announcement; decide which matters and accept the other is lost. Do not restructure the markup to satisfy a locator — the values are hidden by design, and that is a screen-reader decision, not an automation bug.
 
-**Rule of thumb:** if a value is data someone might need to reference — query, navigate, or test — it does not belong inside `aria-hidden`. And don't put announcements in `aria-label` on generic containers: only roles that support naming carry an author-provided name. For a plain-text announcement, use real text — that is exactly what `sr-only` is for.
+**Rule of thumb:** an `sr-only` sentence is the reliable way to announce a constructed line, and `aria-hidden` removes content from the tree for everyone — users and automation alike. If a value must be individually reachable, it cannot also be hidden for a clean announcement. Pick one, and don't let the test decide.
 
 ## How UAT should run
 
