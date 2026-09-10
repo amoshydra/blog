@@ -75,10 +75,10 @@ flowchart LR
 
 The full dump is large, so instead of inlining it, here are two files you can open in a new tab:
 
-- <a href="artifacts/dump.html" target="_blank" rel="noopener">Open the HTML — the full gallery page</a>
-- <a href="artifacts/dump.xml" target="_blank" rel="noopener">Open the XML — the full warm dump</a>
+- [Open the HTML — the full gallery page](artifacts/dump.html)
+- [Open the XML — the full warm dump](artifacts/dump.xml)
 
-Then the same dump, broken out one element at a time — HTML on the left, its dumped node on the right. (The last three cases, 32–34, come from a separate screen-reader-enabled capture — they aren't in the warm `dump.xml`; the worked example below walks through them.)
+Then the same dump, broken out one element at a time — HTML on the left, its dumped node on the right. All the fixture's static cases appear below (the two dynamic ones — delayed content and the scroll region — are covered in Gotchas 1 and 2; the page headings around each fixture case aren't cases themselves). The last three — cases 32–34, the `sr-only`/`aria-hidden` comparison — come from a separate screen-reader-enabled capture — they aren't in the warm `dump.xml`; the worked example below walks through them.
 
 <Collapsible label="Expand to see all 33 mapping cases">
 
@@ -441,12 +441,14 @@ Where `data-testid` *does* work is the **DOM path** (see below) — but only whe
 
 Automation frameworks on Android have **two engines with different contracts**:
 
-| | `NATIVE_APP` (accessibility tree) | `WEBVIEW` (DOM over DevTools protocol) |
+| | `NATIVE_APP` (accessibility tree) | `WEBVIEW` (DOM over CDP, the Chrome DevTools Protocol) |
 |---|---|---|
-| Source | The same `AccessibilityNodeInfo` tree `uiautomator dump` reads | The real HTML DOM, served over the WebView's debugging socket |
+| Source | The same `AccessibilityNodeInfo` tree `uiautomator dump` reads | The real HTML DOM, served over the WebView's debugging socket via CDP (chromedriver) |
 | Works on | Any app — debug **or release**, no special build | Only when the WebView exposes its debugging socket |
 | What you get | `text`, roles→classes, flags, bounds — but **no DOM**, no `data-testid`, no document structure | Full DOM: real selectors, `data-testid`, computed styles |
 | Requires | Nothing beyond the app itself | `WebView.setWebContentsDebuggingEnabled(true)` — auto-on for **debuggable** apps since WebView 113 — **or** a debug-enabled build |
+
+For a WebView-heavy app, the two engines fit different jobs. The DOM/CDP path is the natural tool for *functional* coverage of the web layer — real selectors and `data-testid` — which is why hybrid-mode automation drives WebViews through chromedriver. Its catch is the socket: it exists only on a debug-enabled build or a userdebug device, so it can't validate the production artifact. The a11y tree is the opposite: lossy, but present on every build, release included. The best-practice split is to use both — DOM/CDP for detailed functional tests on a debug-enabled build or release-signed QA flavour, and the a11y tree for the production sign-off and accessibility checks.
 
 The production-build rule, then, is: **the a11y tree works on a production APK; the real DOM only exists if the WebView debugging socket is on.** "The production build's HTML isn't accessible" is a *build/tooling* property (the socket), not something any HTML change can fix. If you genuinely need DOM automation against a production-representative build, the path is a **release-signed QA flavour** with web debugging enabled — still signed, still UAT-eligible, but deliberately not the exact production binary.
 
@@ -492,7 +494,7 @@ Can you have both — the clean announcement *and* individually reachable values
 - **`role="group" aria-label` wrapping the `<dl>`** — the tree carries the sentence on the group node and the values as discrete nodes, but TalkBack does not speak the group's label. It reads only the `<dl>` values, with the structure: `Contact` *term*, `James Roger` *definition*, `Emails` *term*, `23` *definition*. The constructed line is never said.
 - **`sr-only` sentence next to a visible `<dl>`** — the sentence *is* spoken, but then the values are read too, so it is not one clean announcement.
 
-The reason is structural: the accessibility tree is the single source for both TalkBack and automation. Anything in it can be announced, and TalkBack does not reliably speak container labels (groups, definition lists) during normal navigation. There is no HTML pattern that announces the constructed line *and* keeps the values silent-but-reachable.
+The reason is structural: the accessibility tree is the single source for both TalkBack and automation. Anything in it can be announced, and TalkBack does not reliably speak container labels (groups, definition lists) during normal navigation. No pattern we tested — and, as far as we can tell structurally, no HTML pattern — announces the constructed line *and* keeps the values silent-but-reachable.
 
 The practical conclusion is to keep the `sr-only` + `aria-hidden` pattern when the clean announcement is the goal — it is the one pattern that actually delivers it, and automation can still target the sentence, because the sentence *is* in the tree (the dump above shows it). If a specific value must be individually reachable, that conflicts with the clean announcement; decide which matters and accept the other is lost. Do not restructure the markup to satisfy a locator — the values are hidden by design, and that is a screen-reader decision, not an automation bug.
 
@@ -505,6 +507,8 @@ The practical conclusion is to keep the `sr-only` + `aria-hidden` pattern when t
 - Build a release-signed QA flavour **only** if you have a genuine DOM-automation need (and accept it is not byte-identical to production).
 - Make **accessibility an explicit UAT acceptance criterion**: automated scans in CI, manual passes with the platform screen reader, and real-user checks — not just "does the locator find it".
 
+> **Why this matters beyond testing.** Screen-reader compatibility — the same accessibility tree this post maps — is increasingly a compliance surface, not a nice-to-have. Singapore's Enabling Masterplan 2030 commits all high-traffic government websites to WCAG 2.1 AA ([MSF, EMP2030](https://www.msf.gov.sg/docs/default-source/enabling-masterplan/emp2030-report-(final2).pdf); [MDDI PQ reply](https://www.mddi.gov.sg/newsroom/pq-on-ensuring-high-traffic-government-websites-conform-to-wcag/)); private-sector apps are not yet mandated there. Where an app is offered to EU consumers, the EU Accessibility Act already covers consumer banking services, with pre-existing service contracts to comply no later than 28 June 2030 ([European Commission — EAA](https://commission.europa.eu/strategy-and-policy/policies/justice-and-fundamental-rights/disability/european-accessibility-act-eaa_en); [deadline analysis](https://www.twobirds.com/en/insights/2025/eu-accessibility-deadline--the-european-accessibility-act-comes-into-force)). Coding `sr-only`/`aria-hidden` correctly today is what keeps an app testable *and* compliant tomorrow.
+
 ## Practical checklist
 
 - **Want the WebView subtree reliably?** Set `_ --force-renderer-accessibility` in the WebView command-line file (`/data/local/tmp/webview-command-line`, Gotcha 1) and restart the app; remove the file when done — the flag is device-wide. Otherwise expect the first dump of each fresh WebView to be empty — re-dump or warm the tree once.
@@ -515,7 +519,7 @@ The practical conclusion is to keep the `sr-only` + `aria-hidden` pattern when t
 
 ## Reproducing the results
 
-Environment: any device with a WebView launcher app and `adb` (this study used the author's [simple WebView launcher](https://github.com/amoshydra/android-webview-launcher), which just loads a URL you pass it), or the same fixture over your LAN. All facts above were captured against a OnePlus 6 (LineageOS 13, `ro.build.type=userdebug`), WebView `com.android.webview` 115.0.5790.136, Android 13, screen 1080×2280 with a density override of 314. The `id`→`resource-id` and lazy-tree findings were re-verified on a second device — a Pixel 7 Pro (`ro.build.type=user`), where Vanadium WebView 152 and Chrome 153 both export `resource-id` (and where the `--force-renderer-accessibility` flag is ignored).
+Environment: any device with a WebView launcher app and `adb` (this study used the author's [simple WebView launcher](https://github.com/amoshydra/android-webview-launcher), which just loads a URL you pass it), or the same fixture over your LAN. All facts above were captured against a OnePlus 6 (LineageOS 20, `ro.build.type=userdebug`), WebView `com.android.webview` 115.0.5790.136, Android 13, screen 1080×2280 with a density override of 314. The `id`→`resource-id` and lazy-tree findings were re-verified on a second device — a Pixel 7 Pro (`ro.build.type=user`), where Vanadium WebView 152 and Chrome 153 both export `resource-id` (and where the `--force-renderer-accessibility` flag is ignored).
 
 Serve the fixture (any static server works):
 
@@ -563,12 +567,10 @@ The flag row only applies on a `userdebug`/`eng` build — on a stock `user` bui
 - AOSP `AccessibilityNodeInfoDumper.java` — the serializer behind `uiautomator dump` (attribute set, NAF, window handling).
 - [Chrome remote debugging WebViews](https://developer.chrome.com/docs/devtools/remote-debugging/webviews) — `setWebContentsDebuggingEnabled`; Android docs note the manifest debuggable flag does **not** gate the socket.
 - [Chromium net-debugging.md](https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/net-debugging.md) — "WebView debugging is automatically enabled by default if you use either a userdebug or eng Android image … also … a debug app build."
-- [Chromium issue #328681381](https://issues.chromium.org/328681381) — WebView 122 removed HTML-`id`→`resource-id` export, breaking Appium locators; **marked Fixed** (see next).
+- [Chromium issue #328681381](https://issues.chromium.org/328681381) — WebView builds in the ~120–126 range stopped exporting HTML-`id`→`resource-id`, breaking Appium locators (first widely reported against 122); **marked Fixed** (see next).
 - [Chromium commit 7caa57bd5](https://chromium.googlesource.com/chromium/src/+/7caa57bd549d772763064a30a7596d96e9d7ca68) — "Always serialize html id for ax_objects" (M127): the fix that restored the export, explicitly to unblock third-party test frameworks.
 - [Chromium issue #357573053](https://issues.chromium.org/357573053) — residual: with an accessibility service running, a fresh dump can still miss `resource-id` (suspected AX-mode gating; open, P3).
 - [appium/appium#19848](https://github.com/appium/appium/issues/19848) — Chrome 120+ no longer exposes `resource-id` for WebView content in `NATIVE_APP` context; closed as an upstream Chromium issue.
 - [Testing Library guiding principles](https://testing-library.com/docs/guiding-principles); [query priority](https://testing-library.com/docs/queries/about) (`data-testid` as last resort); [Playwright locators](https://playwright.dev/docs/locators) / [ARIA snapshots](https://playwright.dev/docs/aria-snapshots) / [accessibility testing](https://playwright.dev/docs/accessibility-testing).
 - DHH, "Test-induced design damage" (2014); ThoughtWorks, "…or fallacy?" (2014).
 - WebView command-line flags (`/data/local/tmp/webview-command-line`; Chromium docs note the mechanism targets `userdebug`/`eng` builds — matching the test device here) — [Chromium commandline-flags.md](https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/commandline-flags.md).
-
-> **Why this matters.** Screen-reader compatibility — the same accessibility tree this post maps — is increasingly a compliance surface, not a nice-to-have. Singapore's Enabling Masterplan 2030 commits all high-traffic government websites to WCAG 2.1 AA ([MSF, EMP2030](https://www.msf.gov.sg/docs/default-source/enabling-masterplan/emp2030-report-(final2).pdf); [MDDI PQ reply](https://www.mddi.gov.sg/newsroom/pq-on-ensuring-high-traffic-government-websites-conform-to-wcag/)); private-sector apps are not yet mandated there. Where an app is offered to EU consumers, the EU Accessibility Act already covers consumer banking services, with pre-existing service contracts to comply no later than 28 June 2030 ([European Commission — EAA](https://commission.europa.eu/strategy-and-policy/policies/justice-and-fundamental-rights/disability/european-accessibility-act-eaa_en); [deadline analysis](https://www.twobirds.com/en/insights/2025/eu-accessibility-deadline--the-european-accessibility-act-comes-into-force)). Coding `sr-only`/`aria-hidden` correctly today is what keeps an app testable *and* compliant tomorrow.
