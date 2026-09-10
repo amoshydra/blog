@@ -10,7 +10,7 @@ heroImage: "./hero.webp"
 ## TL;DR
 
 - `uiautomator dump` serialises the **Android accessibility tree** (`AccessibilityNodeInfo`) to XML — the same tree Appium's UiAutomator2 driver and native automation read.
-- **The WebView's part of that tree is built lazily.** After a cold start, the *first* dump shows only a bare `<node class="android.webkit.WebView">`; the *second* dump has your whole page. This is why "content isn't in the XML until I run the dump again" happens — and why a modal or late-appearing component seems to "sometimes" vanish. Setting `--force-renderer-accessibility` — a WebView command-line flag (see Gotcha 1) — makes the first dump complete.
+- **The WebView's part of that tree is built lazily** — when no accessibility service is *bound*. After a cold start, the *first* dump shows only a bare `<node class="android.webkit.WebView">`; the *second* dump has your whole page. This is why "content isn't in the XML until I run the dump again" happens — and why a modal or late-appearing component seems to "sometimes" vanish. A bound accessibility service (a real screen-reader client) or `--force-renderer-accessibility` — a WebView command-line flag (see Gotcha 1) — makes the first dump complete.
 - **The mapping** (on the WebView version tested): `text`→`text`; `aria-label`→`text` (not `content-desc`, on this build); roles→platform classes (`Button`, `CheckBox`, `EditText`, `SeekBar`, `Image`); `sr-only` text is *present*; `aria-hidden` and `display:none` are *absent*; HTML `id`→`resource-id` (verified on WebView 115, Chrome 151/153 and Vanadium 152; it regressed in Chrome 120–126 and Chromium fixed it in M127, 2024 — one residual caveat in Gotcha 3); **`data-testid` never appears**.
 - **Two myths, disproved**: you do *not* need a debuggable app to read the dump (a release build dumps fine), and you *cannot* surface `data-testid` into the XML.
 - **Bounds are device pixels**, and the conversion factor depends on your device's density (including a density override, if you have one set).
@@ -336,7 +336,8 @@ no flag, second dump: 90 nodes, gallery text    ← populated
 Two control experiments rule out the obvious explanations:
 
 - **It's not a general `uiautomator` warm-up.** A native app (Settings) dumps 92 nodes on the *first* try.
-- **Enabling the screen reader does not fix it.** With TalkBack enabled and running, the first dump is still 8 nodes; the second dump is 90. The lazy tree is per-WebView-and-per-connection, not a system-wide toggle.
+- **A *bound* accessibility service does fix it.** On a re-visit of this device with TalkBack enabled and *bound* (verified via `dumpsys accessibility` — don't trust the settings toggle alone: a failed `settings put` once left our control reading identical), the first cold dump was complete, whether TalkBack was bound *before* or *enabled after* page load — a live client keeps the renderer's accessibility on from content load. The original study capture of "TalkBack on, first dump still 8" was evidently taken while the service was still binding (`dumpsys` shows `Bound services:{}` for the *empty* state; the setting alone can lie for a few seconds). What has no effect is weak-a11y modes that don't keep a client connected.
+- Without a bound service, the lazy tree is per-WebView-and-per-connection: every fresh connection to a fresh WebView costs one incomplete first dump.
 
 The reliable fix is a WebView **command-line flag**. WebView isn't launched from a
 terminal, so it can't receive `argv` like a normal process. Instead, Chromium checks
@@ -374,7 +375,7 @@ This also explains the modal mystery. The component is there; its tree just isn'
 
 - 15 consecutive dumps of a screen with the modal open: dump #1 empty (cold), dumps #2–#15 all 95 nodes with the modal present.
 - 10 *separate* dump invocations once warm: 10/10 present.
-- Open → close → reopen → each reflected on the very next dump.
+- Open → close → reopen → each reflected on the very next dump (re-verified 12/12 in a later session, including a +0.7 s turn-around, with and without an accessibility service bound).
 - The tree survives 60 s of idle and app background/foreground cycles.
 
 So if you're seeing "sometimes found, sometimes not", the usual culprit is an automation loop that opens a fresh dump per action — each fresh WebView (or freshly restarted app) costs you one empty first dump. Warm the tree once, or set the flag, and it stops.
@@ -556,8 +557,8 @@ The full fixture (`gallery.html`) contains 34 cases, including the `sr-only`/`ar
 
 | State | First dump after cold start |
 |---|---|
-| Baseline (`accessibility_enabled=0`, no flag) | 8 nodes, bare `WebView` |
-| Screen reader on (TalkBack enabled and running) | 8 nodes, bare `WebView` |
+| Baseline (`accessibility_enabled=0`, no flag, no client) | 8 nodes, bare `WebView` |
+| Screen reader on (TalkBack **bound** — verified via `dumpsys accessibility`) | **full page** — a live client keeps the renderer's accessibility on |
 | `--force-renderer-accessibility` flag | **90 nodes, full page** |
 
 The flag row only applies on a `userdebug`/`eng` build — on a stock `user` build the file is ignored (see Gotcha 1).
