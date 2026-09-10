@@ -11,7 +11,7 @@ heroImage: "./hero.webp"
 
 - `uiautomator dump` serialises the **Android accessibility tree** (`AccessibilityNodeInfo`) to XML — the same tree Appium's UiAutomator2 driver and native automation read.
 - **The WebView's part of that tree is built lazily.** After a cold start, the *first* dump shows only a bare `<node class="android.webkit.WebView">`; the *second* dump has your whole page. This is why "content isn't in the XML until I run the dump again" happens — and why a modal or late-appearing component seems to "sometimes" vanish. Setting `--force-renderer-accessibility` — a WebView command-line flag (see Gotcha 1) — makes the first dump complete.
-- **The mapping** (on the WebView version tested): `text`→`text`; `aria-label`→`text` (not `content-desc`, on this build); roles→platform classes (`Button`, `CheckBox`, `EditText`, `SeekBar`, `Image`); `sr-only` text is *present*; `aria-hidden` and `display:none` are *absent*; HTML `id`→`resource-id` (verified on WebView 115, Chrome 151/153 and Vanadium 152 — but it *was* dropped in the Chrome 122 era, so treat it as version-flaky); **`data-testid` never appears**.
+- **The mapping** (on the WebView version tested): `text`→`text`; `aria-label`→`text` (not `content-desc`, on this build); roles→platform classes (`Button`, `CheckBox`, `EditText`, `SeekBar`, `Image`); `sr-only` text is *present*; `aria-hidden` and `display:none` are *absent*; HTML `id`→`resource-id` (verified on WebView 115, Chrome 151/153 and Vanadium 152; it regressed in Chrome 120–126 and Chromium fixed it in M127, 2024 — one residual caveat in Gotcha 3); **`data-testid` never appears**.
 - **Two myths, disproved**: you do *not* need a debuggable app to read the dump (a release build dumps fine), and you *cannot* surface `data-testid` into the XML.
 - **Bounds are device pixels**, and the conversion factor depends on your device's density (including a density override, if you have one set).
 
@@ -218,7 +218,7 @@ Then the same dump, broken out one element at a time — HTML on the left, its d
 
 <HtmlXmlCompare
   label={"HTML `id`"}
-  note={"maps to <code>resource-id</code> on current builds (WebView 115, Chrome 151/153, Vanadium 152 — all verified); note it was dropped in the Chrome 122 era, see Gotcha 3"}
+  note={"maps to <code>resource-id</code> on current builds (WebView 115, Chrome 151/153, Vanadium 152 — all verified); note it regressed in Chrome 120–126 and Chromium fixed it in M127, see Gotcha 3"}
   html={"<div id=\"unique-element-id\">\n  I have an HTML id\n</div>"}
   xml={"<node\n  text=\"I have an HTML id\"\n  resource-id=\"unique-element-id\"\n  \u2026\n  />"}
 />
@@ -393,13 +393,20 @@ Beware density overrides: they silently change the CSS↔px factor, which breaks
 
 Scrolling is weirder. After a swipe scroll (verified: `window.scrollY` = 1768 of 3439), the *whole* web subtree's bounds collapsed to `[0,0][0,0]` — top content and newly-visible bottom content alike — even though every node stayed in the tree. Scrolling back to the top restored real bounds. Treat node bounds as a snapshot that needs a settle/refresh after scroll, not as live geometry.
 
-### 3. `id` → `resource-id` is version-dependent
+### 3. `id` → `resource-id`: works on current builds, regressed once in 2024
 
-The HTML `id` attribute surfaces as the node's `resource-id` — verified live here on **four** engines: WebView 115 (Google Android System WebView, the OnePlus 6), Chrome **151** (an embedded WebView, no accessibility service), Chrome **153** (the browser, on this post's second test device), and Vanadium WebView **152** (same device).
+Every engine we tested surfaces the HTML `id` attribute as the node's `resource-id`:
 
-But it *was* dropped: **WebView/Chrome 122 (2024)** stopped exporting it, famously breaking automation that located web elements by `resource-id` (upstream issue in the appendix) — people factory-reset to WebView 117 to get the ids back. Current builds (2026) export it again; the removal reads as a regression that was later reversed, not a permanent contract.
+- WebView **115** (Google Android System WebView, the OnePlus 6)
+- Chrome **151** (an embedded WebView, no accessibility service)
+- Chrome **153** (the browser, on the second test device)
+- Vanadium WebView **152** (same device)
 
-The practical consequence is that `resource-id` from web content is **not a stable contract across versions**. It works on today's builds, but a locator built on it can break when a device's WebView updates — so it is not the handle to reach for. The stable, version-independent handle in the a11y tree is **role + accessible name** — the `text`/`content-desc` a screen reader announces. That is the best practice on both sides:
+Chromium confirmed this was a regression and fixed it in **M127** (July 2024): the CL *"Always serialize html id for ax_objects"* ([7caa57bd5](https://chromium.googlesource.com/chromium/src/+/7caa57bd549d772763064a30a7596d96e9d7ca68)) re-added the export explicitly *"to unblock third party testing frameworks on Android"* — closing [Chromium issue #328681381](https://issues.chromium.org/328681381), which the Appium project had filed ([appium/appium#19848](https://github.com/appium/appium/issues/19848)). So the breakage covered roughly Chrome/WebView **120–126**; 127+ exports it again, and every 2026 build we tested does too.
+
+One residual nuance, separate from that regression: with an accessibility service already running, a fresh dump can still miss `resource-id`. Chromium logged this separately as [issue #357573053](https://issues.chromium.org/357573053) (suspected cause: HTML-`id` serialisation gated by the tree's AX mode; still open, P3, as of 2026). The export is conditioned on how the tree is built, not only on the WebView version.
+
+For automation that must survive WebView updates, `resource-id` is still not the safest handle — it has broken once. The durable handle is **role + accessible name** — the `text`/`content-desc` a screen reader announces:
 
 - **Developer:** give each control a stable, unique accessible name — real visible text for text controls, `aria-label`/`alt` for icon-only controls, and no two controls sharing a name. A tester can then locate a `button` named *Save*.
 - **Tester:** query `role` + name instead of an `id`.
@@ -407,7 +414,7 @@ The practical consequence is that `resource-id` from web content is **not a stab
 
 | Automation engine | Handle to use | Handle to avoid |
 |---|---|---|
-| A11y tree (`uiautomator dump` / `NATIVE_APP`) | role + accessible name (`text` / `content-desc`) | `resource-id` from HTML `id` (regressed once, in the 122 era — version-flaky); `data-testid` |
+| A11y tree (`uiautomator dump` / `NATIVE_APP`) | role + accessible name (`text` / `content-desc`) | `resource-id` from HTML `id` (regressed once, 2024); `data-testid` |
 | DOM (`WEBVIEW` / chromedriver) | `id`, `data-testid`, real selectors | — |
 
 One related proposal worth resisting: *"let's put an `id` on every element (or build tooling that auto-annotates them) so the testers always have a handle."* Blanket annotation is a maintenance tax — across many modules and teams the ids drift, go unused, and couple tests to DOM structure instead of behaviour. The industry consensus is the opposite: [query by role, label and text first](https://testing-library.com/docs/queries/about), prefer `data-testid` only where semantics genuinely can't be used (it sits last in the standard [query priority](https://testing-library.com/docs/queries/about)), and [locate by role](https://playwright.dev/docs/locators) in browser automation. A test handle is the fallback, not the default.
@@ -505,7 +512,7 @@ The `sr-only` sentence is real content — it stays in the tree and *is* read al
 ## Practical checklist
 
 - **Want the WebView subtree reliably?** Set `_ --force-renderer-accessibility` in the WebView command-line file (`/data/local/tmp/webview-command-line`, Gotcha 1) and restart the app; remove the file when done — the flag is device-wide. Otherwise expect the first dump of each fresh WebView to be empty — re-dump or warm the tree once.
-- **Target by accessible name** (`text` / `content-desc`) and role-derived classes — not `resource-id` (version-dependent) and never `data-testid`.
+- **Target by accessible name** (`text` / `content-desc`) and role-derived classes — not `resource-id` (it regressed once, in 2024) and never `data-testid`.
 - **Bounds are device px.** Compute the CSS↔px factor from the live density (including overrides), and treat bounds as stale after scroll.
 - **Keep the screen awake and unlocked** between steps; use `uiautomator dump --windows` when the thing you want lives in another window.
 - **Verify on a production-representative device.** If your automation depends on the DOM path, remember userdebug/eng devices and emulators enable the socket for all apps; stock user builds do not.
@@ -560,7 +567,10 @@ The flag row only applies on a `userdebug`/`eng` build — on a stock `user` bui
 - AOSP `AccessibilityNodeInfoDumper.java` — the serializer behind `uiautomator dump` (attribute set, NAF, window handling).
 - [Chrome remote debugging WebViews](https://developer.chrome.com/docs/devtools/remote-debugging/webviews) — `setWebContentsDebuggingEnabled`; Android docs note the manifest debuggable flag does **not** gate the socket.
 - [Chromium net-debugging.md](https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/net-debugging.md) — "WebView debugging is automatically enabled by default if you use either a userdebug or eng Android image … also … a debug app build."
-- [Chromium issue #328681381](https://issues.chromium.org/328681381) — WebView 122 removed HTML-`id`→`resource-id` export, breaking Appium locators.
+- [Chromium issue #328681381](https://issues.chromium.org/328681381) — WebView 122 removed HTML-`id`→`resource-id` export, breaking Appium locators; **marked Fixed** (see next).
+- [Chromium commit 7caa57bd5](https://chromium.googlesource.com/chromium/src/+/7caa57bd549d772763064a30a7596d96e9d7ca68) — "Always serialize html id for ax_objects" (M127): the fix that restored the export, explicitly to unblock third-party test frameworks.
+- [Chromium issue #357573053](https://issues.chromium.org/357573053) — residual: with an accessibility service running, a fresh dump can still miss `resource-id` (suspected AX-mode gating; open, P3).
+- [appium/appium#19848](https://github.com/appium/appium/issues/19848) — Chrome 120+ no longer exposes `resource-id` for WebView content in `NATIVE_APP` context; closed as an upstream Chromium issue.
 - [Testing Library guiding principles](https://testing-library.com/docs/guiding-principles); [query priority](https://testing-library.com/docs/queries/about) (`data-testid` as last resort); [Playwright locators](https://playwright.dev/docs/locators) / [ARIA snapshots](https://playwright.dev/docs/aria-snapshots) / [accessibility testing](https://playwright.dev/docs/accessibility-testing).
 - DHH, "Test-induced design damage" (2014); ThoughtWorks, "…or fallacy?" (2014).
 - WebView command-line flags (`/data/local/tmp/webview-command-line`; Chromium docs note the mechanism targets `userdebug`/`eng` builds — matching the test device here) — [Chromium commandline-flags.md](https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/commandline-flags.md).

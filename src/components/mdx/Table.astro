@@ -10,12 +10,13 @@ const props = Astro.props;
 
 <style>
 .scrollable-table {
-  overflow: auto;
+  overflow-x: auto;
   margin: auto;
 
   > table {
-    width: max-content;
-    max-width: max(64rem, 100%);
+    width: 100%;
+    table-layout: fixed;
+    overflow-wrap: anywhere;
   }
 }
 </style>
