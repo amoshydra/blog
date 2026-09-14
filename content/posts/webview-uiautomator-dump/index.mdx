@@ -90,7 +90,7 @@ Then the same dump, broken out one element at a time — HTML on the left, its d
 
 <HtmlXmlCompare
   label={"Heading"}
-  note={"the heading role is not exposed; there is no heading attribute in the dump at all"}
+  note={"the heading role is not exposed by the dump: there is no <code>heading</code> attribute in its fixed attribute set (Appium can read a <code>heading</code> attribute on API 28+ where the platform sets it)"}
   html={"<h3>\n  Case Two Heading\n</h3>"}
   xml={"<node\n  text=\"Case Two Heading\"\n  resource-id=\"\"\n  class=\"android.widget.TextView\"\n  \u2026\n  bounds=\"[29,588][1051,627]\"\n  />"}
 />
@@ -311,7 +311,7 @@ Then the same dump, broken out one element at a time — HTML on the left, its d
 A few patterns worth internalising:
 
 - **The name wins.** Wherever the accessible name comes from (`aria-label`, `alt`, text content, a label), it becomes the node's `text` — and `aria-label` *replaces* inner text on this build. `content-desc` stayed empty everywhere in the web subtree except link wrapper nodes.
-- **Roles are lossy.** Control roles become platform classes and flags (`Button`, `CheckBox`, `EditText`, `SeekBar`, `Image`, `RadioButton`). Roles without an Android analogue — `heading`, `dialog`, `main`, `banner` — simply vanish.
+- **Roles are lossy.** Control roles become platform classes and flags (`Button`, `CheckBox`, `EditText`, `SeekBar`, `Image`, `RadioButton`). Roles the dumper has no attribute for are not exposed as such — `heading` and `dialog` produce no distinguishing `class` or attribute in the XML (Appium can surface a `heading` attribute on API 28+ where the platform sets it; the dump itself cannot).
 - **`sr-only` present, `aria-hidden`/`display:none` absent.** Both are *correct* WCAG-conformance behaviour, not bugs. This becomes important later.
 - **The dump is not a stable mirror.** A link serialised as a clickable wrapper+child in one dump and a plain `TextView` in another. Tree construction varies run to run — one more reason to treat it as a snapshot, not a DOM.
 
