@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sortable table and a windowed list</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<section id="rates">
+  <h2>Exchange rates</h2>
+  <table id="rates-table">
+    <caption>Exchange rates (SGD)</caption>
+    <thead>
+      <tr>
+        <th scope="col" aria-sort="ascending"><button type="button" data-key="currency">Currency</button></th>
+        <th scope="col" aria-sort="none"><button type="button" data-key="rate">Rate</button></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>USD</td><td>1.34</td></tr>
+      <tr><td>MYR</td><td>0.29</td></tr>
+      <tr><td>EUR</td><td>1.45</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="feed-section">
+  <h2>Transactions</h2>
+  <div class="scroller" id="feed" aria-label="Transactions" tabindex="0"></div>
+</section>
+
+<script>
+  const table = document.getElementById('rates-table');
+  const headers = Array.from(table.querySelectorAll('th'));
+  headers.forEach((th) => {
+    th.querySelector('button').addEventListener('click', () => {
+      const index = th.querySelector('button').dataset.key === 'currency' ? 0 : 1;
+      const dir = th.getAttribute('aria-sort') === 'ascending' ? 'descending' : 'ascending';
+      headers.forEach((other) => other.setAttribute('aria-sort', other === th ? dir : 'none'));
+      const body = table.querySelector('tbody');
+      const sorted = Array.from(body.querySelectorAll('tr')).sort((a, b) => {
+        const x = a.children[index].textContent;
+        const y = b.children[index].textContent;
+        const delta = index === 1 ? x - y : x.localeCompare(y);
+        return dir === 'ascending' ? delta : -delta;
+      });
+      sorted.forEach((row) => body.appendChild(row));
+    });
+  });
+
+  // Only the visible slice is ever in the DOM. The spacer divs keep the
+  // scrollbar honest so the container can still scroll through all 200 rows.
+  const feed = document.getElementById('feed');
+  const all = Array.from({ length: 200 }, (_, i) => 'TX' + String(i).padStart(4, '0'));
+  const ROW = 28;
+  const PAD = 3;
+  const render = () => {
+    const start = Math.max(0, Math.floor(feed.scrollTop / ROW) - PAD);
+    const end = Math.min(all.length, start + Math.ceil(feed.clientHeight / ROW) + PAD * 2);
+    feed.innerHTML =
+      '<div style="height:' + start * ROW + 'px"></div>' +
+      all.slice(start, end).map((id) => '<p>' + id + '</p>').join('') +
+      '<div style="height:' + (all.length - end) * ROW + 'px"></div>';
+  };
+  feed.addEventListener('scroll', render);
+  render();
+</script>
+<script src="demo.js"></script>
+</body>
+</html>

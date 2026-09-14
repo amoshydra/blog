@@ -1,0 +1,714 @@
+---
+title: "Locating elements in a WebView: a pattern-by-pattern playbook"
+description: "Fourteen UI patterns, including labelled text fields, checkboxes, comboboxes, tabs, dialogs, toasts, tables, virtualised lists, and canvas. For each one: the HTML that makes it locatable, what the accessibility tree exposes, the Appium and Playwright locators, and the trap underneath. Every pattern has a live page you can open, click, and dump."
+pubDate: "2026-09-14"
+heroImage: "./hero.webp"
+---
+
+WebView automation reads a projection of your HTML. The browser decides the role and the accessible name of each control, Android copies them into the accessibility tree, and Appium reads that tree. Playwright reads the DOM. What each tool can see depends on what the markup exposes.
+
+When the markup exposes nothing, the tree has nothing to match. An icon button with no `aria-label` is what that looks like: the tree carries a rectangle with `clickable="true"`, `NAF="true"` (the dumper's mark for a node with no accessible name), and no text to match on, so the bounds are the only handle. When that node shows up in a flaky-locator report, the fix is a name on the button.
+
+Reaching for a test id is tempting, but the tooling ranks it last. Testing Library's query priority puts `getByRole` first and `getByTestId` last, because a user "cannot see (or hear)" a test id [^1]. Playwright's locator guide ranks role locators as "the closest way to how users and assistive technology perceive the page" [^2]. The patterns below follow that order, and §6 covers what happens to a `data-testid` on the Android side.
+
+The name matters most in the tree, which is the view you get on the build you approve for shipping. The tree is present on every build; the DOM needs the WebView debug socket, which a release build turns off by default. Putting the socket on takes a separate QA build.
+
+This post covers both. Fourteen UI patterns, each with the markup that makes it findable, the node it becomes in the tree, and the locator in Appium and in Playwright. It also covers dynamic content, where locators written for a static page stop working, and a triage table that maps a symptom to its fix.
+
+## 1. The tree and the DOM
+
+Every locator below reads one of two views of the page. They describe the same page with different vocabularies, and each needs its own tool.
+
+| | Accessibility tree (in-app) | DOM (debug socket, or a browser) |
+|---|---|---|
+| Output | role → `class`, accessible name → `text`/`content-desc`, states, bounds | the real markup: tags, attributes, CSS, `data-*` |
+| Locator input | role + name, `resource-id`, XPath over the page source | `getByRole`, labels, CSS, `data-testid` |
+| Survives | release builds, no debug socket needed | only where the DevTools socket is turned on |
+
+- **Appium (left column).** The examples stay in the native context and read the accessibility tree. `driver.context('WEBVIEW_com.example.app')` is the other route: it hands you the DOM through chromedriver, it needs the WebView debug socket on, and the bundled chromedriver has to match your installed WebView version; if the versions differ, the session fails.
+- **Playwright (right column).** Playwright has no driver for an Android WebView. These snippets run against the same page served standalone, or over `chromium.connectOverCDP()` into the debug socket if your build has it. To reach the socket that way, forward it first: `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>`, then connect to `http://localhost:9222`.
+
+You can reach the tree on any build, including a release build (a cold WebView may take a second read, see §3.3). The DOM is reachable only through the socket, so it depends on the build.
+
+The **accessible name computation** is the shared part. Whatever the browser decides the name is, whether it came from text content, a `<label>`, `aria-label`, `aria-labelledby` or `alt`, is the string the tree stores and the screen reader reads. Ask whether the control has a name, and whether that name is unique. Use that answer to pick the selector.
+
+Four authoring habits make locators reliable:
+
+- **Use real elements.** `<button>`, `<input type="checkbox">` and `<a href>` give you a role and a name. A `<div onclick>` gives you neither.
+- **One name per purpose.** Two controls with the same name are indistinguishable in the tree. Rename one, or scope it under a named ancestor.
+- **Do not write test ids into the accessible name.** `aria-label="user_id_42"` makes the screen reader announce gibberish. The page should say `aria-label="Account 42"`.
+- **Put state in the markup.** `aria-expanded`, `aria-selected`, `aria-checked`, `aria-sort`. State can be the only difference between two otherwise identical nodes.
+
+## 2. The pattern catalogue
+
+Every pattern has a live page you can open and dump:
+
+```
+adb exec-out uiautomator dump /dev/tty    # first read of a cold WebView may be bare
+adb exec-out uiautomator dump /dev/tty    # second read has the page
+```
+
+I took each XML block from a real `uiautomator dump` on a OnePlus 6T (Android 15, WebView 140.0.7339.207), loaded through a WebView host app. The earlier mapping study on WebView 115 and Android 13 is in [the previous post](../webview-uiautomator-dump/). The [all-patterns fixture](fixture.html) is one page you can dump in a single pass [^54].
+
+The fourteen patterns follow in the order you meet them in a form: markup, node, locator, trap.
+
+### 2.1 Labelled text field (label + hint + error)
+
+<PatternDemo name="forms.html#field" snippet="field" height={190} label="Labelled field with hint and error" />
+
+**The node.** The field is an `EditText`, and its *value* lands in `text`. An unlabelled input with `value="Type here"` produced `text="Type here"`. Add a `<label>` and WebView 140 does not use it for the field's name. It produced a second node (`android.view.View` with `text="Email"`), and the field came out `NAF="true"`, with the name and description in `hint` (`"Email We only use this for receipts."`). Both `text` and `content-desc` were empty. `resource-id="email"` came from the HTML `id`. The error has no Android role, but showing it does fire an accessibility event.
+
+**Locator.**
+
+```js title="Playwright"
+// Playwright: name from the <label>, description from aria-describedby
+await page.getByRole('textbox', { name: 'Email' }).fill('a@b.com');
+await expect(page.getByRole('textbox', { name: 'Email' }))
+  .toHaveAccessibleDescription(/receipts/i);
+```
+
+```java title="Appium"
+// The label is not the field's name in the tree, so use the id (from the HTML id)
+driver.findElement(AppiumBy.xpath(
+  "//android.widget.EditText[@resource-id='email']"));
+// If your build drops the id, fall back to the hint the bridge composed
+driver.findElement(AppiumBy.xpath(
+  "//android.widget.EditText[@hint='Email We only use this for receipts.']"));
+```
+
+**The trap.** Locating by `text="a@b.com"` ties the selector to one value in your test data. Find the field by its label, and assert the value in a second step.
+
+### 2.2 Password field with show/hide
+
+<PatternDemo name="forms.html#password" snippet="password" height={200} label="Password field and its toggle" />
+
+**The node.** An `EditText` with `password="true"`, masked, and the mask is as long as the value (`•••••••` for a seven-character secret). WebView renders the toggle as a `ToggleButton`, named by `aria-label` (`text="Show password"`). WebView maps an `aria-pressed` button to `ToggleButton`. The pressed state itself did not surface as `checked`, so read class and name, and do not expect a state flag.
+
+**Locator.**
+
+```js title="Playwright"
+await page.getByRole('button', { name: 'Show password' }).click();
+await expect(page.getByRole('button', { name: 'Hide password' }))
+  .toHaveAttribute('aria-pressed', 'true');
+```
+
+```java title="Appium"
+// assert the flag, not the secret
+WebElement pw = driver.findElement(AppiumBy.xpath(
+  "//android.widget.EditText[@password='true']"));
+assert pw.getAttribute("password").equals("true");
+```
+
+**The trap.** Asserting the masked value only restates the mask, and the mask length equals the secret length, so the length leaks. Assert `password="true"`, then toggle and assert that the field stopped being a password field.
+
+### 2.3 Checkbox group, radio group, switch
+
+<PatternDemo name="forms.html#choice" snippet="choice-group" height={300} label="Checkboxes, radios, and a switch" />
+
+**The node.** Each option is its own `CheckBox` or `RadioButton`, named by the wrapping label text. The checked state did not reach the 140 tree. Both options came out `checkable="false" checked="false"`, though the HTML set `checked`. The earlier 115 study in the previous post recorded `checkable="true" checked="true"` for the same markup, so read the state through the effect on the page. `role="switch"` became a `ToggleButton`. The `<fieldset><legend>` does become a named ancestor (`View text="Notifications"`) around its options, so you can scope to it.
+
+**Locator.**
+
+```js title="Playwright"
+await page.getByRole('checkbox', { name: 'Email' }).uncheck();
+await expect(page.getByRole('checkbox', { name: 'Email' })).not.toBeChecked();
+```
+
+```java title="Appium"
+// the legend gives you no scope, so lean on unique option names
+driver.findElement(AppiumBy.xpath("//android.widget.CheckBox[@text='Email']")).click();
+```
+
+**The trap.** Two groups with an "SMS" option produce two nodes named "SMS", because the legend does not join the option's name. Rename them ("SMS alerts", "SMS receipts") or scope to the named fieldset, `//android.view.View[@text='Notifications']//android.widget.CheckBox[@text='SMS']`. Since `checked` is missing from the tree, assert the *effect* of the selection (the page often re-renders something) instead of the checkbox state.
+
+### 2.4 Native `<select>` vs custom combobox
+
+<PatternDemo name="choice.html" snippet="select" height={280} label="A native select next to a custom combobox" />
+
+**The node.** The native `<select>` collapses into a single `android.view.View` rather than a `Button`, with `text="Singapore"` (the current selection) and `hint="Country"` (the label again, in `hint`). Opening it hands you a picker in a separate window, which a default `uiautomator dump` does not cover; add `--windows`, or switch the Appium window, to reach the options. The custom combobox is an `EditText` (`hint="Fruit"`) and reports `enabled="false"`, because the demo marks it `readonly`; an Appium `click()` on it fails with "element not interactable" until you drop the attribute or click the element that owns the popup. Its options become separate nodes only while the list is open.
+
+**Locator.**
+
+```java title="Appium"
+// native select: the node's own text is the current selection
+driver.findElement(AppiumBy.xpath("//android.view.View[@text='Singapore']")).click();
+```
+
+```js title="Playwright"
+// custom combobox: expand, then pick by option role and name
+await page.getByRole('combobox', { name: 'Fruit' }).click();
+await page.getByRole('option', { name: 'Apple' }).click();
+await expect(page.getByRole('combobox', { name: 'Fruit' })).toHaveValue('Apple');
+```
+
+**The trap.** With a native select, the locator changes the moment the value changes, because the value *is* the node's text. Find the control once by an available handle (its `resource-id`, derived from the HTML `id`, or its label), then read the text as an assertion. Do not bake the option into the selector.
+
+### 2.5 Icon-only buttons
+
+<PatternDemo name="actions.html#icons" snippet="icons" height={160} label="Icon buttons with and without a label" />
+
+**The node.** A plain icon button is a `Button` named by `aria-label` (`text="Close dialog"`). Add `aria-pressed` and it becomes a `ToggleButton` instead, as the favourite star did (`ToggleButton text="Add to favourites"`). The node has no child elements. Watch for icon fonts leaking a glyph into the node as text, so the `aria-label` must be present and precise.
+
+**Locator.**
+
+```js title="Playwright"
+await page.getByRole('button', { name: 'Add to favourites' }).click();
+await expect(page.getByRole('button', { name: 'Add to favourites' }))
+  .toHaveAttribute('aria-pressed', 'true');
+```
+
+```java title="Appium"
+driver.findElement(AppiumBy.xpath(
+  "//android.widget.Button[@text='Add to favourites'] | //android.widget.ToggleButton[@text='Add to favourites']"));
+```
+
+**The trap.** Strip the `aria-label` and you get a `NAF="true"` node: clickable, unnamed, reachable only by coordinates, so the test taps by position and can hit the wrong control.
+
+### 2.6 Tabs
+
+<PatternDemo name="disclosure.html#tabs" snippet="tabs" height={200} label="Tabs, with the inactive panel hidden" />
+
+**The node.** `role="tablist"` did map: it became an `android.widget.TabWidget` named by `aria-label` (`text="Account sections"`). Each tab is a `View` named by its label, and `aria-selected="true"` survived as `selected="true"` on the active tab. The inactive panel is `hidden`, so it is not in the tree.
+
+**Locator.**
+
+```js title="Playwright"
+await page.getByRole('tab', { name: 'Activity' }).click();
+await expect(page.getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true');
+await expect(page.getByRole('tabpanel')).toContainText('No recent activity');
+```
+
+```java title="Appium"
+// tabs are plain Views here, not Buttons
+driver.findElement(AppiumBy.xpath("//android.view.View[@text='Activity']")).click();
+// the panel content is the assertion that matters
+driver.findElement(AppiumBy.xpath("//*[@text='No recent activity.']"));
+```
+
+**The trap.** Assert the **panel** content. Role state does not appear in these dumps, and the panel is the visible result.
+
+### 2.7 Disclosure / accordion
+
+<PatternDemo name="disclosure.html#faq" snippet="disclosure" height={170} label="A disclosure that reveals a region" />
+
+**The node.** The trigger is a `Button` named by its text (`resource-id="faq-1"` from the HTML `id`). `aria-expanded` did not appear anywhere in the dump, so do not build an assertion on it. The panel is absent while `hidden`.
+
+**Locator.**
+
+```js title="Playwright"
+await page.getByRole('button', { name: /How long/ }).click();
+await expect(page.getByRole('button', { name: /How long/ })).toHaveAttribute('aria-expanded', 'true');
+await expect(page.getByText('Usually within one business day')).toBeVisible();
+```
+
+```java title="Appium"
+// the trigger is a Button; the HTML id survives as resource-id
+driver.findElement(AppiumBy.xpath("//android.widget.Button[@resource-id='faq-1']")).click();
+// aria-expanded did not surface, so the revealed text is the assertion
+driver.findElement(AppiumBy.xpath("//*[@text='Usually within one business day']"));
+```
+
+**The trap.** This is the same shape as the tabs. In Playwright, `aria-expanded` is reliable, because it is a DOM attribute. In the tree it did not surface, so assert the revealed content.
+
+### 2.8 Dialog (custom `aria-modal`)
+
+<PatternDemo name="overlays.html#custom" snippet="dialog" height={240} label="A custom modal that hides the page behind it" />
+
+**The node.** I expected no special node here, and WebView 140 produced one. `role="dialog"` with `aria-modal="true"` produced an `android.app.Dialog`, named from `aria-labelledby` (`text="Delete recipient"`). It sits inside the scrim, which is a plain `View` (`resource-id="scrim"`). So the container's role and label both made it through, and the inner text and buttons sit under the `Dialog`. The 115 study found no node for the container, a mapping change between WebView 115 and 140. The capture above is the custom modal; a native `<dialog>` is a separate case that I did not dump.
+
+**Locator.**
+
+```js title="Playwright"
+const dialog = page.getByRole('dialog');
+await expect(dialog).toContainText('Delete recipient');
+await dialog.getByRole('button', { name: 'Delete' }).click();
+```
+
+```java title="Appium"
+// the modal is a Dialog node named by its label; scope the action to it
+driver.findElement(AppiumBy.xpath("//android.app.Dialog[@text='Delete recipient']"));
+driver.findElement(AppiumBy.xpath(
+  "//android.app.Dialog[@text='Delete recipient']//android.widget.Button[@text='Delete']"));
+```
+
+**The trap.** A custom scrim that leaves the background visible also leaves the background *in the tree*. A bare `//android.widget.Button[@text='Delete']` can then match a button behind the modal. In the capture above the background is gone, because the demo sets `inert` and `aria-hidden` on it. Hiding the background removes the behind-modal buttons from the tree, so the screen reader and the locator stop seeing them. Do it, then scope locators to the dialog.
+
+### 2.9 List with per-row actions
+
+<PatternDemo name="actions.html#rows" snippet="rows" height={240} label="Two rows, each with uniquely named actions" />
+
+**The node.** The `<ul>` became a `ListView` (`resource-id="recipients"`). Each row is a `View`, the row text a `TextView`, and each action a `Button` named by its unique `aria-label`. Give each action a unique name, and a locator can address it.
+
+**Locator.**
+
+```js title="Playwright"
+const row = page.getByRole('listitem').filter({ hasText: 'Alice' });
+await row.getByRole('button', { name: 'Edit' }).click();
+```
+
+```java title="Appium"
+driver.findElement(AppiumBy.xpath(
+  "//android.widget.Button[@text='Edit transfer to Alice']"));
+```
+
+**The trap.** Drop the unique labels and every row has a button called "Edit". Your only options left are index (`findElements(...).get(0)`) or an ancestor XPath, and both break on the next reorder. Give each action a unique name: the test works, and a screen-reader user hears which row the action affects.
+
+### 2.10 Toast / live region
+
+<PatternDemo name="overlays.html#toast" snippet="toast" height={160} label="A toast that clears itself after 2.5 seconds" />
+
+**The node.** The `live-region` attribute did not appear in the dump. `aria-live="polite"` left no marker in the XML; what you get is the message as a plain `View` with `text="Saved"`, and it is gone once the toast clears. Appium's attribute API documents `live-region` and may expose it on some builds, but do not count on seeing it in a raw dump. Updating the region does fire an `AccessibilityEvent`.
+
+**Locator.**
+
+```js title="Playwright"
+await page.getByRole('button', { name: 'Save' }).click();
+await expect(page.getByRole('status')).toHaveText('Saved');
+```
+
+```java title="Appium"
+// assert right after the action, then assert that it clears
+driver.findElement(AppiumBy.xpath("//*[@text='Saved']"));
+```
+
+**The trap.** An auto-hiding toast can clear before your assertion runs. Assert the message soon after the action, and if you need to prove it vanished, assert the clearing too. `sleep(3000)` and a single check pass or fail with the animation.
+
+### 2.11 Data table
+
+<PatternDemo name="data.html#rates" snippet="table" height={260} label="A sortable table" />
+
+**The node.** The `<section>` is a `View` (`resource-id="rates"`) and the `<table>` inside it became a `GridView` (`resource-id="rates-table"`) named by its caption (`text="Exchange rates (SGD)"`). Each `<td>` and `<th>` is a plain `View` with `text`. The header is a `View` (`text="Currency ↑"`) wrapping a `Button` and a separate `TextView` holding the CSS arrow. `scope` and `aria-sort` have no Android equivalent I could find. The tree keeps node order and drops `scope` and `aria-sort`, so match cells by ordinal position.
+
+**Locator.**
+
+```js title="Playwright"
+const usd = page.getByRole('row', { name: /USD/ });
+await expect(usd).toContainText('1.34');
+await expect(page.getByRole('columnheader', { name: 'Currency' }))
+  .toHaveAttribute('aria-sort', 'ascending');
+```
+
+```java title="Appium"
+// the table is a GridView; cells are plain Views with text
+driver.findElement(AppiumBy.xpath(
+  "//android.widget.GridView[@resource-id='rates-table']//*[@text='1.34']"));
+```
+
+**The trap.** The tree drops row and column relationships, so assert named cell values. Keep `row` and `columnheader` assertions in Playwright, where those roles exist.
+
+### 2.12 Virtualised / infinite list
+
+<PatternDemo name="data.html#feed-section" snippet="virtual" height={300} label="A windowed list: only visible rows exist in the DOM" />
+
+**The node.** The capture shows `TX0000` through `TX0012` and nothing else. That is the realised window. The tree omits rows you scrolled past and rows that never loaded, so `TX0042` does not exist yet.
+
+**Locator.**
+
+```js title="Playwright"
+const item = page.getByText('TX0042');
+await item.scrollIntoViewIfNeeded();
+await expect(item).toBeVisible();
+```
+
+```java title="Appium"
+driver.findElement(AppiumBy.xpath("//*[@text='TX0001']"));
+// ... scroll the container ...
+driver.findElement(AppiumBy.xpath("//*[@text='TX0042']"));
+```
+
+**The trap.** `findElements(...).size()` on a windowed list counts the realised window, so it reports "10 items" for a 200-row list. Assert specific items, and scroll before you look (§3.4 has the loop).
+
+### 2.13 Canvas / chart
+
+<PatternDemo name="canvas.html" snippet="canvas" height={280} label="A canvas with a text alternative and a data table" />
+
+**The node.** A canvas does produce a node, but an empty one: `android.widget.Image` with `resource-id="chart"` and no `text` or `content-desc`. The node carries an id but no text to assert. The text alternative beside it (`resource-id="chart-alt"`) is the only thing carrying the data. The canvas offers no markup to locate.
+
+**The trap.** The canvas gives you nothing to match, so ship the data as text, as a hidden table, or as an `aria-label` on the canvas, and assert that. If the chart is the product, test the data layer behind it.
+
+### 2.14 Async validation and delayed content
+
+<PatternDemo name="dynamic.html" snippet="async" height={340} label="Async validation, delayed content, and a skeleton" />
+
+**The node.** The status changed in place. After the input event, the field's `hint` read `Reference code Too short`, and the status node (`resource-id="ref-status"`) read `Too short`. Delayed content arrives as new nodes after a round trip. Both break naive waits, so §3 covers them.
+
+## 3. Dynamic content, where tests fail
+
+Production pages load and re-render while your test runs, which causes the failures in this section.
+
+### 3.1 Wait for a condition instead of a clock
+
+Playwright auto-waits on actionability, and its web-first assertions retry. `await expect(locator).toBeVisible()` polls until it is true or the timeout expires. `waitForTimeout` skips the retry and asserts once.
+
+Appium's auto-wait is narrower. UiAutomator2 waits for you only on the `-android uiautomator` strategy, through the `waitForSelectorTimeout` setting (10 s by default). With `id`, `accessibilityId`, or `xpath`, it does not wait at all. Nothing in the driver waits for a state change, so write the wait yourself:
+
+```java title="Appium"
+new WebDriverWait(driver, Duration.ofSeconds(10))
+    .pollingEvery(Duration.ofMillis(200))
+    .until(d -> d.findElement(AppiumBy.xpath("//*[@text='Transfer scheduled']")).isDisplayed());
+```
+
+The demo pages give you a calibration point. Their validation debounce is 700 ms and their delayed panel arrives at 900 ms, so 2 s covers in-place state and 5 s covers a round trip. The waits to start from:
+
+| Situation | Wait |
+|---|---|
+| Cold WebView warm-up | two `getPageSource()` reads, then 500 ms |
+| Navigation or full page load | 10 to 20 s explicit |
+| In-place async status (validation) | 2 to 3 s |
+| Delayed content (a details panel) | 5 s |
+| Toast presence | 1 to 1.5 s, then a 3 s wait for absence |
+| List scroll settle | 300 to 500 ms per swipe |
+
+The validation and delayed-panel numbers come from the demo code. The other rows are starting points; tune them against your app.
+
+### 3.2 Re-find, do not cache elements
+
+An Appium `WebElement` holds a node id from the last page-source snapshot. Re-render the page and that id stops resolving, so the call throws. Wrap the find in a retry that catches `StaleElementReferenceException`:
+
+```java title="Appium"
+private WebElement refind(By by) {
+  return new WebDriverWait(driver, Duration.ofSeconds(5))
+      .pollingEvery(Duration.ofMillis(200))
+      .ignoring(StaleElementReferenceException.class)
+      .until(d -> d.findElement(by));
+}
+```
+
+This re-finds an element that already exists; pair it with the wait in §3.1 when the element has not appeared yet. Playwright draws the same line with different names: a `Locator` re-resolves on every action, while an `ElementHandle` holds one resolution that can go stale. Prefer `Locator`.
+
+### 3.3 The lazy tree
+
+With no accessibility service bound, the first dump of a fresh WebView returns a bare `WebView` node, and the second returns the page. A suite that opens a fresh dump per action reads an empty tree once. Dump twice at session start, or bind an accessibility service. I measured this with `uiautomator dump`; check whether your Appium `getPageSource()` shows the same thing on a cold WebView before you rely on it.
+
+### 3.4 Scroll a windowed list until the item is realised
+
+A windowed list (§2.12) builds only the rows near the viewport, so finding an item is a loop: scroll, wait, re-find. The container reports `scrollable="true"` and carries its name, which is what you drive.
+
+```java title="Appium"
+private WebElement scrollUntil(By container, By target, int maxSwipes)
+    throws InterruptedException {
+  for (int i = 0; i < maxSwipes; i++) {
+    List<WebElement> found = driver.findElements(target);
+    if (!found.isEmpty()) return found.get(0);
+    boolean canScrollMore = (Boolean) driver.executeScript("mobile: scrollGesture", Map.of(
+        "elementId", ((RemoteWebElement) driver.findElement(container)).getId(),
+        "direction", "down",
+        "percent", 0.8));
+    if (!canScrollMore) break;
+    Thread.sleep(400);
+  }
+  throw new NoSuchElementException("not realised after " + maxSwipes + " swipes: " + target);
+}
+```
+
+Swipe about 80 percent of the container each time and cap the loop at 20 or 30 swipes. `mobile: scrollGesture` returns whether the container can still scroll in that direction, so the loop can stop when it returns `false` instead of burning every swipe.
+
+### 3.5 Bounds move, or read zero
+
+`bounds` read mid-transition describe a moving layout. Nodes outside the viewport can report `bounds="[0,0][0,0]"`, including every node in a dump taken mid-scroll, so re-dump after the page settles before you act on bounds. Appium exposes `waitForIdleTimeout`. The UIAutomator test library added `UiObject2.waitForStable()` in 2.4.0 as a Kotlin extension, and the Appium driver does not expose it, so poll the bounds yourself:
+
+```java title="Appium"
+private Rectangle stableRect(WebElement el) throws InterruptedException {
+  Rectangle previous = el.getRect();
+  for (int i = 0; i < 8; i++) {
+    Thread.sleep(250);
+    Rectangle current = el.getRect();
+    if (current.equals(previous)) return current;
+    previous = current;
+  }
+  throw new IllegalStateException("bounds never stabilised: " + previous);
+}
+```
+
+### 3.6 Skeletons and optimistic UI
+
+The demo marks its skeleton `aria-hidden`, so the skeleton never reaches the tree. If your app shows a skeleton with the same role and name as the final content, a role locator matches the placeholder instead of the result. Hide the skeleton from the tree, or assert on content that exists only in the final state.
+
+### 3.7 Time and randomness
+
+A relative timestamp, a generated id, or a counter can change the value your assertion expects, so the assertion passes on today's data and fails on next week's. You cannot freeze the clock inside a WebView through Appium. Normalise the value with a pattern like `/Updated \d+ minutes? ago/`, or have the app read the time from a test hook you can set. Assert only values the app controls.
+
+## 4. Triage
+
+Find your symptom, then read the section it points at.
+
+**Nothing is in the tree**
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| The first dump is a bare `WebView`, or a handful of nodes | WebView builds the tree on first access, and this is that first read | Read twice, or bind an accessibility service (§3.3) |
+| A list item is "missing" | A windowed list has not realised that row | Scroll and re-find; assert rows you scrolled to (§3.4) |
+| The native select's options are not in the tree | The open picker is a separate window | Dump with `--windows`, or switch the Appium window (§2.4) |
+
+**The locator finds nothing, or the wrong thing**
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Two nodes match, or the tap lands on the wrong control | Duplicate names, or a modal that leaves the background in the tree | Hide the background with `inert` and `aria-hidden` (§2.8); rename duplicate controls (§2.9) |
+| The node is clickable, with empty `text` and `NAF="true"` | An icon button with no `aria-label` | Add `aria-label` instead of tapping by coordinates (§2.5) |
+| A role locator matches the placeholder | A skeleton shares the final content's role | Hide the skeleton from the tree, or assert final-only content (§3.6) |
+| `resource-id` is empty | Your WebView version does not pass the HTML `id` through | Locate by role and name; treat `resource-id` as a bonus (§5, §6) |
+| A `data-testid` locator finds nothing in `NATIVE_APP` | Test ids never enter the accessibility tree | Locate by role and name, or copy the value into an `id` for a tree handle (§6) |
+| A Playwright role locator fails on the device | Playwright cannot drive the WebView | Run it against the standalone page or over CDP; use Appium for the tree (§1) |
+| The locator works in debug and fails in release | It depends on the DOM path, which needs the debug socket | Locate by role and name in the native context (§1) |
+
+**The action does not land**
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| The tap does nothing, or "element not interactable" | A `readonly` control, or a node off screen with `bounds="[0,0][0,0]"` | Drop `readonly` or click the popup owner (§2.4); scroll into view, re-dump, then tap (§3.4, §3.5) |
+| Every `bounds` reads `[0,0][0,0]` | Someone took the dump mid-scroll | Settle, re-dump, then read bounds (§3.5) |
+| A locator works, then throws on the next action | The element holds a node id from an old snapshot | Re-find inside a wait (§3.2) |
+
+**You cannot assert the result**
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| You cannot assert a checkbox or radio state | WebView 140 does not expose `checkable`/`checked` | Assert the effect the selection has on the page (§2.3) |
+| The toast assertion is flaky | The toast clears itself while the assertion runs | Assert the message within 1.5 s, then assert it clears (§2.10) |
+
+## 5. Locator mechanics
+
+**Appium and UiAutomator2 strategies** ([^3]):
+
+| Strategy | Maps to | When to use it |
+|---|---|---|
+| `accessibilityId` | `content-desc` (Android), `name` (iOS) | native controls that carry a content description |
+| `id` | `resource-id` | web controls whose HTML `id` came through. It did on WebView 140, it did not on some earlier versions, so do not rely on it as the primary handle. |
+| `className` | the Android node class, such as `android.widget.Button` | pair it with text. It matches the node class, NOT the HTML `class` or React's `className`, which never enter the tree |
+| `-android uiautomator` | `UiSelector` | text and `textContains` matching, though Google is deprecating `UiSelector` |
+| `xpath` | the page-source XML | role + name when nothing else fits; slower, snapshot-based |
+
+**Appium element attributes** to assert: `text`/`name`, `content-desc`, `resource-id`, `bounds`, `password`, `clickable`, `enabled`, `focused`, `selected`, `hint`, and `label` on iOS. The driver also documents `checkable`/`checked`, `content-invalid`, `live-region` and `heading`. The WebView 140 dumps above carry `password` and `resource-id` but not `checked` or `live-region`, so verify before you assert them.
+
+**Playwright locators** ([^2]): reach for `getByRole` first, then `getByLabel`, `getByPlaceholder`, `getByText`, and `getByTestId` last. `.filter({ hasText })` and chained locators handle scoping. Strict mode is on by default, so a call that matches two elements fails. `expect(locator)` waits for the assertion to pass, and `toMatchAriaSnapshot` pins structure.
+
+**React Testing Library** ([^1]) queries the DOM the same way Playwright does, because both use the same accessible-name computation. The queries and the scoping map one to one:
+
+| Intent | React Testing Library | Playwright |
+|---|---|---|
+| role + name | `screen.getByRole('textbox', { name: 'Email' })` | `page.getByRole('textbox', { name: 'Email' })` |
+| label | `screen.getByLabelText('Email')` | `page.getByLabel('Email')` |
+| description | `screen.getByRole('textbox', { description: /receipts/i })` | same options |
+| scope to a row | `within(screen.getByText('Transfer to Alice').closest('li')!)` | `.filter({ hasText: 'Alice' })` |
+| inside a dialog | `within(screen.getByRole('dialog'))` | `page.getByRole('dialog')` |
+
+Two caveats apply. RTL runs in jsdom by default, so there is no layout and no real browser. `toBeVisible` reads only attributes and inline styles, and the accessible-name computation comes from `dom-accessibility-api`, which implements a subset of ARIA. Use it to pin a component's role-and-name contract; it cannot reach the Android tree.
+
+## 6. Test ids, and how far they travel
+
+A test id is a DOM handle. The major tools read it, each with its own attribute name, and none of them enters the accessibility tree.
+
+**Who reads which attribute**
+
+| Attribute | Markup | Reader |
+|---|---|---|
+| `data-testid` | `<button data-testid="submit-order">` | Testing Library `getByTestId('submit-order')`, Playwright `page.getByTestId('submit-order')` |
+| `data-cy` | `<button data-cy="submit">` | Cypress `cy.get('[data-cy="submit"]')` |
+| `data-test` | `<button data-test="submit">` | Cypress apps (`getBySel` helper) |
+| `data-qa` | `<button data-qa="submit">` | any CSS selector in a DOM tool |
+| `data-pw` | `<button data-pw="submit">` | Playwright, after `testIdAttribute: 'data-pw'` |
+
+The name is a convention, not a capability. Each tool reads whichever attribute you configure: Testing Library through `testIdAttribute`, Playwright through `testIdAttribute` or `selectors.setTestIdAttribute()`.
+
+**What it buys, what it costs**
+
+A test id survives changes to copy and roles, holds across locales, and records in the markup that a test depends on this element. Cypress frames the decision: if you would want the test to fail when the element's text changes, match the text; if not, use a data attribute.
+
+The cost is that it is not user facing. Playwright calls test ids "the most resilient way of testing", because "even if your text or role ... changes, the test will still pass", and then warns they are "not user facing" [^2]. The same resilience hides breakage: replace a `<button>` with a clickable `<div>` and the test stays green while the control loses its role and its keyboard access. Testing Library's lint rule names the other half: it couples the test "to the implementation details of your components, and not to how they behave" [^17].
+
+**Where it belongs.** Use one where nothing semantic can name the control: a wrapper with no role, a custom widget, or markup you do not own. A per-record label is greyer: §2.9 gives each row's action an accessible name, and a name-based locator still matches it per record, so reach for a test id there only when the copy is translated or redrawn. Do not use one for an icon button with no name; that is a bug, and the fix is a name.
+
+**Who uses them, and with what format**
+
+| Project | Attribute | Format | Example |
+|---|---|---|---|
+| GitLab | `data-testid` | kebab-case; value must match the page-object name | `data-testid="edit-button"` |
+| Grafana | `data-testid` | human-readable phrase | `data-testid="Username input field"` |
+| HMCTS (UK courts) | `data-testid` | `{component}-{element}-{type}` | `case-list-jurisdiction-select` |
+| Appsmith | `data-testid` | lint-enforced regex `^t--[a-zA-Z0-9_.-]*$` | `data-testid="t--submit"` |
+| Primer (GitHub) | `data-component` | PascalCase, `ComponentName.Part` | `data-component="Button.Content"` |
+| Sentry | `data-test-id` | no value convention | `configureRtl({ testIdAttribute: 'data-test-id' })` |
+| Atlassian Atlaskit | `testId` prop | `{string}--{descriptor}` | `testId="testmodal--dismissButton"` |
+| Shopify (mobile) | React Native `testID` | n/a, opt-in | `UNSAFE_testID` |
+
+Read that column carefully: only the first four use `data-testid`. Primer ships `data-component`, Sentry spells it `data-test-id`, and Shopify's is a React Native prop, not an HTML attribute at all. Enforce whichever you pick with `consistent-data-testid` (a regex you write; Appsmith's is the only public one I found), or ban test-id queries outright with `no-test-id-queries`.
+
+**Who skips them**
+
+| Project | Practice, with its source |
+|---|---|
+| YouTube | zero `data-testid` attributes on the logged-in page, [^4]; the reason is unknown, so this proves absence, not method |
+| Sentry | forced real `<button>`s; the engineer behind the change has "not used a `data-testid` attribute in over a decade" ([^5]) |
+| Shopify (mobile) | moved E2E to computer vision; test ids are opt-in through an `UNSAFE_testID` field, "the naming itself discourages using them" ([^6]) |
+| Cash App (Block) | snapshot-tests the accessibility tree itself, on iOS (AccessibilitySnapshot) and Android (Paparazzi): "these properties are what would be read out by screen readers your customers might use" ([^7]) |
+| GOV.UK / GDS | components are tested against accessibility acceptance criteria and assistive technology; test ids appear nowhere in the guidance ([^8]) |
+| Angular Material | component harnesses: a test uses "a supported API", so it is insulated from DOM-structure changes instead of selecting nodes ([^9]) |
+| Microsoft | the platform's stable locator is the accessibility layer: AutomationId, not an HTML test attribute ([^10]) |
+| Android guidance | `contentDescription` is for users; test tags belong in `testTag`, "if you add tags that aren't important to humans, you effectively make your app harder to use for those who rely on accessibility" ([^11]) |
+
+The honest caveat: zero test ids does not prove a team locates by role and name. It can also mean internal tooling. The two examples you can copy are the stated policies, Sentry's and Shopify's, and both pair the move with dedicated accessibility testing, because no locator strategy is an accessibility test.
+
+**Why the scale tips this way anyway.** A name is copy. A translator rewrites it, and a label generated per record differs per record; a test id survives both. Grafana moved off `aria-label` selectors because the labels were "not that useful, or may be out of date", and labelling everything "makes translating Grafana difficult" [^27]. The scale is visible: Facebook's logged-in page carries 116 `data-testid` attributes, Twitter's 74.
+
+**In `NATIVE_APP` a test id does nothing.** Everything above lives in the DOM context, where the tools do the matching. Android is different: Blink keeps only semantic properties in the accessibility tree, so `data-testid` never reaches it. Four routes put a test id to work:
+
+- DOM context: `driver.context('WEBVIEW_<package>')` plus chromedriver, then `By.cssSelector('[data-testid="x"]')`. Needs the debug socket and a matching chromedriver.
+- Playwright over CDP, or against the standalone page (§1).
+- Copy the value into an `id` at build time. Chromium feeds the HTML `id` into the node's `resource-id`, so the value arrives as `resource-id="x"` in the dump. This is the only route that works in `NATIVE_APP`, and §5 already said what it is: a handle, not the primary handle.
+- On Compose, not a WebView: `Modifier.testTag` with `testTagsAsResourceId`, or Appium's `mapTestTagToResourceId`.
+
+**The copy-to-`id` trap.** The third route is the fragile one, because it puts an unchecked value where HTML checks one: HTML requires an `id` to be unique in its tree, `data-testid` has no such rule, and a component rendered once per row repeats its test id by construction. Copy the values as they are and the ids collide. When they do, `getElementById`, `querySelector`, `label for`, fragment scrolling and the ARIA reference attributes all resolve to the first match, and WCAG's H93 technique records the consequence: a duplicate id leaves the second field with no accessible name. On Android the collision is quieter. `UiSelector.resourceId` picks "the first widget in the tree", W3C WebDriver returns the first match, and Appium documents its find as "the first element that matches". A duplicate does not throw; the test taps the wrong node and keeps passing. If you take the route, namespace the generated value (`test-<value>`) so it cannot meet a hand-written id, keep the value a valid CSS identifier, and pin a WebView version: WebView 122 to 126 stopped exporting `resource-id`, and 127 restored it.
+
+That trap is about uniqueness, not about a11y. Copying a value into `id` is accessibility-neutral: an `id` adds no role and no name and serves only as a reference target. Putting the same value into `aria-label` is not neutral, which is why the tree side must not be faked.
+
+**Systems people have built.** Some teams treat a naming convention seriously, but no standard emerged. The solo [`data-testid-guidelines`](https://github.com/pablohpsilva/data-testid-guidelines) repo proposes a dot-separated component hierarchy (`MyComponent.NameList.NameListItem.0`), with a shared TypeScript `testId` prop to thread the hierarchy through components [^43]; seven GitHub stars and no adoption. Mailgun and InboxReady draft a namespace-anchored structure (`mg.dashboard.deliveredStatCard.percentage`) in an internal gist whose comments show the convention mid-debate [^44]. DHIS2, a large health-data platform, was prompted to build ids after an external test team's entire audit "complained about dhis2 being not designed to be testable" [^45]; the practitioners settled on "unique (per app) and constant". Appsmith's `consistent-data-testid` regex is the one public lint config I found [^30]. Cypress, the maker of the tool, governs its own ids in reverse, limiting `data-cy` ("we should rarely, if ever, rely on data-cy alone") [^21]. Vaadin ships `setDataTestId`, and Atlassian Atlaskit ships a first-class `testId` prop [^48]; the design-systems route is real, because it is the component library, not the page, that guarantees the id. Whoever you follow, the honest accounting is that none of these published adoption numbers; the closest to numeric practitioner evidence is Skai's migration of ~310 E2E tests to Playwright across 22 squads [^46].
+
+**So should your suite use them?** Both, in different places. The accessible name is the contract your users and your release build depend on, and it is what an axe-core accessibility scan reads. Test ids keep a DOM-path suite stable across locales and refactors, which pays for itself in a large localized app. Keep them out of `NATIVE_APP`; where a native handle is unavoidable, the build-time `id` copy works with a namespace and a pinned WebView version, and it stays a fallback: a locator that has only that handle fails on any WebView version that drops the mapping.
+
+## 7. Putting it together
+
+Both halves run one flow. The Playwright half runs against the page served standalone; the Appium half reads the same page through the accessibility tree. Start from the [all-patterns fixture](fixture.html).
+
+```js title="Playwright"
+// Playwright: one flow, dynamic bits included
+test('transfer from a saved recipient', async ({ page }) => {
+  await page.goto('/fixture.html');
+
+  await page.getByLabel('Email').fill('qa@example.com');
+  await page.getByLabel('Password').fill('hunter2');
+  await page.getByRole('button', { name: 'Show password' }).click();
+
+  // duplicate row actions: scope to the row
+  await page.getByRole('listitem').filter({ hasText: 'Alice' })
+            .getByRole('button', { name: 'Edit' }).click();
+
+  // async validation: wait for the message, not a timer
+  await page.getByLabel('Reference code').fill('ABC123');
+  await expect(page.getByRole('status')).toHaveText('Valid');
+
+  await page.getByRole('button', { name: 'Load details' }).click();
+  await expect(page.getByText('Recipient: Alice')).toBeVisible();
+});
+```
+
+```java title="Appium"
+// Appium (NATIVE_APP): the same flow, accessibility tree only
+driver.getPageSource();               // warm it, the first read can be incomplete
+driver.getPageSource();
+
+// the label is in hint, not text, so match the id (from the HTML id)
+driver.findElement(AppiumBy.xpath("//android.widget.EditText[@resource-id='pw']"));
+// aria-pressed makes this a ToggleButton, not a Button
+driver.findElement(AppiumBy.xpath("//android.widget.ToggleButton[@text='Show password']")).click();
+
+// the unique aria-label is what makes this row addressable
+driver.findElement(AppiumBy.xpath("//android.widget.Button[@text='Edit transfer to Alice']")).click();
+```
+
+```tsx title="React Testing Library"
+// The same flow as a component test. No tree, no bounds, just roles and names.
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+test('transfer from a saved recipient', async () => {
+  const user = userEvent.setup();
+  render(<Transfer />);
+
+  await user.type(screen.getByLabelText('Email'), 'qa@example.com');
+  await user.type(screen.getByLabelText('Password'), 'hunter2');
+  await user.click(screen.getByRole('button', { name: 'Show password' }));
+
+  const row = screen.getByText('Transfer to Alice').closest('li')!;
+  await user.click(within(row).getByRole('button', { name: 'Edit' }));
+
+  await user.type(screen.getByLabelText('Reference code'), 'ABC123');
+  expect(await screen.findByRole('status')).toHaveTextContent('Valid');
+});
+```
+
+## 8. Further reading
+
+Sources I read but did not cite inline, grouped by what they support.
+
+**Testing tool and lint documentation**
+
+- [Cypress best practices](https://docs.cypress.io/app/core-concepts/best-practices), including the match-text-or-data-attribute rule
+- [Cypress selector priority](https://docs.cypress.io/api/cypress-api/element-selector-api)
+- [Cypress require-data-selectors rule](https://github.com/cypress-io/eslint-plugin-cypress/blob/master/docs/rules/require-data-selectors.md)
+- [Testing Library: role queries and within](https://testing-library.com/docs/queries/byrole)
+- [Testing Library: guiding principles](https://testing-library.com/docs/guiding-principles)
+- [Testing Library: getByTestId](https://testing-library.com/docs/queries/bytestid)
+- [jest-dom matchers](https://github.com/testing-library/jest-dom)
+- [consistent-data-testid rule](https://github.com/testing-library/eslint-plugin-testing-library/blob/master/docs/rules/consistent-data-testid.md)
+- [eslint-plugin-test-selectors](https://github.com/davidcalhoun/eslint-plugin-test-selectors)
+- [Playwright: aria snapshots](https://playwright.dev/docs/aria-snapshots)
+- [Playwright: accessibility testing](https://playwright.dev/docs/accessibility-testing)
+
+**Team conventions**
+
+- [GitLab frontend testing guide](https://docs.gitlab.com/development/testing_guide/frontend_testing/) and [page objects](https://docs.gitlab.com/development/testing_guide/end_to_end/beginners_guide/page_objects/)
+- [HMCTS test-id epic](https://github.com/hmcts/rpx-xui-webapp/blob/master/JIRA_TICKETS_TEST_IDS.md)
+- [Primer: stable selectors ADR](https://github.com/primer/react/blob/main/contributor-docs/adrs/adr-023-stable-selectors-api.md)
+- [Grafana e2e style guide](https://github.com/grafana/grafana/blob/main/contribute/style-guides/e2e-playwright.md) and its [never-delete selector rule](https://github.com/grafana/grafana/blob/main/e2e-playwright/plugin-e2e/plugin-e2e-api-tests/AGENTS.md)
+- [changed-test-ids](https://github.com/muratkeremozcan/changed-test-ids), a tool for catching renamed test ids
+- [Cash App: Paparazzi accessibility snapshots](https://code.cash.app/paparazzi-accessibility-snapshots), the Android counterpart to AccessibilitySnapshot
+
+**Standards**
+
+- [HTML Standard: the id attribute](https://html.spec.whatwg.org/multipage/dom.html#the-id-attribute)
+- [WCAG technique H93](https://www.w3.org/WAI/WCAG21/Techniques/html/H93)
+- [WAI-ARIA 1.2: id reference error processing](https://www.w3.org/TR/wai-aria-1.2/#mapping_additional_relations_error_processing)
+- [WCAG 4.1.2 explained (NYU)](https://digitalaccessibility.nyu.edu/testing/sc412.html)
+- [W3C WebDriver: Find Element](https://w3c.github.io/webdriver/#find-element)
+
+**Android and Chromium**
+
+- [UiSelector.resourceId](https://developer.android.com/reference/androidx/test/uiautomator/UiSelector), which picks "the first widget in the tree"
+- [Chromium issue 328681381](https://issues.chromium.org/issues/328681381): WebView 122 to 126 stopped exporting `resource-id`, and 127 restored it
+- [Compose and UiAutomator interoperability](https://developer.android.com/develop/ui/compose/testing/interoperability)
+- [UiAutomator reference](https://developer.android.com/reference/androidx/test/uiautomator/package-summary), including `UiObject2.waitForStable()` from 2.4.0
+- [UiAutomation](https://developer.android.com/reference/android/app/UiAutomation), which suppresses accessibility services by default
+- [Infinum: locator naming differences](https://infinum.com/handbook/qa/automation/mobile/appium/locator-naming-differences), on `accessibilityId` mapping to `content-desc`
+
+[^1]: [Testing Library: query priority](https://testing-library.com/docs/queries/about)
+
+[^2]: [Playwright: locators](https://playwright.dev/docs/locators)
+
+[^3]: [Appium UiAutomator2 driver README](https://github.com/appium/appium-uiautomator2-driver), covering locator strategies, element attributes (`live-region`, `content-invalid`, `heading`), `mapTestTagToResourceId`, and the `UiSelector` deprecation.
+
+[^4]: [Testing Library issue #479](https://github.com/testing-library/react-testing-library/issues/479), the measured production-page counts: Facebook 116 `data-testid` attributes, Twitter 74, YouTube 0.
+
+[^5]: [TkDodo: Test IDs are an a11y smell](https://tkdodo.eu/blog/test-ids-are-an-a11y-smell)
+
+[^6]: [Shopify engineering: mobile E2E](https://shopify.engineering/mobile-e2e-testing)
+
+[^7]: [Cash App: AccessibilitySnapshot](https://code.cash.app/making-ios-accessibility-testing-easy)
+
+[^8]: [GOV.UK service manual: accessibility for developers](https://www.gov.uk/service-manual/technology/accessibility-for-developers-an-introduction)
+
+[^9]: [Angular Material: component harnesses](https://material.angular.io/guide/using-component-harnesses)
+
+[^10]: [Microsoft: Using UI Automation for Automated Testing](https://github.com/dotnet/docs/blob/main/docs/framework/ui-automation/using-ui-automation-for-automated-testing.md)
+
+[^11]: [Android Developers: composables from UiAutomator](https://medium.com/androiddevelopers/accessing-composables-from-uiautomator-cf316515edc2)
+
+[^17]: [eslint rule: no-test-id-queries](https://github.com/testing-library/eslint-plugin-testing-library/blob/HEAD/docs/rules/no-test-id-queries.md)
+
+[^21]: [Cypress testing strategy and styleguide](https://github.com/cypress-io/cypress/blob/develop/guides/testing-strategy-and-styleguide.md)
+
+[^27]: [Grafana: aria-label migration issue](https://github.com/grafana/grafana/issues/36523)
+
+[^30]: [Appsmith's consistent-data-testid regex](https://raw.githubusercontent.com/appsmithorg/appsmith/release/app/client/.eslintrc.base.json)
+
+[^43]: [data-testid-guidelines](https://github.com/pablohpsilva/data-testid-guidelines)
+
+[^44]: [Mailgun/InboxReady test-id gist](https://gist.github.com/TheNando/2e5e15ee30e33109a9b5cb975287c27d)
+
+[^45]: [DHIS2 issue #54](https://github.com/dhis2/notes/issues/54)
+
+[^46]: [Skai: migrating 300 E2E tests to Playwright](https://medium.com/kenshoos-engineering-blog/good-infrastructure-genai-how-we-migrated-300-e2e-tests-to-playwright-in-1q-b6afe90d750f)
+
+[^48]: [Atlaskit form changelog (testId prop)](https://atlaskit.atlassian.com/packages/design-system/form/changelog)
+
+[^54]: Captured on a OnePlus 6T (`ONEPLUS A6013`), Android 15 (API 35), AOSP WebView `140.0.7339.207`, loaded through a minimal WebView host app. Each XML block is the second of two `adb exec-out uiautomator dump /dev/tty` runs on a freshly loaded page. Regeneration notes live in this post's `AGENTS.md` in the repository.

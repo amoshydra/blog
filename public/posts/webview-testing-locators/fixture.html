@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebView locator patterns</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0 auto; padding: 16px; max-width: 680px; background: #fafafa; color: #111; }
+  h1 { font-size: 1.35rem; }
+  h2 { font-size: 1.02rem; margin: 30px 0 8px; padding-top: 8px; border-top: 1px solid #ccc; }
+  .tag { font-family: ui-monospace, monospace; font-size: .78rem; color: #555; display: block; margin: 2px 0 8px; }
+  label { display: block; font-weight: 600; margin-top: 10px; }
+  input, select, button, textarea { font-size: 1rem; padding: 6px 8px; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .icon-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  [role="tablist"] { display: flex; gap: 4px; border-bottom: 1px solid #ccc; }
+  [role="tab"] { border: 0; background: transparent; padding: 10px 14px; }
+  [role="tab"][aria-selected="true"] { border-bottom: 3px solid #2563eb; font-weight: 700; }
+  [role="tabpanel"] { padding: 12px; border: 1px solid #ddd; border-top: 0; }
+  [role="listbox"] { border: 1px solid #ccc; margin-top: 4px; }
+  [role="option"] { padding: 8px; }
+  [role="option"][aria-selected="true"] { background: #dbeafe; }
+  dialog { padding: 20px; border-radius: 8px; border: 1px solid #ccc; }
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 50; }
+  .scrim.open { display: flex; }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #111; color: #fff; padding: 10px 16px; border-radius: 6px; opacity: 0; transition: opacity .2s; }
+  #toast.show { opacity: 1; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #ddd; }
+  th[aria-sort] { cursor: pointer; }
+  .error { color: #b91c1c; font-size: .9rem; }
+  canvas { border: 1px solid #ddd; }
+</style>
+</head>
+<body>
+<h1>WebView locator patterns</h1>
+<p>One control per pattern. Load it in a WebView and dump the accessibility tree. Each heading matches a section in the blog post.</p>
+
+<h2>1. Labelled text field (label + hint + error)</h2>
+<span class="tag">name from &lt;label&gt;; hint is a description, not a name; error announced via role=alert</span>
+<label for="email">Email</label>
+<input id="email" name="email" type="email" autocomplete="email" required
+       aria-describedby="email-hint" aria-invalid="false">
+<p id="email-hint">We only use this for receipts.</p>
+<p id="email-error" class="error" role="alert" hidden>Enter a valid email address.</p>
+
+<h2>2. Password field with show/hide</h2>
+<span class="tag">password=true + masked value; the toggle is an icon-only button</span>
+<label for="pw">Password</label>
+<div class="row">
+  <input id="pw" name="pw" type="password" value="hunter2" autocomplete="current-password">
+  <button type="button" id="pw-toggle" aria-label="Show password" aria-pressed="false">👁</button>
+</div>
+
+<h2>3. Checkbox group, radio group, switch</h2>
+<span class="tag">each option is its own CheckBox / RadioButton; the fieldset legend is not a control name</span>
+<fieldset>
+  <legend>Notifications</legend>
+  <label><input type="checkbox" name="notify" value="email" checked> Email</label>
+  <label><input type="checkbox" name="notify" value="sms"> SMS</label>
+</fieldset>
+<fieldset>
+  <legend>Delivery speed</legend>
+  <label><input type="radio" name="speed" value="std" checked> Standard</label>
+  <label><input type="radio" name="speed" value="exp"> Express</label>
+</fieldset>
+<label>
+  <input type="checkbox" role="switch" id="wifi" checked> Wi-Fi
+</label>
+
+<h2>4. Native select and custom combobox</h2>
+<span class="tag">native select is one node whose text is the chosen option; a custom listbox is many nodes</span>
+<label for="country">Country</label>
+<select id="country" name="country">
+  <option>Singapore</option>
+  <option>Malaysia</option>
+  <option>Indonesia</option>
+</select>
+
+<label for="combo">Fruit (custom combobox)</label>
+<div class="row">
+  <input id="combo" role="combobox" aria-expanded="false" aria-controls="fruit-list"
+         aria-autocomplete="list" aria-activedescendant="" autocomplete="off">
+</div>
+<ul id="fruit-list" role="listbox" aria-label="Fruit" hidden>
+  <li role="option" id="opt-apple" aria-selected="false">Apple</li>
+  <li role="option" id="opt-banana" aria-selected="false">Banana</li>
+  <li role="option" id="opt-cherry" aria-selected="false">Cherry</li>
+</ul>
+
+<h2>5. Icon-only buttons</h2>
+<span class="tag">no visible text — the name must come from aria-label</span>
+<button type="button" class="icon-btn" id="close" aria-label="Close dialog">✕</button>
+<button type="button" class="icon-btn" id="favourite" aria-label="Add to favourites" aria-pressed="false">☆</button>
+
+<h2>6. Tabs</h2>
+<span class="tag">tablist / tab / tabpanel; the selected tab is exposed by aria-selected</span>
+<div role="tablist" aria-label="Account sections">
+  <button role="tab" id="tab-summary" aria-selected="true" aria-controls="panel-summary">Summary</button>
+  <button role="tab" id="tab-activity" aria-selected="false" aria-controls="panel-activity" tabindex="-1">Activity</button>
+</div>
+<div role="tabpanel" id="panel-summary" aria-labelledby="tab-summary">Your balance is 1,250.</div>
+<div role="tabpanel" id="panel-activity" aria-labelledby="tab-activity" hidden>No recent activity.</div>
+
+<h2>7. Disclosure / accordion</h2>
+<span class="tag">a button with aria-expanded controlling a region</span>
+<button type="button" id="faq-1" aria-expanded="false" aria-controls="faq-1-panel">How long does a transfer take?</button>
+<div id="faq-1-panel" role="region" aria-labelledby="faq-1" hidden>Usually within one business day.</div>
+
+<h2>8. Dialog (native and custom)</h2>
+<span class="tag">custom <code>role="dialog"</code> surfaces as <code>android.app.Dialog</code> on WebView 140; on WebView 115 only its contents appeared</span>
+<button type="button" id="open-native">Open native dialog</button>
+<dialog id="native-dialog" aria-labelledby="native-title">
+  <h3 id="native-title">Confirm transfer</h3>
+  <p>To Alice, 100 SGD.</p>
+  <button type="button" id="native-cancel">Cancel</button>
+  <button type="button" id="native-confirm">Confirm</button>
+</dialog>
+
+<button type="button" id="open-custom">Open custom modal</button>
+<div class="scrim" id="custom-scrim">
+  <div id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="custom-title">
+    <h3 id="custom-title">Delete recipient</h3>
+    <p>This cannot be undone.</p>
+    <button type="button" id="custom-cancel">Cancel</button>
+    <button type="button" id="custom-delete">Delete</button>
+  </div>
+</div>
+
+<h2>9. List with per-row actions</h2>
+<span class="tag">duplicate action names — scope to the row, or make the names unique</span>
+<ul id="recipients">
+  <li>
+    <span>Transfer to Alice</span>
+    <button type="button" class="edit" data-row="Alice" aria-label="Edit transfer to Alice">Edit</button>
+    <button type="button" class="del" data-row="Alice" aria-label="Delete transfer to Alice">Delete</button>
+  </li>
+  <li>
+    <span>Transfer to Bob</span>
+    <button type="button" class="edit" data-row="Bob" aria-label="Edit transfer to Bob">Edit</button>
+    <button type="button" class="del" data-row="Bob" aria-label="Delete transfer to Bob">Delete</button>
+  </li>
+</ul>
+
+<h2>10. Toast (live region)</h2>
+<span class="tag">aria-live; the message is a node only while it exists, and it fires an event</span>
+<button type="button" id="show-toast">Save</button>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<h2>11. Data table (sortable, caption, scopes)</h2>
+<span class="tag">caption/headers; sort state via aria-sort; each cell is its own node</span>
+<table id="rates">
+  <caption>Exchange rates (SGD)</caption>
+  <thead>
+    <tr><th scope="col" aria-sort="ascending" id="th-ccy">Currency</th><th scope="col" aria-sort="none">Rate</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>USD</td><td>1.34</td></tr>
+    <tr><td>MYR</td><td>0.29</td></tr>
+    <tr><td>EUR</td><td>1.45</td></tr>
+  </tbody>
+</table>
+
+<h2>12. Incremental list (Load more)</h2>
+<span class="tag">only appended items exist in the tree; a windowed list would additionally drop scrolled-away rows</span>
+<div id="feed" style="height:180px;overflow:auto;border:1px solid #ddd" aria-label="Transactions"></div>
+<button type="button" id="load-more">Load more</button>
+
+<h2>13. Canvas chart (opaque to the tree)</h2>
+<span class="tag">canvas has no accessible nodes; provide a text alternative or a table</span>
+<canvas id="chart" width="300" height="120"></canvas>
+<p id="chart-alt">Balance trend: up 12% over 30 days.</p>
+
+<h2>14. Async validation and delayed content</h2>
+<span class="tag">content appears after a delay; error appears after a request settles</span>
+<label for="ref">Reference code</label>
+<input id="ref" name="ref" type="text" aria-describedby="ref-status">
+<p id="ref-status" role="status"></p>
+<button type="button" id="load-details">Load details</button>
+<div id="details"></div>
+
+<script>
+  // 2. password toggle
+  const pw = document.getElementById('pw'), pwToggle = document.getElementById('pw-toggle');
+  pwToggle.addEventListener('click', () => {
+    const show = pw.type === 'password';
+    pw.type = show ? 'text' : 'password';
+    pwToggle.setAttribute('aria-pressed', String(show));
+    pwToggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
+
+  // 1. email validation on blur
+  const email = document.getElementById('email'), emailError = document.getElementById('email-error');
+  email.addEventListener('blur', () => {
+    const bad = email.value.trim() !== '' && !/^[^@]+@[^@]+\.[^@]+$/.test(email.value);
+    emailError.hidden = !bad;
+    email.setAttribute('aria-invalid', String(bad));
+  });
+
+  // 4. custom combobox
+  const combo = document.getElementById('combo'), list = document.getElementById('fruit-list');
+  combo.addEventListener('click', () => {
+    const open = list.hidden;
+    list.hidden = !open;
+    combo.setAttribute('aria-expanded', String(open));
+  });
+  list.querySelectorAll('[role="option"]').forEach((opt) => {
+    opt.addEventListener('click', () => {
+      list.querySelectorAll('[role="option"]').forEach(o => o.setAttribute('aria-selected', 'false'));
+      opt.setAttribute('aria-selected', 'true');
+      combo.value = opt.textContent;
+      list.hidden = true;
+      combo.setAttribute('aria-expanded', 'false');
+      combo.setAttribute('aria-activedescendant', opt.id);
+    });
+  });
+
+  // 6. tabs
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  tabs.forEach((tab) => tab.addEventListener('click', () => {
+    tabs.forEach((t) => {
+      const selected = t === tab;
+      t.setAttribute('aria-selected', String(selected));
+      t.tabIndex = selected ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !selected;
+    });
+  }));
+
+  // 7. disclosure
+  const faq = document.getElementById('faq-1');
+  faq.addEventListener('click', () => {
+    const open = faq.getAttribute('aria-expanded') === 'true';
+    faq.setAttribute('aria-expanded', String(!open));
+    document.getElementById('faq-1-panel').hidden = open;
+  });
+
+  // 8. dialogs
+  document.getElementById('open-native').addEventListener('click', () =>
+    document.getElementById('native-dialog').showModal());
+  document.getElementById('native-cancel').addEventListener('click', () =>
+    document.getElementById('native-dialog').close());
+  document.getElementById('open-custom').addEventListener('click', () =>
+    document.getElementById('custom-scrim').classList.add('open'));
+  document.getElementById('custom-cancel').addEventListener('click', () =>
+    document.getElementById('custom-scrim').classList.remove('open'));
+
+  // 10. toast
+  const toast = document.getElementById('toast');
+  document.getElementById('show-toast').addEventListener('click', () => {
+    toast.textContent = 'Saved';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  });
+
+  // 11. sortable table
+  document.getElementById('th-ccy').addEventListener('click', function () {
+    const asc = this.getAttribute('aria-sort') !== 'ascending';
+    document.querySelectorAll('#rates th').forEach(t => t.setAttribute('aria-sort', 'none'));
+    this.setAttribute('aria-sort', asc ? 'ascending' : 'descending');
+  });
+
+  // 12. virtualised / incremental list
+  const feed = document.getElementById('feed');
+  let page = 0;
+  function addPage() {
+    for (let i = 0; i < 20; i++) {
+      const n = page * 20 + i + 1;
+      const row = document.createElement('div');
+      row.textContent = 'Transaction TX' + String(n).padStart(4, '0') + ' · ' + (n * 3) + ' SGD';
+      feed.appendChild(row);
+    }
+    page++;
+  }
+  addPage();
+  document.getElementById('load-more').addEventListener('click', addPage);
+
+  // 13. canvas
+  const ctx = document.getElementById('chart').getContext('2d');
+  ctx.strokeStyle = '#2563eb'; ctx.beginPath(); ctx.moveTo(0, 100);
+  for (let x = 0; x <= 300; x += 30) ctx.lineTo(x, 100 - x / 4);
+  ctx.stroke();
+
+  // 14. async validation + delayed content
+  const ref = document.getElementById('ref'), refStatus = document.getElementById('ref-status');
+  ref.addEventListener('input', () => {
+    refStatus.textContent = 'Checking…';
+    setTimeout(() => {
+      refStatus.textContent = ref.value.trim().length >= 6 ? 'Valid' : 'Too short';
+    }, 800);
+  });
+  document.getElementById('load-details').addEventListener('click', () => {
+    document.getElementById('details').innerHTML = '';
+    setTimeout(() => {
+      document.getElementById('details').innerHTML =
+        '<p>Recipient: Alice</p><p>Amount: 100 SGD</p>';
+    }, 1200);
+  });
+</script>
+</body>
+</html>

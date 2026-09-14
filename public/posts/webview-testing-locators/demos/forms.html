@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forms: field, password, choice</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<section id="field">
+  <h2>Email</h2>
+  <label for="email">Email</label>
+  <input id="email" type="email" required
+         aria-describedby="email-hint" aria-invalid="false">
+  <p id="email-hint" class="hint">We only use this for receipts.</p>
+  <p id="email-error" class="error" role="alert" hidden>Enter a valid email address.</p>
+</section>
+
+<section id="password">
+  <h2>Password</h2>
+  <label for="pw">Password</label>
+  <input id="pw" type="password" value="hunter2">
+  <div class="inline">
+    <button type="button" id="pw-toggle" aria-label="Show password" aria-pressed="false">&#128065;</button>
+  </div>
+</section>
+
+<section id="choice">
+  <h2>Notifications and plan</h2>
+  <fieldset>
+    <legend>Notifications</legend>
+    <label class="field"><input type="checkbox" name="notify" value="email" checked> Email</label>
+    <label class="field"><input type="checkbox" name="notify" value="sms"> SMS</label>
+  </fieldset>
+  <fieldset>
+    <legend>Plan</legend>
+    <label class="field"><input type="radio" name="plan" value="basic" checked> Basic</label>
+    <label class="field"><input type="radio" name="plan" value="plus"> Plus</label>
+  </fieldset>
+  <label class="field"><input type="checkbox" role="switch" id="wifi" checked> Wi-Fi</label>
+</section>
+
+<script>
+  const email = document.getElementById('email');
+  const err = document.getElementById('email-error');
+  const checkEmail = () => {
+    const bad = email.value.length > 0 && !email.checkValidity();
+    err.hidden = !bad;
+    email.setAttribute('aria-invalid', String(bad));
+  };
+  email.addEventListener('input', checkEmail);
+  email.addEventListener('blur', checkEmail);
+
+  const pw = document.getElementById('pw');
+  const toggle = document.getElementById('pw-toggle');
+  toggle.addEventListener('click', () => {
+    const show = pw.type === 'password';
+    pw.type = show ? 'text' : 'password';
+    toggle.setAttribute('aria-pressed', String(show));
+    toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    toggle.textContent = show ? '\u{1F648}' : '\u{1F441}';
+  });
+</script>
+<script src="demo.js"></script>
+</body>
+</html>

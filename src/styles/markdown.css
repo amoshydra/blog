@@ -95,13 +95,18 @@
     font-size: 1rem;
   }
 
-  /* Plain-markdown tables are not wrapped in .scrollable-table (that only applies
-     to MDX via the Table component override). Fit them to the column width with
-     equal columns so they don't need horizontal scrolling. */
-  > table {
+  /* Every markdown table is wrapped in .table-scroll by a rehype plugin.
+     Fill the column when there is room; scroll horizontally when there isn't. */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 2em;
+    scrollbar-width: thin;
+  }
+  .table-scroll > table {
     width: 100%;
-    table-layout: fixed;
-    overflow-wrap: anywhere;
+    min-width: 36rem;
+    margin-bottom: 0;
   }
 
   th, td {

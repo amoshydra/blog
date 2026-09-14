@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tabs and disclosure</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<section id="tabs">
+  <h2>Account</h2>
+  <div role="tablist" aria-label="Account sections">
+    <button role="tab" id="tab-summary" aria-selected="true" aria-controls="panel-summary">Summary</button>
+    <button role="tab" id="tab-activity" aria-selected="false" tabindex="-1" aria-controls="panel-activity">Activity</button>
+  </div>
+  <div role="tabpanel" id="panel-summary" aria-labelledby="tab-summary">Your balance is 1,250.</div>
+  <div role="tabpanel" id="panel-activity" aria-labelledby="tab-activity" hidden>No recent activity.</div>
+</section>
+
+<section id="faq">
+  <h2>FAQ</h2>
+  <button type="button" id="faq-1" aria-expanded="false" aria-controls="faq-1-panel">
+    How long does a transfer take?
+  </button>
+  <div id="faq-1-panel" role="region" aria-labelledby="faq-1" hidden>
+    Usually within one business day.
+  </div>
+</section>
+
+<script>
+  const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      tabs.forEach((other) => {
+        const on = other === tab;
+        other.setAttribute('aria-selected', String(on));
+        other.tabIndex = on ? 0 : -1;
+        document.getElementById(other.getAttribute('aria-controls')).hidden = !on;
+      });
+    });
+  });
+
+  const faq = document.getElementById('faq-1');
+  faq.addEventListener('click', () => {
+    const open = faq.getAttribute('aria-expanded') !== 'true';
+    faq.setAttribute('aria-expanded', String(open));
+    document.getElementById('faq-1-panel').hidden = !open;
+  });
+</script>
+<script src="demo.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canvas with a text alternative</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<section>
+  <h2>Balance trend</h2>
+  <canvas id="chart" width="300" height="120"></canvas>
+  <p id="chart-alt">Balance trend: up 12% over 30 days.</p>
+  <details>
+    <summary>Accessible data table</summary>
+    <table>
+      <thead><tr><th scope="col">Day</th><th scope="col">Balance</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>1,120</td></tr>
+        <tr><td>15</td><td>1,180</td></tr>
+        <tr><td>30</td><td>1,254</td></tr>
+      </tbody>
+    </table>
+  </details>
+</section>
+
+<script>
+  const ctx = document.getElementById('chart').getContext('2d');
+  ctx.strokeStyle = '#2563eb';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  [[0, 110], [60, 95], [120, 80], [180, 70], [240, 55], [300, 40]].forEach(([x, y], i) => {
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+</script>
+<script src="demo.js"></script>
+</body>
+</html>

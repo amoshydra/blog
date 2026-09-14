@@ -1,0 +1,286 @@
+/* Shared styling for the WebView locator demos.
+   Kept deliberately plain: these pages exist to be dumped, not admired. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  padding: 1rem;
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #111;
+  background: #fff;
+}
+
+section + section {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e5e5e5;
+}
+
+h1,
+h2 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+select {
+  font: inherit;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  width: 100%;
+  max-width: 22rem;
+  background: #fff;
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  background: #f6f6f6;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ededed;
+}
+
+button[aria-pressed="true"] {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.hint,
+.status {
+  color: #555;
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+}
+
+.error {
+  color: #b91c1c;
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+}
+
+fieldset {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.8rem;
+}
+
+legend {
+  font-weight: 600;
+  padding: 0 0.35rem;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+  margin-bottom: 0.35rem;
+}
+
+.field input {
+  width: auto;
+}
+
+.inline {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.4rem;
+}
+
+.icon-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* tabs */
+[role="tablist"] {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid #e5e5e5;
+  margin-bottom: 0.5rem;
+}
+
+[role="tab"] {
+  border: none;
+  border-radius: 0;
+  background: none;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 2px solid transparent;
+}
+
+[role="tab"][aria-selected="true"] {
+  border-bottom-color: #2563eb;
+  font-weight: 600;
+}
+
+/* rows */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rows li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.rows li span:first-child {
+  flex: 1;
+}
+
+/* table */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 28rem;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+th button {
+  all: unset;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+[aria-sort]::after {
+  content: " ↑";
+  color: #888;
+}
+
+[aria-sort="descending"]::after {
+  content: " ↓";
+}
+
+/* scrollers */
+.scroller {
+  height: 180px;
+  overflow: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.4rem;
+}
+
+/* Fixed row height: the windowing script in data.html assumes 28px. */
+.scroller p {
+  margin: 0;
+  height: 28px;
+  line-height: 28px;
+  padding: 0 0.25rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* overlays */
+dialog {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+  padding: 1rem 1.2rem;
+  max-width: 24rem;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.scrim[data-open="true"] {
+  display: flex;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  max-width: 24rem;
+  width: calc(100% - 2rem);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+}
+
+.modal h2 {
+  margin-bottom: 0.4rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.9rem;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.skeleton {
+  height: 1rem;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #eee, #f7f7f7, #eee);
+  margin: 0.4rem 0;
+}
+
+canvas {
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  max-width: 100%;
+}

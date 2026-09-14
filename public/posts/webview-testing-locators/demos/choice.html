@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Native select and custom combobox</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<section>
+  <h2>Native select</h2>
+  <label for="country">Country</label>
+  <select id="country">
+    <option>Singapore</option>
+    <option>Malaysia</option>
+  </select>
+</section>
+
+<section>
+  <h2>Custom combobox</h2>
+  <label for="combo">Fruit</label>
+  <input id="combo" role="combobox" aria-expanded="false" aria-controls="fruit-list"
+         aria-activedescendant="" autocomplete="off" readonly>
+  <ul id="fruit-list" role="listbox" aria-label="Fruit" hidden>
+    <li role="option" id="opt-apple" aria-selected="false">Apple</li>
+    <li role="option" id="opt-banana" aria-selected="false">Banana</li>
+  </ul>
+</section>
+
+<script>
+  const combo = document.getElementById('combo');
+  const list = document.getElementById('fruit-list');
+  const setOpen = (open) => {
+    combo.setAttribute('aria-expanded', String(open));
+    list.hidden = !open;
+  };
+  combo.addEventListener('click', () => setOpen(list.hidden));
+  list.addEventListener('click', (event) => {
+    const opt = event.target.closest('[role="option"]');
+    if (!opt) return;
+    list.querySelectorAll('[role="option"]').forEach((o) =>
+      o.setAttribute('aria-selected', String(o === opt)));
+    combo.value = opt.textContent.trim();
+    combo.setAttribute('aria-activedescendant', opt.id);
+    setOpen(false);
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('#combo, #fruit-list')) setOpen(false);
+  });
+</script>
+<script src="demo.js"></script>
+</body>
+</html>

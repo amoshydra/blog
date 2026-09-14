@@ -1,0 +1,188 @@
+---
+import Code from "astro/components/Code.astro";
+
+interface Props {
+  name: string;
+  snippet: string;
+  height?: number;
+  label?: string;
+}
+
+const { name, snippet, height = 240, label = "Example" } = Astro.props;
+
+// BASE_URL already ends in a slash ("/blog/"), but be defensive.
+const base = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+
+// "forms.html#password" -> "forms.html?only=password". The live frame, the
+// open link, and the dump all describe that one section, so they cannot drift.
+const [file, section] = name.split("#");
+const fullSrc = `${base}posts/webview-testing-locators/demos/${file}`;
+const src = section ? `${fullSrc}?only=${section}` : fullSrc;
+
+// Snippets are resolved by name at build time.
+const snippets = import.meta.glob("/content/posts/webview-testing-locators/snippets/*", {
+  eager: true,
+  query: "?raw",
+  import: "default",
+}) as Record<string, string>;
+const dir = "/content/posts/webview-testing-locators/snippets";
+const html = snippets[`${dir}/${snippet}.html`];
+const xml = snippets[`${dir}/${snippet}.xml`];
+
+const uid = Math.random().toString(36).slice(2, 9);
+const themes = { light: "github-light", dark: "github-dark" };
+---
+
+<div class="pe" data-snippet={snippet}>
+  <input class="pe__radio" type="radio" name={uid} id={`${uid}-live`} data-pane="live" checked />
+  <input class="pe__radio" type="radio" name={uid} id={`${uid}-html`} data-pane="html" />
+  {xml && <input class="pe__radio" type="radio" name={uid} id={`${uid}-xml`} data-pane="xml" />}
+
+  <div class="pe__tabs" role="tablist" aria-label={`${label} source`}>
+    <label class="pe__tab" for={`${uid}-live`}>Live</label>
+    <label class="pe__tab" for={`${uid}-html`}>HTML</label>
+    {xml && <label class="pe__tab" for={`${uid}-xml`}>XML</label>}
+    <a class="pe__open" href={src} target="_blank" rel="noopener">
+      Open in a tab <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+
+  <section class="pe__pane pe__pane--live">
+    <iframe class="pe__frame" src={src} title={label} style={`height:${height}px`}></iframe>
+  </section>
+
+  {html && (
+    <section class="pe__pane pe__pane--html">
+      <Code code={html} lang="html" themes={themes} defaultColor={false} wrap />
+    </section>
+  )}
+
+  {xml && (
+    <section class="pe__pane pe__pane--xml">
+      <Code code={xml} lang="xml" themes={themes} defaultColor={false} wrap />
+    </section>
+  )}
+</div>
+
+<script>
+  // The frames are same-origin, so each one can be sized to its own document
+  // height. It never scrolls inside, and it only re-measures on a real width
+  // change (not the mobile URL-bar's height-only resize).
+  function sizeFrame(frame: HTMLIFrameElement) {
+    let doc: Document | null = null;
+    try {
+      doc = frame.contentDocument;
+    } catch {
+      return;
+    }
+    if (!doc || !doc.body) return;
+    const root = (doc.scrollingElement || doc.documentElement) as HTMLElement | null;
+    if (!root) return;
+    const next = `${root.scrollHeight + 2}px`;
+    if (frame.style.height !== next) frame.style.height = next;
+  }
+
+  document.querySelectorAll<HTMLIFrameElement>("iframe.pe__frame").forEach((frame) => {
+    frame.addEventListener("load", () => sizeFrame(frame));
+    if (frame.contentDocument?.readyState === "complete") sizeFrame(frame);
+  });
+
+  let lastWidth = window.innerWidth;
+  let resizeTimer: number | undefined;
+  window.addEventListener("resize", () => {
+    if (window.innerWidth === lastWidth) return;
+    lastWidth = window.innerWidth;
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => {
+      document
+        .querySelectorAll<HTMLIFrameElement>("iframe.pe__frame")
+        .forEach((frame) => sizeFrame(frame));
+    }, 150);
+  });
+</script>
+
+<style>
+  .pe {
+    margin: 1.5rem auto 2.5rem;
+    overflow-anchor: none;
+  }
+  .pe__radio {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+  }
+  .pe__tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 0;
+  }
+  .pe__tab {
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: rgb(var(--gray));
+    border-bottom: 2px solid transparent;
+    user-select: none;
+  }
+  .pe__open {
+    margin-left: auto;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .pe__radio[data-pane="live"]:checked ~ .pe__tabs [for$="-live"],
+  .pe__radio[data-pane="html"]:checked ~ .pe__tabs [for$="-html"],
+  .pe__radio[data-pane="xml"]:checked ~ .pe__tabs [for$="-xml"] {
+    color: rgb(var(--black));
+    border-bottom-color: var(--accent);
+  }
+
+  .pe__pane {
+    display: none;
+    border: 1px solid var(--border-subtle);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+  }
+  .pe__radio[data-pane="live"]:checked ~ .pe__pane--live,
+  .pe__radio[data-pane="html"]:checked ~ .pe__pane--html,
+  .pe__radio[data-pane="xml"]:checked ~ .pe__pane--xml {
+    display: block;
+  }
+  .pe__pane--live {
+    background-color: #fff;
+  }
+  .pe__frame {
+    display: block;
+    width: 100%;
+    border: none;
+  }
+  .pe__pane :global(pre.astro-code) {
+    margin: 0;
+    border-radius: 0;
+    max-height: 32rem;
+    overflow: auto;
+    background-color: rgb(var(--gray-light));
+  }
+</style>
+
+<!-- Code is rendered with defaultColor={false}, so each token carries only
+     --shiki-light / --shiki-dark. These rules turn those variables into an
+     actual color, the same way HtmlXmlCompare does. -->
+<style is:global>
+  .pe pre.astro-code,
+  .pe pre.astro-code span {
+    color: var(--shiki-light, inherit);
+  }
+  [data-theme="dark"] .pe pre.astro-code,
+  [data-theme="dark"] .pe pre.astro-code span {
+    color: var(--shiki-dark, inherit);
+  }
+</style>

@@ -28,3 +28,6 @@ pnpm-debug.log*
 
 # generated hero image candidates
 .hero-candidates/
+
+# device captures - stay local
+/window_dump*.xml

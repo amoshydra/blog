@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Icon buttons and row actions</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<section id="icons">
+  <h2>Icon-only buttons</h2>
+  <button type="button" class="icon-btn" aria-label="Close dialog">&#10005;</button>
+  <button type="button" class="icon-btn" id="fav" aria-pressed="false" aria-label="Add to favourites">&#9734;</button>
+</section>
+
+<section id="rows">
+  <h2>Transfers</h2>
+  <ul class="rows" id="recipients">
+    <li>
+      <span>Transfer to Alice</span>
+      <button type="button" aria-label="Edit transfer to Alice">Edit</button>
+      <button type="button" aria-label="Delete transfer to Alice">Delete</button>
+    </li>
+    <li>
+      <span>Transfer to Bob</span>
+      <button type="button" aria-label="Edit transfer to Bob">Edit</button>
+      <button type="button" aria-label="Delete transfer to Bob">Delete</button>
+    </li>
+  </ul>
+  <p class="status" role="status" id="row-status"></p>
+</section>
+
+<script>
+  const fav = document.getElementById('fav');
+  fav.addEventListener('click', () => {
+    const on = fav.getAttribute('aria-pressed') !== 'true';
+    fav.setAttribute('aria-pressed', String(on));
+    fav.setAttribute('aria-label', on ? 'Remove from favourites' : 'Add to favourites');
+    fav.textContent = on ? '\u2605' : '\u2606';
+  });
+
+  document.getElementById('recipients').addEventListener('click', (event) => {
+    const button = event.target.closest('button');
+    if (button) {
+      document.getElementById('row-status').textContent = button.getAttribute('aria-label');
+    }
+  });
+</script>
+<script src="demo.js"></script>
+</body>
+</html>

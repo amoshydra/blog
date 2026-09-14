@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Async validation, delayed content, skeleton</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<section>
+  <h2>Reference code</h2>
+  <label for="ref">Reference code</label>
+  <input id="ref" aria-describedby="ref-status" autocomplete="off">
+  <p id="ref-status" class="status" role="status"></p>
+</section>
+
+<section>
+  <h2>Details</h2>
+  <button type="button" id="load-details">Load details</button>
+  <div id="details"></div>
+</section>
+
+<section>
+  <h2>Profile</h2>
+  <button type="button" id="load-profile">Load profile</button>
+  <div id="profile" aria-busy="false">
+    <div class="skeleton" aria-hidden="true" hidden></div>
+    <div class="skeleton" aria-hidden="true" hidden></div>
+  </div>
+</section>
+
+<script>
+  const ref = document.getElementById('ref');
+  const status = document.getElementById('ref-status');
+  let validateTimer;
+  ref.addEventListener('input', () => {
+    clearTimeout(validateTimer);
+    status.textContent = 'Checking\u2026';
+    validateTimer = setTimeout(() => {
+      status.textContent = ref.value.length >= 6 ? 'Valid' : 'Too short';
+    }, 700);
+  });
+
+  document.getElementById('load-details').addEventListener('click', () => {
+    const box = document.getElementById('details');
+    box.textContent = 'Loading\u2026';
+    setTimeout(() => {
+      box.textContent = 'Recipient: Alice';
+    }, 900);
+  });
+
+  document.getElementById('load-profile').addEventListener('click', () => {
+    const wrap = document.getElementById('profile');
+    const skeletons = Array.from(wrap.querySelectorAll('.skeleton'));
+    const previous = wrap.querySelector('p');
+    if (previous) previous.remove();
+    skeletons.forEach((s) => (s.hidden = false));
+    wrap.setAttribute('aria-busy', 'true');
+    setTimeout(() => {
+      skeletons.forEach((s) => (s.hidden = true));
+      wrap.setAttribute('aria-busy', 'false');
+      const line = document.createElement('p');
+      line.textContent = 'Signed in as qa@example.com';
+      wrap.appendChild(line);
+    }, 900);
+  });
+</script>
+<script src="demo.js"></script>
+</body>
+</html>

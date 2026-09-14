@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dialogs, a custom modal, and a toast</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<section id="native">
+  <h2>Native dialog</h2>
+  <button type="button" id="open-native">Confirm transfer</button>
+  <dialog id="native-dialog" aria-labelledby="native-title">
+    <h2 id="native-title">Confirm transfer</h2>
+    <p>Send 1,250 to Alice?</p>
+    <div class="modal-actions">
+      <button type="button" id="cancel-native">Cancel</button>
+      <button type="button" id="confirm-native">Confirm</button>
+    </div>
+  </dialog>
+</section>
+
+<section id="custom">
+  <h2>Custom modal</h2>
+  <button type="button" id="open-custom">Delete recipient</button>
+</section>
+
+<!-- A body-level sibling on purpose: the modal must not live inside the
+     section that gets hidden with inert, or it would hide itself. -->
+<div class="scrim" id="scrim" data-open="false">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="custom-title">
+    <h2 id="custom-title">Delete recipient</h2>
+    <p>This cannot be undone.</p>
+    <div class="modal-actions">
+      <button type="button" id="cancel-custom">Cancel</button>
+      <button type="button" id="confirm-custom">Delete</button>
+    </div>
+  </div>
+</div>
+
+<section id="toast">
+  <h2>Toast</h2>
+  <button type="button" id="save">Save</button>
+  <div role="status" aria-live="polite"></div>
+</section>
+
+<script>
+  const nativeDialog = document.getElementById('native-dialog');
+  document.getElementById('open-native').addEventListener('click', () => nativeDialog.showModal());
+  document.getElementById('cancel-native').addEventListener('click', () => nativeDialog.close());
+  document.getElementById('confirm-native').addEventListener('click', () => nativeDialog.close());
+
+  const scrim = document.getElementById('scrim');
+  const setCustomOpen = (open) => {
+    scrim.dataset.open = String(open);
+    // The thing the post is about: hide the page behind the modal.
+    Array.from(document.body.children).forEach((el) => {
+      if (el === scrim || el.tagName === 'SCRIPT') return;
+      el.inert = open;
+      if (open) el.setAttribute('aria-hidden', 'true');
+      else el.removeAttribute('aria-hidden');
+    });
+  };
+  document.getElementById('open-custom').addEventListener('click', () => setCustomOpen(true));
+  document.getElementById('cancel-custom').addEventListener('click', () => setCustomOpen(false));
+  document.getElementById('confirm-custom').addEventListener('click', () => setCustomOpen(false));
+
+  const toast = document.querySelector('section:last-of-type [role="status"]');
+  // ?hold=1 keeps the message on screen, so a dump can catch it.
+  const holdToast = new URLSearchParams(location.search).has('hold');
+  let toastTimer;
+  document.getElementById('save').addEventListener('click', () => {
+    toast.textContent = 'Saved';
+    clearTimeout(toastTimer);
+    if (!holdToast) {
+      toastTimer = setTimeout(() => (toast.textContent = ''), 2500);
+    }
+  });
+</script>
+<script src="demo.js"></script>
+</body>
+</html>
