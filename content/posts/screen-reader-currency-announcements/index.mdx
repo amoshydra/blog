@@ -9,7 +9,7 @@ import CurrencyAudioGallery from "../../../src/components/mdx/CurrencyAudioGalle
 
 A screen reader turns a screen into speech. On Windows you meet NVDA, Narrator and JAWS; on macOS and iOS, VoiceOver; on Android, TalkBack. It does not make the speech itself. It collects text and hands it to a speech synthesizer, the component that also reads e-books and GPS directions, then plays the audio it gets back.
 
-The sound of your page depends on that hand-off — and on which voice the reader speaks through. Put two lines in a page:
+The sound of your page depends on that hand-off, and on which voice the reader speaks through. Put two lines in a page:
 
 ```html
 <p>USD123.45</p>
@@ -22,7 +22,7 @@ NVDA also bundles eSpeak NG, the fallback used where OneCore is unavailable [^11
 
 The digits come through in both cases, so the number itself is read correctly. What `SGD` loses is the currency: the listener hears a code they have to decode, and never hears the currency's name or its minor unit. On a page that mixes Singapore and US amounts, they have to work out which currency they just heard, and can get it wrong.
 
-That observation is from NVDA on Windows 10 using its default OneCore voice, and the two lines are plain text nodes in the same browser — nothing but the code itself differs. The broader per-reader results later in the post come from a published comparison, and I did not re-run them.
+That observation is from NVDA on Windows 10 using its default OneCore voice, and the two lines are plain text nodes in the same browser, and nothing but the code itself differs. The broader per-reader results later in the post come from a published comparison, and I did not re-run them.
 
 The difference has to appear downstream of your markup. The string passes from the `<p>` into the DOM, into the browser's accessibility tree, through the screen reader, and into the operating system's speech engine. There, the engine's text normalizer matches it against a currency table, and one code is tagged as money while the other is not.
 
@@ -32,11 +32,11 @@ The browser passes the string through. Chrome's accessibility tree hands the ope
 
 The synthesizer decides. Its text normalizer tags a token as *money* and rewrites it into words. NVDA's tracker names the engines that do this (Microsoft OneCore, SAPI5, IBM's IBMTTS) and the one that does not (eSpeak NG) [^2]. Windows, Android and Apple's synthesizers all normalize currency in the same place, and the readers forward the text [^2] [^17] [^19] [^22].
 
-What differs is the currency list, which is short and rarely published [^16]. `$` and `USD` sit in the en-US table and `SGD` does not [^6]; NVDA and TalkBack ship no amount table of their own — each carries only a symbol dictionary [^1] [^17] — and the open normalizers from Google and NVIDIA ship small ones [^24] [^25]. HTML has no currency element [^27], so write the currency name out or supply the spoken form yourself.
+What differs is the currency list, which is short and rarely published [^16]. `$` and `USD` sit in the en-US table and `SGD` does not [^6]; NVDA and TalkBack ship no amount table of their own, only a symbol dictionary [^1] [^17], and the open normalizers from Google and NVIDIA ship small ones [^24] [^25]. HTML has no currency element [^27], so write the currency name out or supply the spoken form yourself.
 
 ## What Narrator and NVDA share
 
-When two readers say the same thing, the cause lies in what they share: the browser and the speech engine. Both were reading Chrome, so if Blink expanded currency codes on the way into the accessibility tree, both readers would inherit the expansion. Narrator speaks through Microsoft's engine, OneCore; NVDA speaks through the synthesizer it is set to — OneCore by default on Windows 10 and 11 [^2] [^37]. An NVDA that matches Narrator is running a Microsoft engine.
+When two readers say the same thing, the cause lies in what they share: the browser and the speech engine. Both were reading Chrome, so if Blink expanded currency codes on the way into the accessibility tree, both readers would inherit the expansion. Narrator speaks through Microsoft's voices [^38]; NVDA speaks through the synthesizer it is set to, OneCore by default on Windows 10 and 11 [^2] [^37]. An NVDA that matches Narrator is running a Microsoft engine.
 
 The browser is the only component upstream of the accessibility tree, so start there. If Chrome passes the text through unchanged, the rewrite has to happen after the tree, in an engine both readers can use.
 
@@ -142,6 +142,8 @@ The engine only speaks a minor unit once it has recognized a major one. That is 
 
 The opening example glues a code to a number, `USD123.45`, and that exact form is where the evidence is weakest. Every open normalizer measured here spells it, as the appendices show, and the published example of the mechanism uses a space (`USD 4`) [^2]. Microsoft's table is unpublished too, so the concatenated case rests on the opening observation plus that engine's documented behaviour with a space. A code stuck to a number is not the input these engines were tested on, and one engine here managed a money reading for it.
 
+The probes settle whether the space matters. `ja-JP` returns `JPY123` and `JPY 123` as byte-identical clips, and `ta-IN` does the same for `INR123` and `INR 123`, so spacing carries no weight. The token does. `ja-JP` renders `¥123` and `円123` as different clips, while `ta-IN` renders `₹123` and `ரூபாய்123` as the same one. Recognition follows the symbol or the word the table holds, not a code glued to a number.
+
 ## What each screen reader does
 
 The table below condenses a [2024 comparison of five screen readers](https://onsman.com/money-talks-formatting-currency-in-web-content/) [^16].
@@ -160,7 +162,7 @@ Unrecognized currency fails the same way: letters plus a plain decimal, as in *"
 
 ### Android: TalkBack and the engine under it
 
-TalkBack is [open source](https://github.com/google/talkback) [^17]. Its source carries a currency symbol dictionary — `$`, `€`, `£`, `¥` and others mapped to spoken names — but no currency-amount table [^17]. Like NVDA, it takes text from the accessibility tree and hands it to the platform's text-to-speech engine [^18].
+TalkBack is [open source](https://github.com/google/talkback) [^17]. Its source carries a currency symbol dictionary, mapping `$`, `€`, `£`, `¥` and others to spoken names, but no currency-amount table [^17]. Like NVDA, it takes text from the accessibility tree and hands it to the platform's text-to-speech engine [^18].
 
 On Android that engine is a separate, replaceable app, and the default is Google's **Speech Recognition & Synthesis** (`com.google.android.tts`), which is closed source [^19]. Swap in an OEM engine, the open-source [eSpeak NG](https://github.com/espeak-ng/espeak-ng) [^11], or AOSP's open-source [Pico TTS](https://android.googlesource.com/platform/external/svox/) [^20], and the announcement changes with the engine.
 
@@ -210,7 +212,7 @@ For some engines you can predict the read-out from the table; for others you hav
 
 Open engines that carry no currency table:
 
-- `eSpeak NG` ships its number handling in source. `numbers.c` holds no currency logic [^12], and the English dictionary's only currency-code entries are `usd $abbrev $allcaps` and `eur jU@ $only` — `USD` is an abbreviation to spell and `EUR` a word to say; neither adds amount handling [^13]. eSpeak's behaviour is fully knowable, and it is *"S G D one hundred and twenty-three point four five"*.
+- `eSpeak NG` ships its number handling in source. `numbers.c` holds no currency logic [^12], and the English dictionary's only currency-code entries are `usd $abbrev $allcaps` and `eur jU@ $only`: `USD` is an abbreviation to spell and `EUR` a word to say, and neither adds amount handling [^13]. eSpeak's behaviour is fully knowable, and it is *"S G D one hundred and twenty-three point four five"*.
 - `NVDA` [^1] and `TalkBack` [^17] are open source and likewise carry no currency-amount table, only symbol maps. Their output is whatever the selected engine produces.
 
 Open engines with small currency tables you can read:
@@ -389,7 +391,7 @@ Two caveats. This measures NeMo's **text normalization**, the spoken string the 
 
 The engines most people hear (Google's on Android, Microsoft's and Apple's) publish no table, so reaching them needs another route. On Android the TTS engine is a replaceable app, and `TextToSpeech.synthesizeToFile` renders any string to a WAV. A small harness captures real audio for the locales you install [^36]. Google's engine on the test device exposes 218 voices across 48 locales [^36], and the committed set covers 15 of them: `en-US`, `en-GB`, `en-IN`, `id-ID`, `zh-CN`, `zh-TW`, `yue-HK` (Cantonese), `th-TH`, `ja-JP`, `ta-IN` (Tamil) and five European locales.
 
-Amounts use each locale's own decimal separator, verified against CLDR: a period for `en-US`, `en-GB`, `en-IN`, `zh-CN`, `zh-TW`, `yue-HK`, `th-TH`, `ja-JP`, `ta-IN`, and a comma for `id-ID`, `de-DE`, `fr-FR`, `es-ES`, `it-IT`, `nl-NL`. The Indonesian set is `IDR123,45`, `IDR123`, and `IDR123.45` as a wrong-separator control. Each locale runs `USD123<sep>45`, `SGD123<sep>45`, `$123<sep>45`, the cents-only `USD0<sep>10`, then its own currency.
+Amounts use each locale's own decimal separator, verified against CLDR: a period for `en-US`, `en-GB`, `en-IN`, `zh-CN`, `zh-TW`, `yue-HK`, `th-TH`, `ja-JP`, `ta-IN`, and a comma for `id-ID`, `de-DE`, `fr-FR`, `es-ES`, `it-IT`, `nl-NL`. The Indonesian set is `IDR123,45`, `IDR123`, and `IDR123.45` as a wrong-separator control. Each locale runs `USD123<sep>45`, `SGD123<sep>45`, `$123<sep>45`, the cents-only `USD0<sep>10`, then its own currency. `id-ID`, `en-IN`, `ja-JP` and `ta-IN` add an integer form of that currency (`IDR123`, `INR123`, `JPY123`), and `ja-JP` and `ta-IN` add three probes that swap the code for a symbol, a word, or a spaced code.
 
 Android's API returns audio and never the normalized string, so the words have to come from listening. The gallery below carries a clip and a transcript for each amount, checked against the audio. Currency, the number, the point word and the minor unit are each coloured, with a second, non-colour cue so the split survives without colour; non-Latin read-outs carry a romanization underneath.
 
@@ -405,7 +407,7 @@ The demo page behind this post is [currency-announcements.html](/blog/posts/scre
 
 For the browser side, inspect a page with a currency string in Chrome DevTools under **Elements → Accessibility**, or open the **Accessibility** pane and enable the full AX tree [^4]. The raw text node is there, for recognized and unrecognized currency alike.
 
-To find which layer is speaking on your machine, look at the synthesizer, not the screen reader. In NVDA, **Speech → Synthesizer** names it — Windows OneCore by default on Windows 10 and 11 [^37]. `Microsoft OneCore` and `Microsoft Speech API version 5` carry the currency normalizer; `eSpeak NG` does not [^2]. Narrator uses the same Microsoft voice family [^16]. That setting is the difference between *"US dollars and forty-five cents"* and *"point four five"*.
+To find which layer is speaking on your machine, look at the synthesizer, not the screen reader. In NVDA, **Speech → Synthesizer** names it; on Windows 10 and 11 that is OneCore by default [^37]. `Microsoft OneCore` and `Microsoft Speech API version 5` carry the currency normalizer; `eSpeak NG` does not [^2]. Narrator uses the same Microsoft voice family [^38]. That setting is the difference between *"US dollars and forty-five cents"* and *"point four five"*.
 
 
 [^1]: [NVDA issue #953, “NVDA pronouncing currency symbol before amount”](https://github.com/nvaccess/nvda/issues/953), opened 2010-10-01; closed as synthesizer-specific. Source of the two maintainer quotes and of NVDA’s symbol-dictionary approach. (The reporter’s own wording for the `$10.00` case reads “100 dollars”; the intended spoken form is “ten dollars”.)
@@ -440,7 +442,7 @@ To find which layer is speaking on your machine, look at the synthesizer, not th
 
 [^16]: [Ricky Onsman, “Money Talks! Formatting Currency in Web Content”](https://onsman.com/money-talks-formatting-currency-in-web-content/) ([also at OZeWAI](https://ozewai.org/blog/technical-articles/money-talks-formatting-currency-in-web-content/)), the five-screen-reader comparison (`$`, `US$`, `A$`, `AU$`, `AUD`, `THB`, `VND`, `£`, `€`, `¥`) and its per-reader recognition summary. The article does not record the synthesizers used.
 
-[^17]: [Google TalkBack](https://github.com/google/talkback), the open-source Android screen reader; no currency-amount table in its source. The `TALKBACK_PUNCTUATION_AND_SYMBOL` map in [`SpeechCleanupUtils.java`](https://github.com/google/talkback/blob/master/utils/src/main/java/com/google/android/accessibility/utils/output/SpeechCleanupUtils.java) maps `$`, `€`, `£`, `¥` and more to spoken names — a symbol dictionary, not an amount normalizer.
+[^17]: [Google TalkBack](https://github.com/google/talkback), the open-source Android screen reader; no currency-amount table in its source. The `TALKBACK_PUNCTUATION_AND_SYMBOL` map in [`SpeechCleanupUtils.java`](https://github.com/google/talkback/blob/master/utils/src/main/java/com/google/android/accessibility/utils/output/SpeechCleanupUtils.java) maps `$`, `€`, `£`, `¥` and more to spoken names. It is a symbol dictionary, not an amount normalizer.
 
 [^18]: [Android Accessibility Help, Text-to-speech output](https://support.google.com/accessibility/android/answer/6006983), TTS is a user-selectable engine; the default varies by device.
 
@@ -481,3 +483,5 @@ To find which layer is speaking on your machine, look at the synthesizer, not th
 [^36]: Android measurement: [`scripts/android-tts-harness/`](https://github.com/amoshydra/blog/tree/main/scripts/android-tts-harness) (a `TtsActivity` for the `android-simple-webview` app) and [`scripts/gtts-locale-dump.sh`](https://github.com/amoshydra/blog/blob/main/scripts/gtts-locale-dump.sh); the manifest is [`artifacts/RESULTS-gtts-locales.tsv`](/blog/posts/screen-reader-currency-announcements/artifacts/RESULTS-gtts-locales.tsv), the clips are in [`artifacts/gtts/`](https://github.com/amoshydra/blog/tree/main/public/posts/screen-reader-currency-announcements/artifacts/gtts), and the hand-filled transcripts are [`content/posts/screen-reader-currency-announcements/transcripts.json`](https://github.com/amoshydra/blog/blob/main/content/posts/screen-reader-currency-announcements/transcripts.json). Engine: Google Speech Recognition & Synthesis (`com.google.android.tts`) 103.12.8, re-signed with a v2 signature to install on Android 15; device OnePlus 6T. The `money` schema is read from `assets/voices/en-us-x-sfg/hmm/en_verbalize_spec.pb` inside that APK.
 
 [^37]: [NV Access, “Synthesizer options”](https://www.nvaccess.org/csun) (“NVDA uses Windows OneCore by default”), and NVDA’s [`source/synthDriverHandler.py`](https://github.com/nvaccess/nvda/blob/master/source/synthDriverHandler.py) (`defaultSynthPriorityList = ["oneCore", "espeak", "silence"]`) with [`source/config/configSpec.py`](https://github.com/nvaccess/nvda/blob/master/source/config/configSpec.py) (the synthesizer defaults to `auto`); eSpeak NG is the bundled fallback.
+
+[^38]: [Microsoft, “Chapter 7: Customizing Narrator”](https://support.microsoft.com/en-us/accessibility/windows/narrator/chapter-7-customizing-narrator), which lists the Microsoft voices Narrator speaks through (David, Zira, Mark and the natural voices) and notes SAPI5 support.
