@@ -9,18 +9,20 @@ import CurrencyAudioGallery from "../../../src/components/mdx/CurrencyAudioGalle
 
 A screen reader turns a screen into speech. On Windows you meet NVDA, Narrator and JAWS; on macOS and iOS, VoiceOver; on Android, TalkBack. It does not make the speech itself. It collects text and hands it to a speech synthesizer, the component that also reads e-books and GPS directions, then plays the audio it gets back.
 
-The sound of your page depends on that hand-off. Put two lines in a page:
+The sound of your page depends on that hand-off — and on which voice the reader speaks through. Put two lines in a page:
 
 ```html
 <p>USD123.45</p>
 <p>SGD123.45</p>
 ```
 
-With a Microsoft voice selected, NVDA reads the first as *"one hundred and twenty-three US dollars and forty-five cents"*. It reads the second as a spelled-out code and then a decimal number: *"S G D, one hundred and twenty-three point four five"*. No "Singapore dollars", no cents. Narrator, Microsoft's own screen reader, produces the same two readings [^16]. That observation comes from Windows with a Microsoft voice; the broader per-reader results later in the post come from a published comparison, and I did not re-run them. The markup is the same in both readings, and so is the browser.
+On Windows 10 and 11, NVDA speaks through Windows OneCore by default [^37]. OneCore reads the first as *"one hundred and twenty-three US dollars and forty-five cents"* and the second as a spelled-out code followed by a decimal number: *"S G D, one hundred and twenty-three point four five"*. No "Singapore dollars", no cents. Narrator, Microsoft's own screen reader, uses OneCore too and produces the same two readings [^2] [^16].
 
-The digits come through both times, so the value is never wrong. What `SGD` loses is the words: the listener hears a code they may have to decode, and never hears the currency's name or its minor unit. On a page that mixes Singapore and US amounts, that is work the listener would not otherwise have to do.
+NVDA also bundles eSpeak NG, the fallback used where OneCore is unavailable [^11] [^37]. eSpeak NG does not expand currency [^2], so on it both lines come out as letters and a decimal. The money reading above is OneCore's doing, not a property of NVDA itself.
 
-NVDA ships with eSpeak NG, which does not expand currency, so the reading above came from a Microsoft engine rather than from NVDA itself [^2].
+The digits come through in both cases, so the number itself is read correctly. What `SGD` loses is the currency: the listener hears a code they have to decode, and never hears the currency's name or its minor unit. On a page that mixes Singapore and US amounts, they have to work out which currency they just heard, and can get it wrong.
+
+That observation is from NVDA on Windows 10 using its default OneCore voice, and the two lines are plain text nodes in the same browser — nothing but the code itself differs. The broader per-reader results later in the post come from a published comparison, and I did not re-run them.
 
 The difference has to appear downstream of your markup. The string passes from the `<p>` into the DOM, into the browser's accessibility tree, through the screen reader, and into the operating system's speech engine. There, the engine's text normalizer matches it against a currency table, and one code is tagged as money while the other is not.
 
@@ -30,11 +32,11 @@ The browser passes the string through. Chrome's accessibility tree hands the ope
 
 The synthesizer decides. Its text normalizer tags a token as *money* and rewrites it into words. NVDA's tracker names the engines that do this (Microsoft OneCore, SAPI5, IBM's IBMTTS) and the one that does not (eSpeak NG) [^2]. Windows, Android and Apple's synthesizers all normalize currency in the same place, and the readers forward the text [^2] [^17] [^19] [^22].
 
-What differs is the currency list, which is short and rarely published. `$` and `USD` sit in the en-US table and `SGD` does not [^6] [^16]; NVDA and TalkBack ship no table, and the open normalizers from Google and NVIDIA ship small ones [^24] [^25]. HTML has no currency element [^27], so write the currency name out or supply the spoken form yourself.
+What differs is the currency list, which is short and rarely published [^16]. `$` and `USD` sit in the en-US table and `SGD` does not [^6]; NVDA and TalkBack ship no amount table of their own — each carries only a symbol dictionary [^1] [^17] — and the open normalizers from Google and NVIDIA ship small ones [^24] [^25]. HTML has no currency element [^27], so write the currency name out or supply the spoken form yourself.
 
 ## What Narrator and NVDA share
 
-When two readers say the same thing, the cause lies in what they share: the browser and the speech engine. Both were reading Chrome, so if Blink expanded currency codes on the way into the accessibility tree, both readers would inherit the expansion. Narrator speaks through Microsoft's engine, OneCore; NVDA speaks through whichever synthesizer you select [^2]. An NVDA that matches Narrator is an NVDA set to a Microsoft engine.
+When two readers say the same thing, the cause lies in what they share: the browser and the speech engine. Both were reading Chrome, so if Blink expanded currency codes on the way into the accessibility tree, both readers would inherit the expansion. Narrator speaks through Microsoft's engine, OneCore; NVDA speaks through the synthesizer it is set to — OneCore by default on Windows 10 and 11 [^2] [^37]. An NVDA that matches Narrator is running a Microsoft engine.
 
 The browser is the only component upstream of the accessibility tree, so start there. If Chrome passes the text through unchanged, the rewrite has to happen after the tree, in an engine both readers can use.
 
@@ -150,7 +152,7 @@ The table below condenses a [2024 comparison of five screen readers](https://ons
 | Narrator (Windows) | same as NVDA | same |
 | VoiceOver (iOS 15.8) | `$123`, `A$123`, `AUD123`, `¥123`, `£123`, `€123` | `US$123`, `THB123`, `VND123` |
 | TalkBack (Android 10) | `$123` | `A$123`, `AUD123`, `€123`, `THB123` |
-| JAWS 2024 (Windows) | `£123`, `¥123`, `€123` | `$123`, `AUD123`, `THB123` |
+| JAWS 2024 (Windows) | `£123` | `$123`, `¥123`, `€123`, `AUD123`, `THB123` |
 
 The source did not record which synthesizer each reader used, so read a row as the behaviour of one reader paired with one engine, not as a property of the product. `$58.96` came out the way a person would say it in NVDA, Narrator, TalkBack and VoiceOver, and as "dollar fifty-eight point nine six" in JAWS, from the same page and the same bytes [^16].
 
@@ -158,7 +160,7 @@ Unrecognized currency fails the same way: letters plus a plain decimal, as in *"
 
 ### Android: TalkBack and the engine under it
 
-TalkBack is [open source](https://github.com/google/talkback) [^17]. Its source contains no currency or money handling, only a speech compositor and a `NumberAdjustor` for sliders [^17]. Like NVDA, it takes text from the accessibility tree and hands it to the platform's text-to-speech engine [^18].
+TalkBack is [open source](https://github.com/google/talkback) [^17]. Its source carries a currency symbol dictionary — `$`, `€`, `£`, `¥` and others mapped to spoken names — but no currency-amount table [^17]. Like NVDA, it takes text from the accessibility tree and hands it to the platform's text-to-speech engine [^18].
 
 On Android that engine is a separate, replaceable app, and the default is Google's **Speech Recognition & Synthesis** (`com.google.android.tts`), which is closed source [^19]. Swap in an OEM engine, the open-source [eSpeak NG](https://github.com/espeak-ng/espeak-ng) [^11], or AOSP's open-source [Pico TTS](https://android.googlesource.com/platform/external/svox/) [^20], and the announcement changes with the engine.
 
@@ -208,8 +210,8 @@ For some engines you can predict the read-out from the table; for others you hav
 
 Open engines that carry no currency table:
 
-- `eSpeak NG` ships its number handling in source. `numbers.c` holds no currency logic [^12], and the English dictionary's only currency-code entry is `usd $abbrev $allcaps`, which treats `USD` as an abbreviation to spell [^13]. eSpeak's behaviour is fully knowable, and it is *"S G D one hundred and twenty-three point four five"*.
-- `NVDA` [^1] and `TalkBack` [^17] are open source and likewise carry no currency table. Their output is whatever the selected engine produces.
+- `eSpeak NG` ships its number handling in source. `numbers.c` holds no currency logic [^12], and the English dictionary's only currency-code entries are `usd $abbrev $allcaps` and `eur jU@ $only` — `USD` is an abbreviation to spell and `EUR` a word to say; neither adds amount handling [^13]. eSpeak's behaviour is fully knowable, and it is *"S G D one hundred and twenty-three point four five"*.
+- `NVDA` [^1] and `TalkBack` [^17] are open source and likewise carry no currency-amount table, only symbol maps. Their output is whatever the selected engine produces.
 
 Open engines with small currency tables you can read:
 
@@ -235,13 +237,13 @@ For the open engines the logic is in the source:
 Flite gives the clearest example from a real synthesizer. Its tokenizer matches a dollar amount with one regex, named `usmoney`, and rewrites it:
 
 ```c
-/* lang/usenglish/us_text.c, abridged. usmoney = \$[0-9,]+(\.[0-9]+)? */
+        /* lang/usenglish/us_text.c, abridged. usmoney (from make_us_regexes): \$[0-9,]+(\.[0-9]+)? */
 else if (cst_regex_match(usmoney, name)) {
     /* US money */
     p = strchr(name, '.');
     ...
     else if (cst_strlen(p) == 1 || cst_strlen(p) > 3) {
-        /* just read as mumble point mumble */
+        /* simply read as mumble point mumble */
         r = val_append(en_exp_real(&name[1]), cons_val(string_val("dollars"), NULL));
     } else {
         ...
@@ -250,6 +252,8 @@ else if (cst_regex_match(usmoney, name)) {
     }
 }
 ```
+
+Source at flite commit [`6c9f20d`](https://github.com/festvox/flite/blob/6c9f20dc915b17f5619340069889db0aa007fcdc): the branch above is in [`lang/usenglish/us_text.c#L611-L665`](https://github.com/festvox/flite/blob/6c9f20dc915b17f5619340069889db0aa007fcdc/lang/usenglish/us_text.c#L611-L665), and the `usmoney` regex in [`lang/usenglish/make_us_regexes#L45`](https://github.com/festvox/flite/blob/6c9f20dc915b17f5619340069889db0aa007fcdc/lang/usenglish/make_us_regexes#L45). `mumble` is flite's placeholder for a number, so the comment means "say the digits literally": `$12.345` becomes *"twelve point three four five dollars"*, not a cent amount.
 
 The branch handles `$`-prefixed amounts, writes `dollar`/`dollars` and `cent`/`cents`, and reads the number as a plain decimal when there are no digits after the dot, or three or more. A code like `SGD` never reaches it.
 
@@ -323,7 +327,7 @@ NeMo's English model is the widest of the three open tables and still covers 7 o
 
 NeMo's entries are literal tokens (`cad`, `hk$`, `rs`), so an uppercase `CAD` amount is a different input. num2words only names a currency when the caller passes the code, since it has no detector. Neither caveat applies to a symbol an engine matches on its own.
 
-Closed engines offer no table to enumerate, only measurements. The five-reader comparison [^16] gives, for `$58.96`, *"fifty-eight dollars and ninety-six cents"* in NVDA, Narrator, TalkBack and VoiceOver, and *"dollar fifty-eight point nine six"* in JAWS. Add `US$` and the readings split: NVDA and Narrator keep the money reading, VoiceOver says "U S U S", JAWS stays symbol-first. `£58.96` is money to every reader tested. `THB58.96` comes out as letters and a decimal in all five. The source labels the Australian amount `AUD59.96` once and `AUD58.96` elsewhere; I use 58, which its own read-outs agree on.
+Closed engines offer no table to enumerate, only measurements. The five-reader comparison [^16] gives, for `$58.96`, *"fifty-eight dollars and ninety-six cents"* in NVDA, Narrator, TalkBack and VoiceOver, and *"dollar fifty-eight point nine six"* in JAWS. Add `US$` and the readings split: NVDA and Narrator keep the money reading, VoiceOver says "U S U S", JAWS stays symbol-first. `£58.96` is money in NVDA, Narrator, VoiceOver and JAWS; TalkBack names the pound but reads the amount as a plain decimal, *"fifty-eight pounds point nine six"* [^16]. `THB58.96` comes out as letters and a decimal in all five. The source labels the Australian amount `AUD59.96` once and `AUD58.96` elsewhere; I use 58, which its own read-outs agree on.
 
 ## How the same amount reads in other languages
 
@@ -348,7 +352,7 @@ Three languages produce a full major-plus-minor reading: English (dollars/cents,
 
 A table entry is not a working read-out. Vietnamese carries nineteen entries: fourteen name the symbol and read the amount digit by digit, and five raise `FstOpError` (`$`, `€`, `¥`, `£`, `₩`). Portuguese carries four, reads two as symbols, and fails on `€` and `£`. Italian and Hungarian leave `¥` untouched. An entry can exist and the grammar can still fail to render it.
 
-Chinese classifies bare ISO codes. NeMo's `zh` model keys on codes, not symbols, so it reads the concatenated form that the English engines spell out:
+Chinese classifies bare ISO codes. NeMo's `zh` model keys on ISO codes *and* currency symbols, so unlike English it reads the concatenated code form [^35]:
 
 | Input | NeMo `zh` | NeMo `en` |
 |---|---|---|
@@ -360,7 +364,7 @@ Chinese classifies bare ISO codes. NeMo's `zh` model keys on codes, not symbols,
 
 The English column shows the same fallback: `USD123.45` is not classified as money in English NeMo either, because the English tokens are `$` and `US$`. Whether an input counts as an amount depends on the language, and is settled before anything is spoken.
 
-Coverage is uneven, and the raw counts hide how uneven. The sweep runs over about 110 ISO codes [^35]. This counts every table entry that maps to one of those codes and what happened when that token was concatenated with an amount:
+Coverage is uneven, and the raw counts hide how uneven. The sweep runs over 105 ISO codes [^35]. This counts every table entry that maps to one of those codes and what happened when that token was concatenated with an amount:
 
 | Language | money | named the symbol, digits read | text only | error | unclassified |
 |---|---|---|---|---|---|
@@ -377,7 +381,7 @@ Coverage is uneven, and the raw counts hide how uneven. The sweep runs over abou
 | `pt` | 0 | 2 | 0 | 2 | 0 |
 | `es` | 1 | 0 | 104 | 0 | 0 |
 
-Chinese works for all 81 codes its table carries. English works for 7 of the 24 codes its table carries, 29% of its own entries. The same trap that catches English catches Spanish harder: 105 codes map to words and only one works when concatenated with an amount. Vietnamese lists 19: 14 merely name the symbol while 5 fail. Claiming that a language supports a currency needs the working count, not the table size.
+Chinese works for all 81 of the swept codes its table carries. English works for 7 of the 24 codes its table carries, 29% of its own entries. The same trap that catches English catches Spanish harder: 105 codes map to words and only one works when concatenated with an amount. Vietnamese lists 19: 14 merely name the symbol while 5 fail. Claiming that a language supports a currency needs the working count, not the table size.
 
 Two caveats. This measures NeMo's **text normalization**, the spoken string the engine would pass to a synthesizer, not audio or a screen reader. Every test also uses the prefix form (`USD123.45`); postfix forms such as `123,45 €` are untested here. Several outputs carry visible defects: Spanish and `zh` number grouping, the stray period in `es` and `sv`, and the `FstOpError`s. They are shown as the engines produced them; the post documents behaviour, not fixed output.
 
@@ -387,7 +391,7 @@ The engines most people hear (Google's on Android, Microsoft's and Apple's) publ
 
 Amounts use each locale's own decimal separator, verified against CLDR: a period for `en-US`, `en-GB`, `en-IN`, `zh-CN`, `zh-TW`, `yue-HK`, `th-TH`, `ja-JP`, `ta-IN`, and a comma for `id-ID`, `de-DE`, `fr-FR`, `es-ES`, `it-IT`, `nl-NL`. The Indonesian set is `IDR123,45`, `IDR123`, and `IDR123.45` as a wrong-separator control. Each locale runs `USD123<sep>45`, `SGD123<sep>45`, `$123<sep>45`, the cents-only `USD0<sep>10`, then its own currency.
 
-Android's API returns audio and never the normalized string, so the words have to come from listening. The gallery below carries a clip and a transcript for each amount. Entries marked **predicted** are drafts composed from documented engine behaviour and CLDR names, not from listening; without the marker, the line has been checked against its clip.
+Android's API returns audio and never the normalized string, so the words have to come from listening. The gallery below carries a clip and a transcript for each amount, checked against the audio. Currency, the number, the point word and the minor unit are each coloured, with a second, non-colour cue so the split survives without colour; non-Latin read-outs carry a romanization underneath.
 
 Google's pipeline does show up in the data it ships. The APK's bundled en-US voice carries `en_verbalize_spec.pb`, a spec that names a `money` class with `currency`, `amount.integer_part` and `amount.fractional_part` fields. That is the same classify-then-verbalize split the other engines use [^36].
 
@@ -401,12 +405,12 @@ The demo page behind this post is [currency-announcements.html](/blog/posts/scre
 
 For the browser side, inspect a page with a currency string in Chrome DevTools under **Elements → Accessibility**, or open the **Accessibility** pane and enable the full AX tree [^4]. The raw text node is there, for recognized and unrecognized currency alike.
 
-To find which layer is speaking on your machine, look at the synthesizer, not the screen reader. In NVDA, **Speech → Synthesizer** names it: `Microsoft OneCore` and `Microsoft Speech API version 5` carry the currency normalizer, and `eSpeak NG` does not [^2]. Narrator uses the same Microsoft voice family [^16]. That setting is the difference between *"US dollars and forty-five cents"* and *"point four five"*.
+To find which layer is speaking on your machine, look at the synthesizer, not the screen reader. In NVDA, **Speech → Synthesizer** names it — Windows OneCore by default on Windows 10 and 11 [^37]. `Microsoft OneCore` and `Microsoft Speech API version 5` carry the currency normalizer; `eSpeak NG` does not [^2]. Narrator uses the same Microsoft voice family [^16]. That setting is the difference between *"US dollars and forty-five cents"* and *"point four five"*.
 
 
 [^1]: [NVDA issue #953, “NVDA pronouncing currency symbol before amount”](https://github.com/nvaccess/nvda/issues/953), opened 2010-10-01; closed as synthesizer-specific. Source of the two maintainer quotes and of NVDA’s symbol-dictionary approach. (The reporter’s own wording for the `$10.00` case reads “100 dollars”; the intended spoken form is “ten dollars”.)
 
-[^2]: [NVDA PR #14266, “Fixed an issue where symbol repetition was not correctly reported by the synthesizer”](https://github.com/nvaccess/nvda/pull/14266), the OneCore/SAPI5/IBMTTS vs eSpeak distinction, the `USD 4` → “four dollars” example, and the fact that eSpeak NG ships with NVDA.
+[^2]: [NVDA PR #14266, “Fixed an issue where symbol repetition was not correctly reported by the synthesizer”](https://github.com/nvaccess/nvda/pull/14266), the OneCore/SAPI5/IBMTTS vs eSpeak distinction and the `USD 4` → “four dollars” example.
 
 [^3]: [Chromium accessibility source, `third_party/blink/renderer/modules/accessibility/ax_node_object.cc`](https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/modules/accessibility/ax_node_object.cc), the code that computes accessible names/text on the way into the tree; no currency handling. Platform exposure (UIA/AT-SPI) is described in [Chrome’s accessibility documentation](https://developer.chrome.com/docs/devtools/accessibility/reference).
 
@@ -428,7 +432,7 @@ To find which layer is speaking on your machine, look at the synthesizer, not th
 
 [^12]: [eSpeak NG, `src/libespeak-ng/numbers.c`](https://github.com/espeak-ng/espeak-ng/blob/master/src/libespeak-ng/numbers.c), number translation with no currency or money handling.
 
-[^13]: [eSpeak NG, `dictsource/en_list`](https://github.com/espeak-ng/espeak-ng/blob/master/dictsource/en_list), the entry `usd $abbrev $allcaps`; `USD` is an abbreviation to be spelled, and there is no `dollar`/`cent` amount handling.
+[^13]: [eSpeak NG, `dictsource/en_list`](https://github.com/espeak-ng/espeak-ng/blob/master/dictsource/en_list), the only two currency-code entries: `usd $abbrev $allcaps` (line 683) and `eur jU@ $only` (line 574). `USD` is an abbreviation to be spelled and `EUR` a word to say; there is no `dollar`/`cent` amount handling.
 
 [^14]: [Unicode CLDR, Currency Names](https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names), display names, symbols and plural forms for every ISO 4217 code; no subunit (“cent”/“pence”) data.
 
@@ -436,7 +440,7 @@ To find which layer is speaking on your machine, look at the synthesizer, not th
 
 [^16]: [Ricky Onsman, “Money Talks! Formatting Currency in Web Content”](https://onsman.com/money-talks-formatting-currency-in-web-content/) ([also at OZeWAI](https://ozewai.org/blog/technical-articles/money-talks-formatting-currency-in-web-content/)), the five-screen-reader comparison (`$`, `US$`, `A$`, `AU$`, `AUD`, `THB`, `VND`, `£`, `€`, `¥`) and its per-reader recognition summary. The article does not record the synthesizers used.
 
-[^17]: [Google TalkBack](https://github.com/google/talkback), the open-source Android screen reader; no currency or money handling in its source (speech compositor and `NumberAdjustor` only).
+[^17]: [Google TalkBack](https://github.com/google/talkback), the open-source Android screen reader; no currency-amount table in its source. The `TALKBACK_PUNCTUATION_AND_SYMBOL` map in [`SpeechCleanupUtils.java`](https://github.com/google/talkback/blob/master/utils/src/main/java/com/google/android/accessibility/utils/output/SpeechCleanupUtils.java) maps `$`, `€`, `£`, `¥` and more to spoken names — a symbol dictionary, not an amount normalizer.
 
 [^18]: [Android Accessibility Help, Text-to-speech output](https://support.google.com/accessibility/android/answer/6006983), TTS is a user-selectable engine; the default varies by device.
 
@@ -474,4 +478,6 @@ To find which layer is speaking on your machine, look at the synthesizer, not th
 
 [^35]: NeMo measurement: [`scripts/nemo-currency-dump.sh`](https://github.com/amoshydra/blog/blob/main/scripts/nemo-currency-dump.sh) builds a Podman image from [`scripts/nemo/Dockerfile`](https://github.com/amoshydra/blog/blob/main/scripts/nemo/Dockerfile) (Python + `pynini` + `nemo_text_processing`) and runs `scripts/nemo/langs.py`, `scripts/nemo/currency_tokens.py` and `scripts/nemo/coverage.py` inside it, nothing is installed on the host. Committed output: [`artifacts/RESULTS-nemo-langs.txt`](/blog/posts/screen-reader-currency-announcements/artifacts/RESULTS-nemo-langs.txt), [`artifacts/RESULTS-nemo-currencies.txt`](/blog/posts/screen-reader-currency-announcements/artifacts/RESULTS-nemo-currencies.txt) and [`artifacts/RESULTS-nemo-coverage.tsv`](/blog/posts/screen-reader-currency-announcements/artifacts/RESULTS-nemo-coverage.tsv), with the readable matrix in [`RESULTS-nemo-coverage.md`](/blog/posts/screen-reader-currency-announcements/artifacts/RESULTS-nemo-coverage.md). `ru` is unavailable through the `Normalizer` wrapper (it requires non-deterministic mode), and `fr` has a money verbalizer but no data directory in the released package.
 
-[^36]: Android measurement: [`scripts/android-tts-harness/`](https://github.com/amoshydra/blog/tree/main/scripts/android-tts-harness) (a `TtsActivity` for the `android-simple-webview` app) and [`scripts/gtts-locale-dump.sh`](https://github.com/amoshydra/blog/blob/main/scripts/gtts-locale-dump.sh); the manifest is [`artifacts/RESULTS-gtts-locales.tsv`](/blog/posts/screen-reader-currency-announcements/artifacts/RESULTS-gtts-locales.tsv), the clips are in [`artifacts/gtts/`](https://github.com/amoshydra/blog/tree/main/public/posts/screen-reader-currency-announcements/artifacts/gtts), and the hand-filled transcripts are [`content/posts/screen-reader-currency-announcements/transcripts.json`](https://github.com/amoshydra/blog/blob/main/content/posts/screen-reader-currency-announcements/transcripts.json). Engine: Google Speech Recognition & Synthesis, re-signed with a v2 signature to install on Android 15; device OnePlus 6T. The `money` schema is read from `assets/voices/en-us-x-sfg/hmm/en_verbalize_spec.pb` inside that APK.
+[^36]: Android measurement: [`scripts/android-tts-harness/`](https://github.com/amoshydra/blog/tree/main/scripts/android-tts-harness) (a `TtsActivity` for the `android-simple-webview` app) and [`scripts/gtts-locale-dump.sh`](https://github.com/amoshydra/blog/blob/main/scripts/gtts-locale-dump.sh); the manifest is [`artifacts/RESULTS-gtts-locales.tsv`](/blog/posts/screen-reader-currency-announcements/artifacts/RESULTS-gtts-locales.tsv), the clips are in [`artifacts/gtts/`](https://github.com/amoshydra/blog/tree/main/public/posts/screen-reader-currency-announcements/artifacts/gtts), and the hand-filled transcripts are [`content/posts/screen-reader-currency-announcements/transcripts.json`](https://github.com/amoshydra/blog/blob/main/content/posts/screen-reader-currency-announcements/transcripts.json). Engine: Google Speech Recognition & Synthesis (`com.google.android.tts`) 103.12.8, re-signed with a v2 signature to install on Android 15; device OnePlus 6T. The `money` schema is read from `assets/voices/en-us-x-sfg/hmm/en_verbalize_spec.pb` inside that APK.
+
+[^37]: [NV Access, “Synthesizer options”](https://www.nvaccess.org/csun) (“NVDA uses Windows OneCore by default”), and NVDA’s [`source/synthDriverHandler.py`](https://github.com/nvaccess/nvda/blob/master/source/synthDriverHandler.py) (`defaultSynthPriorityList = ["oneCore", "espeak", "silence"]`) with [`source/config/configSpec.py`](https://github.com/nvaccess/nvda/blob/master/source/config/configSpec.py) (the synthesizer defaults to `auto`); eSpeak NG is the bundled fallback.

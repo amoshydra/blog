@@ -21,6 +21,18 @@ reader. That claim is load-bearing and rests on a few kinds of evidence.
   eSpeak and Flite columns are measured, not inferred.
 - `scripts/nemo/` + `scripts/nemo-currency-dump.sh` — the NeMo text-processing
   sweep (Podman; Python + pynini, nothing installed on the host).
+- `content/posts/screen-reader-currency-announcements/transcripts.json` — the
+  read-outs for the committed clips, keyed by filename. All 90 are verified
+  against their clip; a leading `~` would mark an unverified prediction.
+- `content/posts/screen-reader-currency-announcements/transcripts.romanized.json`
+  — romanization for the non-Latin clips, shown under the script in the gallery.
+- `content/posts/screen-reader-currency-announcements/transcripts.notes.json` —
+  English glosses for the Thai clips, whose read-out is not self-evident.
+- `src/lib/transcript-render.mjs` — classifies a read-out into
+  currency / number / point / minor-unit and emits the coloured spans.
+- `tools/transcript-verifier/` — a standalone Node service (`pnpm
+  verify:transcripts`) to listen to each clip, pick or edit its transcript, and
+  write `transcripts.json`.
 
 ## Regenerating the engine dumps
 
@@ -65,16 +77,25 @@ the source. Do not add a claim without adding its source.
   `Currency`); NVDA issue #953 was closed as synthesizer-specific; NVDA PR
   #14266 names OneCore, SAPI5 and IBMTTS as the synthesizers that rewrite
   `USD 4` into "four US dollars", and eSpeak NG as the one that does not.
+- **NVDA's default voice on Windows 10/11 is Windows OneCore, not eSpeak NG.**
+  NVDA source `source/synthDriverHandler.py`: `defaultSynthPriorityList =
+  ["oneCore", "espeak", "silence"]`, with the synthesizer defaulting to `auto`
+  (`source/config/configSpec.py`); NV Access, "Synthesizer options": "NVDA uses
+  Windows OneCore by default". eSpeak NG is bundled but is the fallback, and it
+  does not expand currency. The opening observation is therefore NVDA's
+  out-of-the-box reading, not a manually selected voice. (footnote [^37])
 - The currency set is a short per-locale table. `$`/`USD` for `en-US`;
   `$`/`AUD` for `en-AU`; `¥`/`JPY` for `ja-JP` (Genesys docs).
-- **TalkBack** is open source and has no currency code; it hands text to the
-  Android TTS engine, whose default (Google's Speech Recognition & Synthesis) is
-  closed. **VoiceOver** and Apple's synthesizers are closed; the mechanism is
-  visible through `AVSpeechSynthesizer` and Apple's ICU4X #495 write-up.
+- **TalkBack** is open source and has no currency-amount table (it does carry a
+  currency symbol dictionary, `TALKBACK_PUNCTUATION_AND_SYMBOL` in
+  `SpeechCleanupUtils.java`); it hands text to the Android TTS engine, whose
+  default (Google's Speech Recognition & Synthesis) is closed. **VoiceOver** and
+  Apple's synthesizers are closed; the mechanism is visible through
+  `AVSpeechSynthesizer` and Apple's ICU4X #495 write-up.
 - **Open-source tables exist but are incomplete:** Google Sparrowhawk's money
   grammar is `$`/`£`/`€`; NVIDIA NeMo's English table is ~40 entries and has no
-  `sgd`; eSpeak NG has none (its only currency-adjacent entry is
-  `usd $abbrev $allcaps`). CLDR has display names for every ISO 4217 code but no
+  `sgd`; eSpeak NG has no amount table (its only currency-code entries are
+  `usd $abbrev $allcaps` and `eur jU@ $only`). CLDR has display names for every ISO 4217 code but no
   subunit names and no spoken-form grammar.
 - **Where the expansion lives (open source):** Flite
   `lang/usenglish/us_text.c` (`us_tokentowords_one()`, "US money"); eSpeak NG
@@ -111,6 +132,10 @@ the Pango overlay and re-composite; do not try to edit the text pixels.
 
 ## Android / Google TTS audio (closed engine)
 
+- Engine at capture time: **Google Speech Recognition & Synthesis**
+  (`com.google.android.tts`) **103.12.8** (versionCode 1210312581), device
+  OnePlus 6T (A6013), Android 15. A different engine build can change a
+  read-out, so record the version whenever the clips are regenerated.
 - `scripts/android-tts-harness/` — a headless `TtsActivity` added to the
   `android-simple-webview` app; build with `./podman-build.sh build-apk` in a
   copy of that repo, then `adb install -r`.
@@ -120,16 +145,17 @@ the Pango overlay and re-composite; do not try to edit the text pixels.
 - `src/components/mdx/CurrencyAudioGallery.astro` — the in-post player. It
   reads the manifest `artifacts/RESULTS-gtts-locales.tsv` at build time (and
   checks each file exists), so the table cannot drift from the clips and the
-  form column can show locale currencies without parsing filenames. Requires an
-  explicit MDX import (auto-import from `src/components` did not pick it up
-  here).
-- `content/posts/screen-reader-currency-announcements/transcripts.json` — the
-  transcripts, keyed by clip filename. A value starting with `~` is a **draft**:
-  a prediction composed from documented engine behaviour plus CLDR currency
-  names (`Intl.DisplayNames`), never from listening. The gallery labels those
-  `predicted` and dims them. Delete the leading `~` once a line is verified
-  against its clip, and the label disappears. Values with no `~` are treated as
-  verified readings.
+  form column can show locale currencies without parsing filenames. Each
+  transcript is rendered through `src/lib/transcript-render.mjs` with a colour
+  and a non-colour cue per category (currency bold, point italic, minor a faint
+  fill; number is plain, so nothing crosses CJK glyphs — no underlines; the
+  colours are `--tx-*` in `src/styles/global.css`, defined for both themes), and
+  the romanization is shown for non-Latin clips. Requires an explicit MDX import
+  (auto-import from `src/components` did not pick it up here).
+- To (re)verify a read-out: `pnpm verify:transcripts`, listen, pick a candidate
+  (or type it under **other**), and Save. The service writes `transcripts.json`
+  and strips the leading `~`; a value with no `~` is treated as verified. All 90
+  are currently verified.
 
 **Amounts use the locale's own decimal separator** (verified against CLDR via
 `Intl.NumberFormat`): comma for `id-ID`, `de-DE`, `fr-FR`, `es-ES`, `it-IT`,
