@@ -55,6 +55,14 @@ img {
   --shimmer-bg: rgba(255, 255, 255, 0.8);
   --shimmer-band: rgba(255, 255, 255, 0.8);
 
+  /* transcript category colours (>=5:1 on the page background) */
+  --tx-currency: #067647;
+  --tx-number: #1e40af;
+  --tx-point: #92400e;
+  --tx-minor: #7e22ce;
+  /* faint fill: the non-colour cue for the minor unit */
+  --tx-minor-bg: rgba(126, 34, 206, 0.09);
+
   --font-family-mono: 'IBM Plex Mono', Menlo, Consolas, Monaco, Adwaita Mono, Liberation Mono, Lucida Console, monospace;
 }
 
@@ -78,6 +86,11 @@ img {
   --border-subtle: rgba(255, 255, 255, 0.12);
   --shimmer-bg: rgba(15, 18, 25, 0.6);
   --shimmer-band: rgba(229, 233, 240, 0.22);
+  --tx-currency: #4ade80;
+  --tx-number: #93c5fd;
+  --tx-point: #fbbf24;
+  --tx-minor: #d8b4fe;
+  --tx-minor-bg: rgba(216, 180, 254, 0.16);
   --box-shadow:
     0 2px 6px rgba(0, 0, 0, 40%), 0 8px 24px rgba(0, 0, 0, 50%),
     0 16px 32px rgba(0, 0, 0, 50%);

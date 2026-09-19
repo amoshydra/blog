@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="data:," />
+<title>Currency transcript verifier</title>
+<style>
+  :root { color-scheme: light dark; --line: #d0d0d5; --muted: #6b7280; --ok: #15803d; --warn: #b45309; --bg: #fff; --fg: #111; --panel: #f6f6f7; }
+  @media (prefers-color-scheme: dark) {
+    :root { --line: #3a3a40; --muted: #9ca3af; --ok: #4ade80; --warn: #fbbf24; --bg: #16161a; --fg: #e7e7ea; --panel: #1f1f24; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--fg); }
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding: .6rem 1rem; display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+  header h1 { font-size: 1rem; margin: 0 1rem 0 0; }
+  header .spacer { flex: 1; }
+  .progress { font-variant-numeric: tabular-nums; color: var(--muted); }
+  .progress b { color: var(--fg); }
+  button { font: inherit; padding: .3rem .7rem; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: inherit; cursor: pointer; }
+  button:hover { background: var(--panel); }
+  button.primary { border-color: var(--ok); color: var(--ok); font-weight: 600; }
+  button:disabled { opacity: .5; cursor: default; }
+  select, input[type=text] { font: inherit; padding: .25rem .4rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: inherit; }
+  label.inline { display: flex; align-items: center; gap: .35rem; font-size: .85rem; color: var(--muted); }
+  main { padding: 1rem; max-width: 60rem; margin: 0 auto; }
+  .note { color: var(--muted); font-size: .85rem; margin: 0 0 .5rem; }
+  .locale-head { margin: 1.4rem 0 .4rem; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: .25rem; }
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: .7rem .8rem; margin: .5rem 0; }
+  .card.focused { outline: 2px solid var(--warn); outline-offset: 1px; }
+  .card.saved { border-color: var(--ok); }
+  .card .top { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+  .form { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .95rem; }
+  .chip { font-size: .7rem; padding: .05rem .45rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .chip.predicted { color: var(--warn); border-color: var(--warn); }
+  .chip.verified { color: var(--ok); border-color: var(--ok); }
+  .audio { flex: 1 1 18rem; min-width: 14rem; }
+  .options { display: flex; flex-direction: column; gap: .15rem; margin: .55rem 0 .4rem; }
+  .opt { display: flex; gap: .5rem; align-items: baseline; padding: .2rem .3rem; border-radius: 6px; cursor: pointer; }
+  .opt:hover { background: var(--panel); }
+  .opt input { margin-top: .25rem; }
+  .opt .val { flex: 1; }
+  .opt .src { color: var(--muted); font-size: .72rem; white-space: nowrap; }
+  .other { display: flex; gap: .5rem; align-items: center; margin: .3rem 0 0; }
+  .other label { display: flex; align-items: baseline; gap: .5rem; flex: 1; }
+  textarea { width: 100%; font: inherit; padding: .4rem .5rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: inherit; resize: vertical; min-height: 2.4rem; }
+  .actions { display: flex; align-items: center; gap: .5rem; margin-top: .45rem; }
+  .status { font-size: .8rem; color: var(--muted); }
+  .status.ok { color: var(--ok); }
+  .status.dirty { color: var(--warn); }
+  .hint { color: var(--muted); font-size: .8rem; margin-top: 2rem; }
+  kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 .3rem; font-size: .75rem; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Currency transcript verifier</h1>
+  <label class="inline">locale <select id="filter"><option value="">all</option></select></label>
+  <label class="inline"><input type="checkbox" id="unverified" /> only unverified</label>
+  <span class="spacer"></span>
+  <span class="progress" id="progress"></span>
+  <button id="saveAll" class="primary" disabled>Save all changed</button>
+</header>
+
+<main>
+  <p class="note">
+    Listen, pick the read-out you hear (or type it under <b>other</b>), then Save.
+    The candidates are guesses; the draft is the machine prediction. Saving removes
+    the <code>~</code> predicted marker.
+  </p>
+  <div id="list"></div>
+  <p class="hint">
+    Shortcuts: <kbd>space</kbd> play/pause &middot; <kbd>j</kbd>/<kbd>k</kbd> next/prev card &middot;
+    <kbd>1</kbd>–<kbd>9</kbd> pick option &middot; <kbd>ctrl</kbd>+<kbd>enter</kbd> save &middot;
+    <kbd>ctrl</kbd>+<kbd>enter</kbd> on the last card saves all changed.
+  </p>
+</main>
+
+<script>
+const list = document.getElementById("list");
+const filter = document.getElementById("filter");
+const unverifiedBox = document.getElementById("unverified");
+const progressEl = document.getElementById("progress");
+const saveAllBtn = document.getElementById("saveAll");
+
+let data = { clips: [], total: 0, verified: 0 };
+const state = new Map(); // file -> { text, savedText, verified, predicted }
+let focusedFile = null;
+
+function esc(s) { return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+async function load() {
+  data = await (await fetch("api/data")).json();
+  const locales = [...new Set(data.clips.map((c) => c.locale))];
+  for (const loc of locales) {
+    const opt = document.createElement("option");
+    opt.value = loc; opt.textContent = loc;
+    filter.append(opt);
+  }
+  for (const clip of data.clips) {
+    state.set(clip.file, { text: clip.draft, savedText: clip.draft, verified: clip.verified, predicted: clip.predicted });
+  }
+  render();
+}
+
+function render() {
+  list.innerHTML = "";
+  const groups = new Map();
+  for (const clip of data.clips) {
+    (groups.get(clip.locale) ?? groups.set(clip.locale, []).get(clip.locale)).push(clip);
+  }
+  for (const [locale, clips] of groups) {
+    const head = document.createElement("div");
+    head.className = "locale-head";
+    head.textContent = locale;
+    list.append(head);
+    for (const clip of clips) list.append(card(clip));
+  }
+  applyFilters();
+  updateProgress();
+}
+
+function card(clip) {
+  const st = state.get(clip.file);
+  const el = document.createElement("div");
+  el.className = "card";
+  el.dataset.file = clip.file;
+  el.dataset.locale = clip.locale;
+  el.tabIndex = 0;
+
+  const top = document.createElement("div");
+  top.className = "top";
+  top.innerHTML = `<span class="form">${esc(clip.form)}</span>`;
+  const chip = document.createElement("span");
+  chip.className = "chip " + (st.verified ? "verified" : st.predicted ? "predicted" : "");
+  chip.textContent = st.verified ? "verified" : st.predicted ? "predicted" : "unsaved";
+  top.append(chip);
+  const audio = document.createElement("audio");
+  audio.className = "audio";
+  audio.controls = true;
+  audio.preload = "none";
+  audio.src = clip.url;
+  audio.dataset.file = clip.file;
+  top.append(audio);
+  const loop = document.createElement("button");
+  loop.textContent = "loop";
+  loop.title = "toggle looping for this clip";
+  loop.addEventListener("click", () => { audio.loop = !audio.loop; loop.style.borderColor = audio.loop ? "var(--ok)" : ""; });
+  top.append(loop);
+  el.append(top);
+
+  const options = document.createElement("div");
+  options.className = "options";
+  clip.options.forEach((opt, i) => {
+    const label = document.createElement("label");
+    label.className = "opt";
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "opt-" + clip.file;
+    input.value = opt.value;
+    input.dataset.index = String(i + 1);
+    input.addEventListener("change", () => { setText(clip.file, opt.value, false); });
+    const val = document.createElement("span");
+    val.className = "val";
+    val.dir = "auto";
+    val.textContent = opt.value;
+    const src = document.createElement("span");
+    src.className = "src";
+    src.textContent = (i + 1) + " · " + (opt.note || opt.origin);
+    label.append(input, val, src);
+    options.append(label);
+  });
+  el.append(options);
+
+  const other = document.createElement("div");
+  other.className = "other";
+  const otherLabel = document.createElement("label");
+  const otherRadio = document.createElement("input");
+  otherRadio.type = "radio";
+  otherRadio.name = "opt-" + clip.file;
+  otherRadio.value = "__other__";
+  otherRadio.addEventListener("change", () => ta.focus());
+  const ta = document.createElement("textarea");
+  ta.rows = 1;
+  ta.dir = "auto";
+  ta.id = "other-" + clip.file;
+  ta.name = "other-" + clip.file;
+  ta.setAttribute("aria-label", "corrected transcript for " + clip.form + " (" + clip.locale + ")");
+  ta.value = st.text;
+  ta.placeholder = "other / edit the transcript here";
+  ta.addEventListener("input", () => {
+    st.text = ta.value;
+    syncSelection(clip, ta.value, otherRadio);
+    markDirty(clip, ta.value);
+    autosize(ta);
+  });
+  otherLabel.append(otherRadio, document.createElement("span"));
+  otherLabel.lastChild.textContent = "other";
+  other.append(otherLabel, ta);
+  el.append(other);
+
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  const save = document.createElement("button");
+  save.textContent = "Save";
+  save.className = "primary";
+  save.addEventListener("click", () => saveOne(clip.file));
+  const reset = document.createElement("button");
+  reset.textContent = "Reset";
+  reset.title = "restore the predicted draft, discarding edits";
+  reset.addEventListener("click", () => { setText(clip.file, clip.draft, true); });
+  const status = document.createElement("span");
+  status.className = "status";
+  status.dataset.role = "status";
+  actions.append(save, reset, status);
+  el.append(actions);
+
+  el.addEventListener("focusin", () => setFocus(clip.file));
+  el.addEventListener("click", () => setFocus(clip.file));
+  syncSelection(clip, st.text, otherRadio);
+  autosize(ta);
+  return el;
+}
+
+function autosize(ta) { ta.style.height = "auto"; ta.style.height = Math.max(ta.scrollHeight, 40) + "px"; }
+
+function syncSelection(clip, text, otherRadio) {
+  const cardEl = list.querySelector(`.card[data-file="${CSS.escape(clip.file)}"]`);
+  if (!cardEl) return;
+  const radios = [...cardEl.querySelectorAll('input[type=radio]')];
+  let matched = false;
+  for (const r of radios) {
+    if (r.value === "__other__") continue;
+    const on = r.value === text;
+    r.checked = on;
+    if (on) matched = true;
+  }
+  otherRadio.checked = !matched;
+}
+
+function setText(file, text, isReset) {
+  const st = state.get(file);
+  st.text = text;
+  const clip = data.clips.find((c) => c.file === file);
+  const cardEl = list.querySelector(`.card[data-file="${CSS.escape(file)}"]`);
+  const ta = cardEl.querySelector("textarea");
+  ta.value = text;
+  autosize(ta);
+  syncSelection(clip, text, cardEl.querySelector('input[value="__other__"]'));
+  if (isReset) { st.verified = false; }
+  markDirty(clip, text);
+}
+
+function markDirty(clip, text) {
+  const st = state.get(clip.file);
+  const dirty = text !== st.savedText;
+  const cardEl = list.querySelector(`.card[data-file="${CSS.escape(clip.file)}"]`);
+  cardEl.classList.toggle("saved", st.verified && !dirty);
+  const status = cardEl.querySelector('[data-role="status"]');
+  status.className = "status " + (dirty ? "dirty" : st.verified ? "ok" : "");
+  status.textContent = dirty ? "unsaved change" : st.verified ? "saved" : "not verified";
+  saveAllBtn.disabled = !anyDirty();
+  updateProgress();
+}
+
+function anyDirty() { return [...state.values()].some((s) => s.text !== s.savedText); }
+function changedCount() { return [...state.values()].filter((s) => s.text !== s.savedText).length; }
+
+function updateProgress() {
+  const verified = [...state.values()].filter((s) => s.verified).length;
+  const dirty = changedCount();
+  progressEl.innerHTML = `<b>${verified}</b>/${data.clips.length} verified` + (dirty ? ` · <b>${dirty}</b> unsaved` : "");
+}
+
+function setFocus(file) {
+  focusedFile = file;
+  list.querySelectorAll(".card.focused").forEach((c) => c.classList.remove("focused"));
+  const cardEl = list.querySelector(`.card[data-file="${CSS.escape(file)}"]`);
+  cardEl?.classList.add("focused");
+}
+
+async function saveOne(file) {
+  const st = state.get(file);
+  if (st.text === st.savedText) return;
+  await saveUpdates([{ file, text: st.text }]);
+}
+
+async function saveUpdates(updates) {
+  const res = await fetch("api/save", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ updates }),
+  });
+  const json = await res.json();
+  if (!json.ok) { alert("save failed: " + json.error); return; }
+  for (const { file, text } of updates) {
+    const st = state.get(file);
+    st.savedText = text.replace(/^~\s*/, "").trim();
+    st.text = st.savedText;
+    st.verified = true;
+    st.predicted = false;
+    const cardEl = list.querySelector(`.card[data-file="${CSS.escape(file)}"]`);
+    const chip = cardEl.querySelector(".chip");
+    chip.className = "chip verified";
+    chip.textContent = "verified";
+  }
+  data.verified = json.verified;
+  // re-run state sync for the saved rows
+  for (const { file } of updates) {
+    const clip = data.clips.find((c) => c.file === file);
+    const st = state.get(file);
+    const cardEl = list.querySelector(`.card[data-file="${CSS.escape(file)}"]`);
+    if (cardEl) syncSelection(clip, st.text, cardEl.querySelector('input[value="__other__"]'));
+    markDirty(clip, st.text);
+  }
+  saveAllBtn.disabled = !anyDirty();
+  updateProgress();
+}
+
+saveAllBtn.addEventListener("click", () => {
+  const updates = [...state.entries()]
+    .filter(([, s]) => s.text !== s.savedText)
+    .map(([file, s]) => ({ file, text: s.text }));
+  if (updates.length) saveUpdates(updates);
+});
+
+function applyFilters() {
+  const loc = filter.value;
+  const onlyUn = unverifiedBox.checked;
+  for (const cardEl of list.querySelectorAll(".card")) {
+    const st = state.get(cardEl.dataset.file);
+    const hide = (loc && cardEl.dataset.locale !== loc) || (onlyUn && st.verified);
+    cardEl.classList.toggle("hidden", Boolean(hide));
+  }
+  for (const head of list.querySelectorAll(".locale-head")) {
+    let any = false;
+    let n = head.nextElementSibling;
+    while (n && !n.classList.contains("locale-head")) {
+      if (n.classList.contains("card") && !n.classList.contains("hidden")) any = true;
+      n = n.nextElementSibling;
+    }
+    head.classList.toggle("hidden", !any);
+  }
+}
+filter.addEventListener("change", applyFilters);
+unverifiedBox.addEventListener("change", applyFilters);
+
+function visibleCards() {
+  return [...list.querySelectorAll(".card:not(.hidden)")];
+}
+
+document.addEventListener("keydown", (e) => {
+  const tag = document.activeElement?.tagName;
+
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    const cards = visibleCards();
+    if (!cards.length) return;
+    const idx = cards.findIndex((c) => c.dataset.file === focusedFile);
+    const isLast = idx === cards.length - 1;
+    if (isLast) {
+      const updates = [...state.entries()].filter(([, s]) => s.text !== s.savedText).map(([file, s]) => ({ file, text: s.text }));
+      if (updates.length) saveUpdates(updates);
+    } else if (focusedFile && state.get(focusedFile).text !== state.get(focusedFile).savedText) {
+      saveOne(focusedFile);
+    }
+    return;
+  }
+
+  // don't hijack typing, and let radios/buttons keep their native keys
+  if (tag === "TEXTAREA") return;
+
+  if (e.key === " " && tag !== "INPUT" && tag !== "BUTTON" && tag !== "SELECT") {
+    const cardEl = list.querySelector(`.card[data-file="${CSS.escape(focusedFile ?? "")}"]`);
+    const audio = cardEl?.querySelector("audio");
+    if (audio) { e.preventDefault(); audio.paused ? audio.play() : audio.pause(); }
+    return;
+  }
+  if (e.key === "j") { e.preventDefault(); moveFocus(1); return; }
+  if (e.key === "k") { e.preventDefault(); moveFocus(-1); return; }
+  if (/^[1-9]$/.test(e.key)) {
+    const cardEl = list.querySelector(`.card[data-file="${CSS.escape(focusedFile ?? "")}"]`);
+    const r = cardEl?.querySelector(`input[data-index="${e.key}"]`);
+    if (r) { e.preventDefault(); r.checked = true; r.dispatchEvent(new Event("change")); }
+  }
+});
+
+function moveFocus(delta) {
+  const cards = visibleCards();
+  if (!cards.length) return;
+  let idx = cards.findIndex((c) => c.dataset.file === focusedFile);
+  idx = idx === -1 ? 0 : Math.min(cards.length - 1, Math.max(0, idx + delta));
+  const cardEl = cards[idx];
+  setFocus(cardEl.dataset.file);
+  cardEl.scrollIntoView({ block: "center", behavior: "smooth" });
+  cardEl.focus({ preventScroll: true });
+}
+
+load();
+</script>
+</body>
+</html>

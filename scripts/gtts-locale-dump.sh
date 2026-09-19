@@ -6,8 +6,9 @@
 # Amounts use each locale's own decimal separator (CLDR: comma for id-ID, de-DE,
 # fr-FR, es-ES, it-IT, nl-NL; period elsewhere). Per locale the set is:
 #   USD123<dec>45  SGD123<dec>45  $123<dec>45  USD0<dec>10  <local>123<dec>45
-#   ... plus <local>123 for id-ID, and a wrong-separator <local> control for the
-#   comma locales.
+#   ... plus a whole-unit <local>123 for currencies whose engine reads the
+#   decimal oddly (ja-JP, en-IN, id-ID), and a wrong-separator <local> control
+#   for the comma locales.
 #
 # Usage: scripts/gtts-locale-dump.sh [output-dir]
 # Prints a TSV manifest (locale, form, file, bytes).
@@ -55,7 +56,10 @@ for loc in "${locales[@]}"; do
 
   forms=("USD123${dec}45" "SGD123${dec}45" "\$123${dec}45" "USD0${dec}10")
   local_forms=("${cur}123${dec}45")
-  [ "$loc" = "id-ID" ] && local_forms+=("IDR123")
+  # Currencies whose engine reads the decimal form oddly: add the whole-unit form.
+  case "$loc" in
+    ja-JP | en-IN | ta-IN | id-ID) local_forms+=("${cur}123") ;;
+  esac
   wrong=$(wrong_for "$loc")
   [ -n "$wrong" ] && local_forms+=("${cur}123${wrong}45")
 

@@ -1,6 +1,7 @@
 ---
 import fs from "node:fs";
 import path from "node:path";
+import { renderTranscriptHtml } from "../../lib/transcript-render.mjs";
 
 // The clips live under public/ (served as-is) and are listed in a manifest so
 // the table can never drift from the files on disk. The manifest also carries
@@ -33,6 +34,12 @@ const transcripts: Record<string, string> = fs.existsSync(transcriptFile)
   ? JSON.parse(fs.readFileSync(transcriptFile, "utf8"))
   : {};
 
+// Optional romanization for the non-Latin read-outs; keyed by filename.
+const romanFile = path.join(process.cwd(), "content/posts", slug, "transcripts.romanized.json");
+const romanized: Record<string, string> = fs.existsSync(romanFile)
+  ? JSON.parse(fs.readFileSync(romanFile, "utf8"))
+  : {};
+
 const base = import.meta.env.BASE_URL.endsWith("/")
   ? import.meta.env.BASE_URL
   : `${import.meta.env.BASE_URL}/`;
@@ -49,19 +56,14 @@ const locales = [...groups.keys()];
 ---
 
 <div class="ag">
-  <div class="ag__bar">
-    <button type="button" data-act="all">▶ play everything</button>
-    <button type="button" data-act="stop">■ stop</button>
-    <label class="ag__filter">
-      <span>locale</span>
-      <select data-act="filter">
-        <option value="">all</option>
-        {locales.map((locale) => <option value={locale}>{locale}</option>)}
-      </select>
-    </label>
-  </div>
-
   <p class="ag__meta">{rows.length} clips</p>
+
+  <p class="ag__legend">
+    <span class="tx-currency">currency</span>
+    <span class="tx-number">number</span>
+    <span class="tx-point">point</span>
+    <span class="tx-minor">minor unit</span>
+  </p>
 
   <table>
     <thead>
@@ -71,27 +73,25 @@ const locales = [...groups.keys()];
       {
         locales.map((locale) => (
           <>
-            <tr class="ag__locale" data-locale={locale}>
-              <th colspan="3">
-                {locale}
-                <button type="button" class="ag__play-locale" data-act="locale" data-locale={locale}>
-                  ▶ play all {locale}
-                </button>
-              </th>
+            <tr class="ag__locale">
+              <th colspan="3">{locale}</th>
             </tr>
             {groups.get(locale)!.map(({ form, file }) => {
               const raw = (transcripts[file] ?? "").trim();
               const predicted = raw.startsWith("~");
               const text = predicted ? raw.replace(/^~\s*/, "") : raw;
+              const html = renderTranscriptHtml(text, locale);
+              const roman = (romanized[file] ?? "").trim();
               return (
-                <tr data-locale={locale}>
+                <tr>
                   <td class="ag__form">{form}</td>
                   <td>
                     <audio controls preload="none" src={srcFor(file)} data-file={file} />
                   </td>
                   <td class="ag__transcript">
                     {predicted && <span class="ag__tag">predicted</span>}
-                    <span class={predicted ? "ag__guess" : ""}>{text}</span>
+                    <span class={predicted ? "ag__guess" : ""} set:html={html} />
+                    {roman && <span class="ag__roman">{roman}</span>}
                   </td>
                 </tr>
               );
@@ -101,96 +101,11 @@ const locales = [...groups.keys()];
       }
     </tbody>
   </table>
-
-  <p class="ag__hint">
-    Transcripts are in <code>content/posts/screen-reader-currency-announcements/transcripts.json</code>,
-    keyed by clip filename.
-  </p>
 </div>
-
-<script>
-  const root = document.currentScript?.previousElementSibling as HTMLElement | null;
-  if (root) {
-    const audios = () => Array.from(root.querySelectorAll<HTMLAudioElement>("audio"));
-    let queue: HTMLAudioElement[] = [];
-    let current: HTMLAudioElement | null = null;
-
-    const clear = () => root.querySelectorAll("tr.is-playing").forEach((r) => r.classList.remove("is-playing"));
-    const next = () => {
-      clear();
-      if (!queue.length) return;
-      current = queue.shift()!;
-      current.closest("tr")?.classList.add("is-playing");
-      current.scrollIntoView({ block: "center", behavior: "smooth" });
-      void current.play();
-    };
-    const stop = () => {
-      queue = [];
-      current?.pause();
-      current = null;
-      clear();
-    };
-    audios().forEach((a) => a.addEventListener("ended", next));
-
-    root.querySelector('[data-act="all"]')?.addEventListener("click", () => {
-      stop();
-      queue = audios().filter((a) => a.offsetParent !== null);
-      next();
-    });
-    root.querySelector('[data-act="stop"]')?.addEventListener("click", stop);
-    root.querySelectorAll<HTMLButtonElement>('[data-act="locale"]').forEach((b) =>
-      b.addEventListener("click", () => {
-        const locale = b.dataset.locale;
-        stop();
-        queue = audios().filter((a) => a.closest("tr")?.dataset.locale === locale);
-        next();
-      })
-    );
-    root.querySelector<HTMLSelectElement>('[data-act="filter"]')?.addEventListener("change", (e) => {
-      stop();
-      const value = (e.target as HTMLSelectElement).value;
-      root.querySelectorAll<HTMLTableRowElement>("tr[data-locale]").forEach((row) => {
-        row.hidden = Boolean(value) && row.dataset.locale !== value;
-      });
-    });
-  }
-</script>
 
 <style>
   .ag {
     margin: 1.5rem auto 2.5rem;
-  }
-  .ag__bar {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 0;
-    background-color: rgb(var(--white));
-    border-bottom: 1px solid var(--border-subtle);
-  }
-  .ag button {
-    font: inherit;
-    font-size: 0.85rem;
-    padding: 0.25rem 0.7rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 999px;
-    background-color: transparent;
-    color: rgb(var(--black));
-    cursor: pointer;
-  }
-  .ag button:hover {
-    background-color: rgb(var(--gray-light));
-  }
-  .ag__filter {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
-    color: rgb(var(--gray));
   }
   .ag__meta {
     margin: 0.6rem 0 0.4rem;
@@ -220,10 +135,6 @@ const locales = [...groups.keys()];
     text-transform: none;
     letter-spacing: 0;
   }
-  .ag__play-locale {
-    float: right;
-    font-size: 0.78rem !important;
-  }
   .ag__form {
     font-family: var(--font-mono, ui-monospace, monospace);
     white-space: nowrap;
@@ -232,15 +143,48 @@ const locales = [...groups.keys()];
     height: 2rem;
     vertical-align: middle;
   }
-  .ag tr.is-playing {
-    background-color: rgb(var(--gray-light));
-  }
   .ag__transcript {
     font-size: 0.9rem;
   }
-  .ag__hint {
-    margin-top: 0.8rem;
-    font-size: 0.85rem;
+  .ag__roman {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.8rem;
+    font-style: italic;
     color: rgb(var(--gray));
+  }
+  .ag__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin: 0 0 0.6rem;
+    font-size: 0.78rem;
+  }
+  .ag__legend span::before {
+    content: "●";
+    margin-right: 0.3rem;
+  }
+  /* Rendered via set:html, so these spans carry no Astro scope attribute;
+     the colour rules must be global to reach them. Colours come from the
+     theme variables so both light and dark (data-color-scheme) work. Extra
+     cues are font weight (currency), italic (point) and a faint fill (minor);
+     number stays plain so nothing crosses CJK glyphs (no underlines). */
+  :global(.tx-currency) {
+    color: var(--tx-currency);
+    font-weight: 600;
+  }
+  :global(.tx-number) {
+    color: var(--tx-number);
+  }
+  :global(.tx-point) {
+    color: var(--tx-point);
+    font-style: italic;
+  }
+  :global(.tx-minor) {
+    color: var(--tx-minor);
+    background-color: var(--tx-minor-bg);
+    border-radius: 3px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
   }
 </style>
