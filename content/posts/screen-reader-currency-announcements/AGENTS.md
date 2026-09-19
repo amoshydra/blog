@@ -132,9 +132,12 @@ the Pango overlay and re-composite; do not try to edit the text pixels.
 
 ## Android / Google TTS audio (closed engine)
 
-- Engine at capture time: **Google Speech Recognition & Synthesis**
-  (`com.google.android.tts`) **103.12.8** (versionCode 1210312581), device
-  OnePlus 6T (A6013), Android 15. A different engine build can change a
+- Engine builds captured: **Google Speech Recognition & Synthesis**
+  (`com.google.android.tts`) **103.12.8** (versionCode 1210312581) on a
+  OnePlus 6T (A6013), Android 15, and
+  `googletts.google-speech-apk_20260817.01_p0.966249458` on a Pixel 9
+  (`artifacts/RESULTS-gtts-locales-20260817.tsv`, clips under `gtts/20260817/`).
+  The gallery toggles between them. A different engine build can change a
   read-out, so record the version whenever the clips are regenerated.
 - `scripts/android-tts-harness/` — a headless `TtsActivity` added to the
   `android-simple-webview` app; build with `./podman-build.sh build-apk` in a

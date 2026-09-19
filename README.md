@@ -8,9 +8,9 @@
 
 - 2026-08-27 [HTTP ETags and content-encoding: how Apache's gzip breaks revalidation (a hands-on study)](https://amoshydra.github.io/blog/posts/http-etag-content-encoding-study/)
 
-- 2026-09-15 [Why `USD123.45` becomes “US dollars” but `SGD123.45` gets spelled out](https://amoshydra.github.io/blog/posts/screen-reader-currency-announcements/)
-
 - 2026-08-18 [HTTP cache validators: ETag vs Last-Modified (a hands-on study)](https://amoshydra.github.io/blog/posts/http-etag-last-modified-study/)
+
+- 2026-09-19 [Why `USD123.45` becomes “US dollars” but `SGD123.45` gets spelled out](https://amoshydra.github.io/blog/posts/screen-reader-currency-announcements/)
 
 - 2026-09-14 [Locating elements in a WebView: a pattern-by-pattern playbook](https://amoshydra.github.io/blog/posts/webview-testing-locators/)
 

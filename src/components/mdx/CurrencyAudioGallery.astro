@@ -5,14 +5,13 @@ import { renderTranscriptHtml } from "../../lib/transcript-render.mjs";
 
 // Cross-engine comparison gallery for the screen-reader currency tests.
 //
-// Two TTS engine builds are captured per form:
 //   A = 103.12.8 (2023, committed snapshot, human-verified transcripts)
-//   B = 20260817 (2026, later build, machine-predicted transcripts)
+//   B = 20260817 (2026, later build, machine-predicted/draft transcripts)
 //
-// One responsive component: aligned columns on desktop, stacked cards on mobile
-// (same DOM). Every row exposes both builds up front — no global mode — and
-// clamps the transcripts for scanability, with a per-row expand for the full
-// text. B is predicted until a human verifies it.
+// A is shown by default. The B column is hidden behind a "draft capture"
+// toggle, because it is unverified. One responsive component: aligned columns
+// on desktop, stacked cards on mobile (same DOM). No global engine mode: every
+// visible row exposes both builds up front, with per-row A/B play buttons.
 const slug = "screen-reader-currency-announcements";
 const artifacts = path.join(process.cwd(), "public", "posts", slug, "artifacts");
 const contentDir = path.join(process.cwd(), "content", "posts", slug);
@@ -97,26 +96,33 @@ for (const r of a.rows) {
 const total = groups.reduce((n, g) => n + g.rows.length, 0);
 ---
 
-<div class="cmp">
+<div class="cmp" data-draft="0">
   <div class="cmp__bar">
-    <p class="cmp__title">{total} forms</p>
-    <p class="cmp__legend">
-      <span class="cmp__key">A</span> {a.label} ({a.year}){
-        hasB && (
-          <>
-            <span class="cmp__sep">·</span> <span class="cmp__key cmp__key--b">B</span> {b.label} ({b.year})
-            <span class="cmp__pred">predicted</span>
-          </>
-        )
-      }
+    <p class="cmp__title">
+      {total} forms <span class="cmp__title-sub">A = {a.label} ({a.year}), verified</span>
     </p>
+    {
+      hasB && (
+        <button
+          type="button"
+          class="cmp__draft"
+          aria-pressed="false"
+          aria-label="20260817 draft capture, unverified"
+        >
+          <span class="cmp__draft-show">Show draft capture · B = {b.label} ({b.year}) · unverified</span>
+          <span class="cmp__draft-hide">Hide draft capture</span>
+        </button>
+      )
+    }
   </div>
 
   <div class="cmp__table" role="table" aria-label="Currency read-outs across two TTS engine builds">
     <div class="cmp__head" role="row">
       <div class="cmp__th" role="columnheader">Input</div>
       <div class="cmp__th" role="columnheader">A · {a.label}</div>
-      <div class="cmp__th" role="columnheader">B · {hasB ? b.label : "—"}</div>
+      <div class="cmp__th cmp__th--b" role="columnheader">
+        B · {hasB ? b.label : "—"} <span class="cmp__pred">draft</span>
+      </div>
     </div>
 
     {
@@ -156,14 +162,18 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
                 )}
               </div>
 
-              <div class="cmp__cell" role="cell" data-label={`B · ${hasB ? b.label : "—"}`}>
+              <div
+                class="cmp__cell cmp__cell--b"
+                role="cell"
+                data-label={`B · ${hasB ? b.label : "—"}`}
+              >
                 {row.b ? (
                   <>
                     <button
                       type="button"
                       class="cmp__play"
                       data-play={row.b.url}
-                      aria-label={`Play the ${b.label} predicted read-out for ${group.locale} ${row.form}`}
+                      aria-label={`Play the ${b.label} draft read-out for ${group.locale} ${row.form}`}
                     >
                       ▶<span class="cmp__badge cmp__badge--b">B</span>
                     </button>
@@ -221,6 +231,16 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     if (root.dataset.bound) continue;
     root.dataset.bound = "1";
 
+    const draft = root.querySelector<HTMLButtonElement>(".cmp__draft");
+    if (draft) {
+      draft.addEventListener("click", () => {
+        const on = root.dataset.draft === "1";
+        root.dataset.draft = on ? "0" : "1";
+        draft.setAttribute("aria-pressed", on ? "false" : "true");
+        syncMore(root);
+      });
+    }
+
     for (const p of root.querySelectorAll<HTMLButtonElement>(".cmp__play")) {
       p.addEventListener("click", () => {
         const src = p.dataset.play ?? "";
@@ -257,8 +277,16 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
 </script>
 
 <style>
-  .cmp {
+  /* Draft (B) column is hidden until toggled on, so the grid has 2 tracks by
+     default and 3 when revealed. */
+  .cmp[data-draft="0"] {
+    --cmp-cols: 10rem minmax(0, 1fr);
+  }
+  .cmp[data-draft="1"] {
     --cmp-cols: 10rem minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .cmp {
     margin: 1.25rem auto 2.5rem;
     border: 1px solid var(--border-subtle);
     border-radius: 6px;
@@ -271,8 +299,8 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     z-index: 3;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem 1rem;
-    align-items: baseline;
+    gap: 0.4rem 1rem;
+    align-items: center;
     justify-content: space-between;
     padding: 0.55rem 0.7rem;
     background-color: rgb(var(--white));
@@ -283,18 +311,37 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     font-size: 0.85rem;
     font-weight: 600;
   }
-  .cmp__legend {
-    margin: 0;
-    font-size: 0.8rem;
+  .cmp__title-sub {
     color: rgb(var(--gray));
+    font-weight: 400;
+    margin-left: 0.35rem;
   }
-  .cmp__key {
-    font-weight: 700;
+  .cmp__draft {
+    font: inherit;
+    font-size: 0.78rem;
+    padding: 0.28rem 0.7rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    background: transparent;
     color: inherit;
+    cursor: pointer;
+  }
+  .cmp__draft[aria-pressed="true"] {
+    background: rgb(var(--gray-light));
+    font-weight: 600;
+  }
+  .cmp__draft-hide {
+    display: none;
+  }
+  .cmp__draft[aria-pressed="true"] .cmp__draft-show {
+    display: none;
+  }
+  .cmp__draft[aria-pressed="true"] .cmp__draft-hide {
+    display: inline;
   }
   .cmp__pred {
     display: inline-block;
-    font-size: 0.68rem;
+    font-size: 0.66rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     border: 1px solid var(--border-subtle);
@@ -303,8 +350,10 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     margin-left: 0.3rem;
     vertical-align: 0.08em;
   }
-  .cmp__sep {
-    margin: 0 0.35rem;
+
+  .cmp[data-draft="0"] .cmp__th--b,
+  .cmp[data-draft="0"] .cmp__cell--b {
+    display: none;
   }
 
   .cmp__table {
@@ -405,7 +454,8 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
 
   /* Mobile: same DOM, stacked cards. */
   @media (max-width: 760px) {
-    .cmp {
+    .cmp[data-draft="0"],
+    .cmp[data-draft="1"] {
       --cmp-cols: 1fr;
     }
     .cmp__head {
