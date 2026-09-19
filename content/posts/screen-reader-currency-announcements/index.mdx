@@ -16,17 +16,21 @@ The sound of your page depends on that hand-off. Put two lines in a page:
 <p>SGD123.45</p>
 ```
 
-With a Microsoft voice selected, NVDA reads the first as *"one hundred and twenty-three US dollars and forty-five cents"*. It reads the second as a spelled-out code and then a decimal number: *"S G D, one hundred and twenty-three point four five"*. No "Singapore dollars", no cents. Narrator, Microsoft's own screen reader, produces the same two readings [^16]. That observation comes from Windows with a Microsoft voice; the broader per-reader results later in the post come from a published comparison, and I did not re-run them.
+With a Microsoft voice selected, NVDA reads the first as *"one hundred and twenty-three US dollars and forty-five cents"*. It reads the second as a spelled-out code and then a decimal number: *"S G D, one hundred and twenty-three point four five"*. No "Singapore dollars", no cents. Narrator, Microsoft's own screen reader, produces the same two readings [^16]. That observation comes from Windows with a Microsoft voice; the broader per-reader results later in the post come from a published comparison, and I did not re-run them. The markup is the same in both readings, and so is the browser.
 
-The digits come through in both cases. But with `SGD`, the listener never hears "Singapore dollars" or "cents", so on a page that mixes Singapore and US amounts they have to work out which currency they just heard, and can get it wrong.
+The digits come through both times, so the value is never wrong. What `SGD` loses is the words: the listener hears a code they may have to decode, and never hears the currency's name or its minor unit. On a page that mixes Singapore and US amounts, that is work the listener would not otherwise have to do.
 
-NVDA ships with eSpeak NG, which does not expand currency, so the Microsoft engine produced that reading [^2]. The markup is identical in both cases, as is the browser.
+NVDA ships with eSpeak NG, which does not expand currency, so the reading above came from a Microsoft engine rather than from NVDA itself [^2].
 
 The difference has to appear downstream of your markup. The string passes from the `<p>` into the DOM, into the browser's accessibility tree, through the screen reader, and into the operating system's speech engine. There, the engine's text normalizer matches it against a currency table, and one code is tagged as money while the other is not.
 
 ## TL;DR
 
-The browser passes the string through. Chrome's accessibility tree hands the operating system `USD123.45` as plain text [^4], and Blink, Chrome's rendering engine, has no currency logic in the code that builds that tree [^3]. The screen reader passes it along too: NVDA holds no currency table; it keeps only a per-language symbol dictionary for punctuation, and forwards text to the selected synthesizer [^1]. The synthesizer decides. Its text normalizer tags a token as a *money* expression and rewrites it into words, and NVDA's tracker names the engines that do this (Microsoft OneCore, SAPI5, IBM's IBMTTS) and the one that does not (eSpeak NG) [^2]. The layer that decides is the same everywhere: Windows, Android (Google's engine by default) and Apple's synthesizers all normalize currency inside the synthesizer, and the readers forward text [^2] [^17] [^19] [^22]. What differs is the currency list, which is short and rarely published: `$` and `USD` sit in the en-US table and `SGD` does not [^6] [^16], NVDA and TalkBack ship no table at all, and the open normalizers from Google and NVIDIA ship small ones [^24] [^25]. Markup cannot change it, since HTML has no currency element [^27], so write the currency name out or supply the spoken form yourself.
+The browser passes the string through. Chrome's accessibility tree hands the operating system `USD123.45` as plain text [^4], and Blink, Chrome's rendering engine, has no currency logic in the code that builds that tree [^3]. The screen reader passes it along too: NVDA holds no currency table, only a per-language symbol dictionary for punctuation [^1].
+
+The synthesizer decides. Its text normalizer tags a token as *money* and rewrites it into words. NVDA's tracker names the engines that do this (Microsoft OneCore, SAPI5, IBM's IBMTTS) and the one that does not (eSpeak NG) [^2]. Windows, Android and Apple's synthesizers all normalize currency in the same place, and the readers forward the text [^2] [^17] [^19] [^22].
+
+What differs is the currency list, which is short and rarely published. `$` and `USD` sit in the en-US table and `SGD` does not [^6] [^16]; NVDA and TalkBack ship no table, and the open normalizers from Google and NVIDIA ship small ones [^24] [^25]. HTML has no currency element [^27], so write the currency name out or supply the spoken form yourself.
 
 ## What Narrator and NVDA share
 
@@ -387,7 +391,7 @@ Android's API returns audio and never the normalized string, so the words have t
 
 Google's pipeline does show up in the data it ships. The APK's bundled en-US voice carries `en_verbalize_spec.pb`, a spec that names a `money` class with `currency`, `amount.integer_part` and `amount.fractional_part` fields. That is the same classify-then-verbalize split the other engines use [^36].
 
-For closed engines you can hear the difference, and the data they ship shows the shape of their pipeline. Their currency table stays out of reach.
+For closed engines you can hear the difference, and the data they ship shows the shape of their pipeline, but their currency table stays out of reach.
 
 <CurrencyAudioGallery />
 
