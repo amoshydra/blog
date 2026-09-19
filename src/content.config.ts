@@ -17,6 +17,8 @@ const posts = defineCollection({
       pubDate: z.coerce.date(),
       updatedDate: z.coerce.date().optional(),
       heroImage: image(),
+      // Opt a post into non-wrapping table cells (wide tables scroll instead).
+      tableNowrap: z.boolean().optional(),
     }),
 });
 
