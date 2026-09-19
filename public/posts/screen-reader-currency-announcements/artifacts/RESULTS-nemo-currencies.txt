@@ -1,0 +1,1189 @@
+## en (38 tokens)
+   $123.45          -> one hundred and twenty three dollars forty five cents
+   US$123.45        -> one hundred and twenty three us dollars forty five cents
+   ฿123.45          -> one hundred and twenty three Thai Bahts. forty five
+   £123.45          -> one hundred and twenty three pounds forty five pence
+   €123.45          -> one hundred and twenty three euros forty five cents
+   ₩123.45          -> one hundred and twenty three won. forty five
+   nzd123.45        -> nzd one two three dot four five
+   rs123.45         -> rs one two three dot four five
+   chf123.45        -> chf one two three dot four five
+   dkk123.45        -> dkk one two three dot four five
+   fim123.45        -> fim one two three dot four five
+   aed123.45        -> aed one two three dot four five
+   ¥123.45          -> one hundred and twenty three yen. forty five
+   czk123.45        -> czk one two three dot four five
+   mro123.45        -> mro one two three dot four five
+   pkr123.45        -> pkr one two three dot four five
+   crc123.45        -> crc one two three dot four five
+   hk$123.45        -> one hundred and twenty three hong kong dollars. forty five
+   npr123.45        -> npr one two three dot four five
+   awg123.45        -> awg one two three dot four five
+   nok123.45        -> nok one two three dot four five
+   tzs123.45        -> tzs one two three dot four five
+   sek123.45        -> sek one two three dot four five
+   cyp123.45        -> cyp one two three dot four five
+   r123.45          -> r one two three dot four five
+   sar123.45        -> sar one two three dot four five
+   cve123.45        -> cve one two three dot four five
+   rsd123.45        -> rsd one two three dot four five
+   dm123.45         -> dm one two three dot four five
+   shp123.45        -> shp one two three dot four five
+   php123.45        -> php one two three dot four five
+   cad123.45        -> cad one two three dot four five
+   ssp123.45        -> ssp one two three dot four five
+   scr123.45        -> scr one two three dot four five
+   mvr123.45        -> mvr one two three dot four five
+   DH123.45         -> dh one two three dot four five
+   Dh123.45         -> dh one two three dot four five
+   Dhs.123.45       -> dhs dot one two three dot four five
+## de (23 tokens)
+   €123.45          -> ein euro zwei drei punkt vier fünf
+   $123.45          -> dollar zeichen eins zwei drei punkt vier fünf
+   £123.45          -> ein pfund zwei drei punkt vier fünf
+   ₩123.45          -> ein won zwei drei punkt vier fünf
+   nzd123.45        -> n z d eins zwei drei punkt vier fünf
+   rs123.45         -> r s eins zwei drei punkt vier fünf
+   chf123.45        -> c h f eins zwei drei punkt vier fünf
+   dkk123.45        -> d k k eins zwei drei punkt vier fünf
+   fim123.45        -> f i m eins zwei drei punkt vier fünf
+   aed123.45        -> a e d eins zwei drei punkt vier fünf
+   ¥123.45          -> ein yen zwei drei punkt vier fünf
+   czk123.45        -> c z k eins zwei drei punkt vier fünf
+   mro123.45        -> m r o eins zwei drei punkt vier fünf
+   pkr123.45        -> p k r eins zwei drei punkt vier fünf
+   crc123.45        -> c r c eins zwei drei punkt vier fünf
+   hkd123.45        -> h k d eins zwei drei punkt vier fünf
+   npr123.45        -> n p r eins zwei drei punkt vier fünf
+   awg123.45        -> a w g eins zwei drei punkt vier fünf
+   nok123.45        -> n o k eins zwei drei punkt vier fünf
+   tzs123.45        -> t z s eins zwei drei punkt vier fünf
+   sek123.45        -> s e k eins zwei drei punkt vier fünf
+   cyp123.45        -> c y p eins zwei drei punkt vier fünf
+   dm123.45         -> d m eins zwei drei punkt vier fünf
+## es (571 tokens)
+   ars123.45        -> a r s uno dos tres punto cuatro cinco
+   ar$123.45        -> a r signo de dólar uno dos tres punto cuatro cinco
+   awg123.45        -> a w g uno dos tres punto cuatro cinco
+   bob123.45        -> b o b uno dos tres punto cuatro cinco
+   brl123.45        -> b r l uno dos tres punto cuatro cinco
+   cad123.45        -> c a d uno dos tres punto cuatro cinco
+   chf123.45        -> c h f uno dos tres punto cuatro cinco
+   clp123.45        -> c l p uno dos tres punto cuatro cinco
+   cny123.45        -> c n y uno dos tres punto cuatro cinco
+   cop123.45        -> c o p uno dos tres punto cuatro cinco
+   crc123.45        -> c r c uno dos tres punto cuatro cinco
+   ₡123.45          -> ciento veintitrés colones . cuarenta y cinco
+   cup123.45        -> c u p uno dos tres punto cuatro cinco
+   dop123.45        -> d o p uno dos tres punto cuatro cinco
+   rd$123.45        -> r d signo de dólar uno dos tres punto cuatro cinco
+   eur123.45        -> e u r uno dos tres punto cuatro cinco
+   gtq123.45        -> g t q uno dos tres punto cuatro cinco
+   gyd123.45        -> g y d uno dos tres punto cuatro cinco
+   hkd123.45        -> h k d uno dos tres punto cuatro cinco
+   hnl123.45        -> h n l uno dos tres punto cuatro cinco
+   htg123.45        -> h t g uno dos tres punto cuatro cinco
+   inr123.45        -> i n r uno dos tres punto cuatro cinco
+   jpy123.45        -> j p y uno dos tres punto cuatro cinco
+   kr123.45         -> k r uno dos tres punto cuatro cinco
+   kr.123.45        -> k r punto uno dos tres punto cuatro cinco
+   krw123.45        -> k r w uno dos tres punto cuatro cinco
+   mxn123.45        -> m x n uno dos tres punto cuatro cinco
+   nio123.45        -> n i o uno dos tres punto cuatro cinco
+   pab123.45        -> p a b uno dos tres punto cuatro cinco
+   pen123.45        -> p e n uno dos tres punto cuatro cinco
+   s/123.45         -> s barra uno dos tres punto cuatro cinco
+   pyg123.45        -> p y g uno dos tres punto cuatro cinco
+   ₲123.45          -> ciento veintitrés guaraníes . cuarenta y cinco
+   rs123.45         -> r s uno dos tres punto cuatro cinco
+   rs.123.45        -> r s punto uno dos tres punto cuatro cinco
+   svc123.45        -> s v c uno dos tres punto cuatro cinco
+   ttd123.45        -> t t d uno dos tres punto cuatro cinco
+   usd123.45        -> u s d uno dos tres punto cuatro cinco
+   uyu123.45        -> u y u uno dos tres punto cuatro cinco
+   uyw123.45        -> u y w uno dos tres punto cuatro cinco
+   ves​123.45       -> ciento veintitrés bolívares soberanos . cuarenta y cinco
+   arp123.45        -> a r p uno dos tres punto cuatro cinco
+   bop123.45        -> b o p uno dos tres punto cuatro cinco
+   cle123.45        -> c l e uno dos tres punto cuatro cinco
+   ecs123.45        -> e c s uno dos tres punto cuatro cinco
+   mxp123.45        -> m x p uno dos tres punto cuatro cinco
+   peh123.45        -> p e h uno dos tres punto cuatro cinco
+   veb123.45        -> v e b uno dos tres punto cuatro cinco
+   vef123.45        -> v e f uno dos tres punto cuatro cinco
+   €123.45          -> ciento veintitrés euros . cuarenta y cinco
+   $123.45          -> signo de dólar uno dos tres punto cuatro cinco
+   £123.45          -> ciento veintitrés libras . cuarenta y cinco
+   ₩123.45          -> ciento veintitrés wones . cuarenta y cinco
+   fr123.45         -> f r uno dos tres punto cuatro cinco
+   mk123.45         -> m k uno dos tres punto cuatro cinco
+   ¥123.45          -> ciento veintitrés yenes . cuarenta y cinco
+   r$123.45         -> r signo de dólar uno dos tres punto cuatro cinco
+   ₧123.45          -> ciento veintitrés pesetas . cuarenta y cinco
+   ptas123.45       -> p t a s uno dos tres punto cuatro cinco
+   us$123.45        -> u s signo de dólar uno dos tres punto cuatro cinco
+   mex$123.45       -> m e x signo de dólar uno dos tres punto cuatro cinco
+   q123.45          -> q uno dos tres punto cuatro cinco
+   us $123.45       -> ciento veintitrés dólares estadounidenses . cuarenta y cinco
+   aed123.45        -> a e d uno dos tres punto cuatro cinco
+   dh123.45         -> d h uno dos tres punto cuatro cinco
+   dhs123.45        -> d h s uno dos tres punto cuatro cinco
+   afn123.45        -> a f n uno dos tres punto cuatro cinco
+   all123.45        -> a l l uno dos tres punto cuatro cinco
+   amd123.45        -> a m d uno dos tres punto cuatro cinco
+   ang123.45        -> a n g uno dos tres punto cuatro cinco
+   aoa123.45        -> a o a uno dos tres punto cuatro cinco
+   aok123.45        -> a o k uno dos tres punto cuatro cinco
+   aon123.45        -> a o n uno dos tres punto cuatro cinco
+   aor123.45        -> a o r uno dos tres punto cuatro cinco
+   azn123.45        -> a z n uno dos tres punto cuatro cinco
+   bam123.45        -> b a m uno dos tres punto cuatro cinco
+   bbd123.45        -> b b d uno dos tres punto cuatro cinco
+   bdt123.45        -> b d t uno dos tres punto cuatro cinco
+   bgn123.45        -> b g n uno dos tres punto cuatro cinco
+   bhd123.45        -> b h d uno dos tres punto cuatro cinco
+   bif123.45        -> b i f uno dos tres punto cuatro cinco
+   bmd123.45        -> b m d uno dos tres punto cuatro cinco
+   bd$123.45        -> b d signo de dólar uno dos tres punto cuatro cinco
+   bnd123.45        -> b n d uno dos tres punto cuatro cinco
+   bsd123.45        -> b s d uno dos tres punto cuatro cinco
+   b$123.45         -> b signo de dólar uno dos tres punto cuatro cinco
+   btn123.45        -> b t n uno dos tres punto cuatro cinco
+   bwp123.45        -> b w p uno dos tres punto cuatro cinco
+   byn123.45        -> b y n uno dos tres punto cuatro cinco
+   bzd123.45        -> b z d uno dos tres punto cuatro cinco
+   bz$123.45        -> b z signo de dólar uno dos tres punto cuatro cinco
+   cdf123.45        -> c d f uno dos tres punto cuatro cinco
+   cou123.45        -> c o u uno dos tres punto cuatro cinco
+   cve123.45        -> c v e uno dos tres punto cuatro cinco
+   czk123.45        -> c z k uno dos tres punto cuatro cinco
+   djf123.45        -> d j f uno dos tres punto cuatro cinco
+   dkk123.45        -> d k k uno dos tres punto cuatro cinco
+   dzd123.45        -> d z d uno dos tres punto cuatro cinco
+   egp123.45        -> e g p uno dos tres punto cuatro cinco
+   ern123.45        -> e r n uno dos tres punto cuatro cinco
+   etb123.45        -> e t b uno dos tres punto cuatro cinco
+   fjd123.45        -> f j d uno dos tres punto cuatro cinco
+   fj$123.45        -> f j signo de dólar uno dos tres punto cuatro cinco
+   fkp123.45        -> f k p uno dos tres punto cuatro cinco
+   gbp123.45        -> g b p uno dos tres punto cuatro cinco
+   gel123.45        -> g e l uno dos tres punto cuatro cinco
+   ghs123.45        -> g h s uno dos tres punto cuatro cinco
+   gip123.45        -> g i p uno dos tres punto cuatro cinco
+   gmd123.45        -> g m d uno dos tres punto cuatro cinco
+   gnf123.45        -> g n f uno dos tres punto cuatro cinco
+   hrk123.45        -> h r k uno dos tres punto cuatro cinco
+   huf123.45        -> h u f uno dos tres punto cuatro cinco
+   idr123.45        -> i d r uno dos tres punto cuatro cinco
+   ils123.45        -> i l s uno dos tres punto cuatro cinco
+   iqd123.45        -> i q d uno dos tres punto cuatro cinco
+   irr123.45        -> i r r uno dos tres punto cuatro cinco
+   isk123.45        -> i s k uno dos tres punto cuatro cinco
+   jmd123.45        -> j m d uno dos tres punto cuatro cinco
+   jod123.45        -> j o d uno dos tres punto cuatro cinco
+   kes123.45        -> k e s uno dos tres punto cuatro cinco
+   kgs123.45        -> k g s uno dos tres punto cuatro cinco
+   khr123.45        -> k h r uno dos tres punto cuatro cinco
+   kmf123.45        -> k m f uno dos tres punto cuatro cinco
+   kpw123.45        -> k p w uno dos tres punto cuatro cinco
+   kwd123.45        -> k w d uno dos tres punto cuatro cinco
+   kyd123.45        -> k y d uno dos tres punto cuatro cinco
+   kzt123.45        -> k z t uno dos tres punto cuatro cinco
+   lak123.45        -> l a k uno dos tres punto cuatro cinco
+   lbp123.45        -> l b p uno dos tres punto cuatro cinco
+   lkr123.45        -> l k r uno dos tres punto cuatro cinco
+   lrd123.45        -> l r d uno dos tres punto cuatro cinco
+   lsl123.45        -> l s l uno dos tres punto cuatro cinco
+   lyd123.45        -> l y d uno dos tres punto cuatro cinco
+   mad123.45        -> m a d uno dos tres punto cuatro cinco
+   mdl123.45        -> m d l uno dos tres punto cuatro cinco
+   mga123.45        -> m g a uno dos tres punto cuatro cinco
+   mkd123.45        -> m k d uno dos tres punto cuatro cinco
+   mmk123.45        -> m m k uno dos tres punto cuatro cinco
+   mnt123.45        -> m n t uno dos tres punto cuatro cinco
+   ₮123.45          -> ₮123.45
+   mop123.45        -> m o p uno dos tres punto cuatro cinco
+   mop$123.45       -> m o p signo de dólar uno dos tres punto cuatro cinco
+   mru123.45        -> m r u uno dos tres punto cuatro cinco
+   mur123.45        -> m u r uno dos tres punto cuatro cinco
+   mvr123.45        -> m v r uno dos tres punto cuatro cinco
+   mwk123.45        -> m w k uno dos tres punto cuatro cinco
+   myr123.45        -> m y r uno dos tres punto cuatro cinco
+   mzn123.45        -> m z n uno dos tres punto cuatro cinco
+   nad123.45        -> n a d uno dos tres punto cuatro cinco
+   ngn123.45        -> n g n uno dos tres punto cuatro cinco
+   ₦123.45          -> ₦123.45
+   nok123.45        -> n o k uno dos tres punto cuatro cinco
+   npr123.45        -> n p r uno dos tres punto cuatro cinco
+   nzd123.45        -> n z d uno dos tres punto cuatro cinco
+   nz$123.45        -> n z signo de dólar uno dos tres punto cuatro cinco
+   omr123.45        -> o m r uno dos tres punto cuatro cinco
+   pgk123.45        -> p g k uno dos tres punto cuatro cinco
+   php123.45        -> p h p uno dos tres punto cuatro cinco
+   ₱123.45          -> ₱123.45
+   P123.45          -> P uno dos tres punto cuatro cinco
+   pkr123.45        -> p k r uno dos tres punto cuatro cinco
+   pln123.45        -> p l n uno dos tres punto cuatro cinco
+   zł123.45         -> zł123.45
+   zł.123.45        -> zł.123.45
+   qar123.45        -> q a r uno dos tres punto cuatro cinco
+   ron123.45        -> r o n uno dos tres punto cuatro cinco
+   rsd123.45        -> r s d uno dos tres punto cuatro cinco
+   rub123.45        -> r u b uno dos tres punto cuatro cinco
+   rwf123.45        -> r w f uno dos tres punto cuatro cinco
+   sar123.45        -> s a r uno dos tres punto cuatro cinco
+   sbd123.45        -> s b d uno dos tres punto cuatro cinco
+   scr123.45        -> s c r uno dos tres punto cuatro cinco
+   sdg123.45        -> s d g uno dos tres punto cuatro cinco
+   sek123.45        -> s e k uno dos tres punto cuatro cinco
+   shp123.45        -> s h p uno dos tres punto cuatro cinco
+   sll123.45        -> s l l uno dos tres punto cuatro cinco
+   sos123.45        -> s o s uno dos tres punto cuatro cinco
+   srd123.45        -> s r d uno dos tres punto cuatro cinco
+   ssp123.45        -> s s p uno dos tres punto cuatro cinco
+   stn123.45        -> s t n uno dos tres punto cuatro cinco
+   syp123.45        -> s y p uno dos tres punto cuatro cinco
+   szl123.45        -> s z l uno dos tres punto cuatro cinco
+   thb123.45        -> t h b uno dos tres punto cuatro cinco
+   ฿123.45          -> ฿123.45
+   tjs123.45        -> t j s uno dos tres punto cuatro cinco
+   tmt123.45        -> t m t uno dos tres punto cuatro cinco
+   tnd123.45        -> t n d uno dos tres punto cuatro cinco
+   top123.45        -> t o p uno dos tres punto cuatro cinco
+   try123.45        -> t r y uno dos tres punto cuatro cinco
+   twd123.45        -> t w d uno dos tres punto cuatro cinco
+   tzs123.45        -> t z s uno dos tres punto cuatro cinco
+   uah123.45        -> u a h uno dos tres punto cuatro cinco
+   ugx123.45        -> u g x uno dos tres punto cuatro cinco
+   uzs123.45        -> u z s uno dos tres punto cuatro cinco
+   vnd123.45        -> v n d uno dos tres punto cuatro cinco
+   ₫123.45          -> ₫123.45
+   vuv123.45        -> v u v uno dos tres punto cuatro cinco
+   wst123.45        -> w s t uno dos tres punto cuatro cinco
+   xaf123.45        -> x a f uno dos tres punto cuatro cinco
+   xof123.45        -> x o f uno dos tres punto cuatro cinco
+   xpf123.45        -> x p f uno dos tres punto cuatro cinco
+   xsu123.45        -> x s u uno dos tres punto cuatro cinco
+   xua123.45        -> x u a uno dos tres punto cuatro cinco
+   yer123.45        -> y e r uno dos tres punto cuatro cinco
+   zar123.45        -> z a r uno dos tres punto cuatro cinco
+   zmw123.45        -> z m w uno dos tres punto cuatro cinco
+   zwl123.45        -> z w l uno dos tres punto cuatro cinco
+   adf123.45        -> a d f uno dos tres punto cuatro cinco
+   adp123.45        -> a d p uno dos tres punto cuatro cinco
+   afa123.45        -> a f a uno dos tres punto cuatro cinco
+   ats123.45        -> a t s uno dos tres punto cuatro cinco
+   bec123.45        -> b e c uno dos tres punto cuatro cinco
+   bef123.45        -> b e f uno dos tres punto cuatro cinco
+   bel123.45        -> b e l uno dos tres punto cuatro cinco
+   bgl123.45        -> b g l uno dos tres punto cuatro cinco
+   csd123.45        -> c s d uno dos tres punto cuatro cinco
+   csk123.45        -> c s k uno dos tres punto cuatro cinco
+   cyp123.45        -> c y p uno dos tres punto cuatro cinco
+   ddm123.45        -> d d m uno dos tres punto cuatro cinco
+   dem123.45        -> d e m uno dos tres punto cuatro cinco
+   eek123.45        -> e e k uno dos tres punto cuatro cinco
+   ehp123.45        -> e h p uno dos tres punto cuatro cinco
+   fim123.45        -> f i m uno dos tres punto cuatro cinco
+   frf123.45        -> f r f uno dos tres punto cuatro cinco
+   grd123.45        -> g r d uno dos tres punto cuatro cinco
+   iep123.45        -> i e p uno dos tres punto cuatro cinco
+   itl123.45        -> i t l uno dos tres punto cuatro cinco
+   luf123.45        -> l u f uno dos tres punto cuatro cinco
+   mtl123.45        -> m t l uno dos tres punto cuatro cinco
+   nlg123.45        -> n l g uno dos tres punto cuatro cinco
+   pei123.45        -> p e i uno dos tres punto cuatro cinco
+   plz123.45        -> p l z uno dos tres punto cuatro cinco
+   pte123.45        -> p t e uno dos tres punto cuatro cinco
+   rur123.45        -> r u r uno dos tres punto cuatro cinco
+   sit123.45        -> s i t uno dos tres punto cuatro cinco
+   skk123.45        -> s k k uno dos tres punto cuatro cinco
+   srg123.45        -> s r g uno dos tres punto cuatro cinco
+   sur123.45        -> s u r uno dos tres punto cuatro cinco
+   trl123.45        -> t r l uno dos tres punto cuatro cinco
+   yud123.45        -> y u d uno dos tres punto cuatro cinco
+   yum123.45        -> y u m uno dos tres punto cuatro cinco
+   zal123.45        -> z a l uno dos tres punto cuatro cinco
+   zrn123.45        -> z r n uno dos tres punto cuatro cinco
+   zrz123.45        -> z r z uno dos tres punto cuatro cinco
+   zml123.45        -> z m l uno dos tres punto cuatro cinco
+   kč123.45         -> kč123.45
+   aud123.45        -> a u d uno dos tres punto cuatro cinco
+   bov123.45        -> b o v uno dos tres punto cuatro cinco
+   che123.45        -> c h e uno dos tres punto cuatro cinco
+   chw123.45        -> c h w uno dos tres punto cuatro cinco
+   clf123.45        -> c l f uno dos tres punto cuatro cinco
+   cuc123.45        -> c u c uno dos tres punto cuatro cinco
+   mxv123.45        -> m x v uno dos tres punto cuatro cinco
+   sgd123.45        -> s g d uno dos tres punto cuatro cinco
+   usn123.45        -> u s n uno dos tres punto cuatro cinco
+   uyi123.45        -> u y i uno dos tres punto cuatro cinco
+   xag123.45        -> x a g uno dos tres punto cuatro cinco
+   xau123.45        -> x a u uno dos tres punto cuatro cinco
+   xcd123.45        -> x c d uno dos tres punto cuatro cinco
+   xdr123.45        -> x d r uno dos tres punto cuatro cinco
+   xpd123.45        -> x p d uno dos tres punto cuatro cinco
+   xpt123.45        -> x p t uno dos tres punto cuatro cinco
+   ara123.45        -> a r a uno dos tres punto cuatro cinco
+   arc123.45        -> a r c uno dos tres punto cuatro cinco
+   arf123.45        -> a r f uno dos tres punto cuatro cinco
+   arg123.45        -> a r g uno dos tres punto cuatro cinco
+   arl123.45        -> a r l uno dos tres punto cuatro cinco
+   arm123.45        -> a r m uno dos tres punto cuatro cinco
+   ecv123.45        -> e c v uno dos tres punto cuatro cinco
+   esa123.45        -> e s a uno dos tres punto cuatro cinco
+   esb123.45        -> e s b uno dos tres punto cuatro cinco
+   esp123.45        -> e s p uno dos tres punto cuatro cinco
+   xeu123.45        -> x e u uno dos tres punto cuatro cinco
+   gourde123.45     -> g o u r d e uno dos tres punto cuatro cinco
+   rupia india123.45 -> rupia i n d i a uno dos tres punto cuatro cinco
+   corona123.45     -> c o r o n a uno dos tres punto cuatro cinco
+   córdoba123.45    -> córdoba123.45
+   rupia123.45      -> r u p i a uno dos tres punto cuatro cinco
+   unidad previsional uruguaya123.45 -> unidad previsional u r u g u a y a uno dos tres punto cuatro cinco
+   libra123.45      -> l i b r a uno dos tres punto cuatro cinco
+   peseta123.45     -> p e s e t a uno dos tres punto cuatro cinco
+   leva búlgara123.45 -> leva búlgara123.45
+   pula123.45       -> p u l a uno dos tres punto cuatro cinco
+   unidad de fomento123.45 -> unidad de f o m e n t o uno dos tres punto cuatro cinco
+   unidad de valor real123.45 -> unidad de valor r e a l uno dos tres punto cuatro cinco
+   corona checa123.45 -> corona c h e c a uno dos tres punto cuatro cinco
+   corona danesa123.45 -> corona d a n e s a uno dos tres punto cuatro cinco
+   libra egipcia123.45 -> libra e g i p c i a uno dos tres punto cuatro cinco
+   libra malvinense123.45 -> libra m a l v i n e n s e uno dos tres punto cuatro cinco
+   libra esterlina123.45 -> libra e s t e r l i n a uno dos tres punto cuatro cinco
+   libra de gibraltar123.45 -> libra de g i b r a l t a r uno dos tres punto cuatro cinco
+   kuna123.45       -> k u n a uno dos tres punto cuatro cinco
+   rupia indonesia123.45 -> rupia i n d o n e s i a uno dos tres punto cuatro cinco
+   corona islandesa123.45 -> corona i s l a n d e s a uno dos tres punto cuatro cinco
+   libra libanesa123.45 -> libra l i b a n e s a uno dos tres punto cuatro cinco
+   rupia de sri lanka123.45 -> rupia de sri l a n k a uno dos tres punto cuatro cinco
+   pataca123.45     -> p a t a c a uno dos tres punto cuatro cinco
+   uguiya123.45     -> u g u i y a uno dos tres punto cuatro cinco
+   rupia de mauricio123.45 -> rupia de m a u r i c i o uno dos tres punto cuatro cinco
+   unidad de inversión mexicana123.45 -> unidad de inversión m e x i c a n a uno dos tres punto cuatro cinco
+   rufiyaa123.45    -> r u f i y a a uno dos tres punto cuatro cinco
+   corona noruega123.45 -> corona n o r u e g a uno dos tres punto cuatro cinco
+   rupia nepalí123.45 -> rupia nepalí123.45
+   rupia pakistaní123.45 -> rupia pakistaní123.45
+   rupia seychelense123.45 -> rupia s e y c h e l e n s e uno dos tres punto cuatro cinco
+   libra sudanesa123.45 -> libra s u d a n e s a uno dos tres punto cuatro cinco
+   corona sueca123.45 -> corona s u e c a uno dos tres punto cuatro cinco
+   libra de santa elena123.45 -> libra de santa e l e n a uno dos tres punto cuatro cinco
+   libra siria123.45 -> libra s i r i a uno dos tres punto cuatro cinco
+   lira turca123.45 -> lira t u r c a uno dos tres punto cuatro cinco
+   grivna123.45     -> g r i v n a uno dos tres punto cuatro cinco
+   unidad de cuenta del banco africano de desarrollo123.45 -> unidad de cuenta del banco africano de d e s a r r o l l o uno dos tres punto cuatro cinco
+   peseta andorrana123.45 -> peseta a n d o r r a n a uno dos tres punto cuatro cinco
+   corona checoslovaca123.45 -> corona c h e c o s l o v a c a uno dos tres punto cuatro cinco
+   libra chipriota123.45 -> libra c h i p r i o t a uno dos tres punto cuatro cinco
+   unidad de valor constante ecuatoriana123.45 -> unidad de valor constante e c u a t o r i a n a uno dos tres punto cuatro cinco
+   corona estonia123.45 -> corona e s t o n i a uno dos tres punto cuatro cinco
+   peseta saharaui123.45 -> peseta s a h a r a u i uno dos tres punto cuatro cinco
+   peseta española123.45 -> peseta española123.45
+   dracma griega123.45 -> dracma g r i e g a uno dos tres punto cuatro cinco
+   libra irlandesa123.45 -> libra i r l a n d e s a uno dos tres punto cuatro cinco
+   lira italiana123.45 -> lira i t a l i a n a uno dos tres punto cuatro cinco
+   lira maltesa123.45 -> lira m a l t e s a uno dos tres punto cuatro cinco
+   corona eslovaca123.45 -> corona e s l o v a c a uno dos tres punto cuatro cinco
+   unidad monetaria europea123.45 -> unidad monetaria e u r o p e a uno dos tres punto cuatro cinco
+   feninga123.45    -> f e n i n g a uno dos tres punto cuatro cinco
+   poisha123.45     -> p o i s h a uno dos tres punto cuatro cinco
+   stotinka123.45   -> s t o t i n k a uno dos tres punto cuatro cinco
+   piastra123.45    -> p i a s t r a uno dos tres punto cuatro cinco
+   pesewa123.45     -> p e s e w a uno dos tres punto cuatro cinco
+   pya123.45        -> p y a uno dos tres punto cuatro cinco
+   támbala123.45    -> támbala123.45
+   real brasileño123.45 -> real brasileño123.45
+   peso argentino123.45 -> peso a r g e n t i n o uno dos tres punto cuatro cinco
+   florín arubeño123.45 -> florín arubeño123.45
+   boliviano123.45  -> b o l i v i a n o uno dos tres punto cuatro cinco
+   dólar canadiense123.45 -> dólar c a n a d i e n s e uno dos tres punto cuatro cinco
+   franco suizo123.45 -> franco s u i z o uno dos tres punto cuatro cinco
+   peso chileno123.45 -> peso c h i l e n o uno dos tres punto cuatro cinco
+   yuan chino123.45 -> yuan c h i n o uno dos tres punto cuatro cinco
+   peso colombiano123.45 -> peso c o l o m b i a n o uno dos tres punto cuatro cinco
+   colón costarricense123.45 -> colón c o s t a r r i c e n s e uno dos tres punto cuatro cinco
+   peso cubano123.45 -> peso c u b a n o uno dos tres punto cuatro cinco
+   peso dominicano123.45 -> peso d o m i n i c a n o uno dos tres punto cuatro cinco
+   euro123.45       -> e u r o uno dos tres punto cuatro cinco
+   quetzal123.45    -> q u e t z a l uno dos tres punto cuatro cinco
+   dólar guyanés123.45 -> dólar guyanés123.45
+   dólar de hong kong123.45 -> dólar de hong k o n g uno dos tres punto cuatro cinco
+   lempira123.45    -> l e m p i r a uno dos tres punto cuatro cinco
+   yen123.45        -> y e n uno dos tres punto cuatro cinco
+   won123.45        -> w o n uno dos tres punto cuatro cinco
+   balboa123.45     -> b a l b o a uno dos tres punto cuatro cinco
+   sol123.45        -> s o l uno dos tres punto cuatro cinco
+   guaraní123.45    -> guaraní123.45
+   dólar de trinidad y tobago123.45 -> dólar de trinidad y t o b a g o uno dos tres punto cuatro cinco
+   dólar estadounidense123.45 -> dólar e s t a d o u n i d e n s e uno dos tres punto cuatro cinco
+   peso uruguayo123.45 -> peso u r u g u a y o uno dos tres punto cuatro cinco
+   bolívar soberano123.45 -> bolívar s o b e r a n o uno dos tres punto cuatro cinco
+   peso boliviano123.45 -> peso b o l i v i a n o uno dos tres punto cuatro cinco
+   escudo chileno123.45 -> escudo c h i l e n o uno dos tres punto cuatro cinco
+   sucre ecuatoriano123.45 -> sucre e c u a t o r i a n o uno dos tres punto cuatro cinco
+   peso mexicano123.45 -> peso m e x i c a n o uno dos tres punto cuatro cinco
+   sol de oro123.45 -> sol de o r o uno dos tres punto cuatro cinco
+   colón salvadoreño123.45 -> colón salvadoreño123.45
+   bolívar venezolano123.45 -> bolívar v e n e z o l a n o uno dos tres punto cuatro cinco
+   bolívar fuerte123.45 -> bolívar f u e r t e uno dos tres punto cuatro cinco
+   centavo123.45    -> c e n t a v o uno dos tres punto cuatro cinco
+   céntimo123.45    -> céntimo123.45
+   øre123.45        -> øre123.45
+   penique123.45    -> p e n i q u e uno dos tres punto cuatro cinco
+   paisa123.45      -> p a i s a uno dos tres punto cuatro cinco
+   chon123.45       -> c h o n uno dos tres punto cuatro cinco
+   centésimo123.45  -> centésimo123.45
+   dólar123.45      -> dólar123.45
+   franco123.45     -> f r a n c o uno dos tres punto cuatro cinco
+   marco123.45      -> m a r c o uno dos tres punto cuatro cinco
+   real123.45       -> r e a l uno dos tres punto cuatro cinco
+   colón123.45      -> colón123.45
+   dírham123.45     -> dírham123.45
+   afgani123.45     -> a f g a n i uno dos tres punto cuatro cinco
+   lek123.45        -> l e k uno dos tres punto cuatro cinco
+   dram armenio123.45 -> dram a r m e n i o uno dos tres punto cuatro cinco
+   florín antillano neerlandés123.45 -> florín antillano neerlandés123.45
+   kwanza123.45     -> k w a n z a uno dos tres punto cuatro cinco
+   primer kwanza123.45 -> primer k w a n z a uno dos tres punto cuatro cinco
+   nuevo kwanza123.45 -> nuevo k w a n z a uno dos tres punto cuatro cinco
+   kwanza reajustado123.45 -> kwanza r e a j u s t a d o uno dos tres punto cuatro cinco
+   dólar australiano123.45 -> dólar a u s t r a l i a n o uno dos tres punto cuatro cinco
+   manat azerbaiyano123.45 -> manat a z e r b a i y a n o uno dos tres punto cuatro cinco
+   marco convertible123.45 -> marco c o n v e r t i b l e uno dos tres punto cuatro cinco
+   dólar barbadense123.45 -> dólar b a r b a d e n s e uno dos tres punto cuatro cinco
+   taka123.45       -> t a k a uno dos tres punto cuatro cinco
+   dinar bareiní123.45 -> dinar bareiní123.45
+   franco de burundi123.45 -> franco de b u r u n d i uno dos tres punto cuatro cinco
+   dólar bermudeño123.45 -> dólar bermudeño123.45
+   dólar de brunéi123.45 -> dólar de brunéi123.45
+   boliviano con mantenimiento de valor respecto al dólar estadounidense123.45 -> boliviano con mantenimiento de valor respecto al dólar e s t a d o u n i d e n s e uno dos tres punto cuatro cinco
+   dólar bahameño123.45 -> dólar bahameño123.45
+   ngultrum123.45   -> n g u l t r u m uno dos tres punto cuatro cinco
+   rublo bielorruso123.45 -> rublo b i e l o r r u s o uno dos tres punto cuatro cinco
+   dólar beliceño123.45 -> dólar beliceño123.45
+   franco congoleño123.45 -> franco congoleño123.45
+   euro wir123.45   -> euro w i r uno dos tres punto cuatro cinco
+   franco wir123.45 -> franco w i r uno dos tres punto cuatro cinco
+   peso convertible123.45 -> peso c o n v e r t i b l e uno dos tres punto cuatro cinco
+   escudo caboverdiano123.45 -> escudo c a b o v e r d i a n o uno dos tres punto cuatro cinco
+   franco yibutiano123.45 -> franco y i b u t i a n o uno dos tres punto cuatro cinco
+   dinar argelino123.45 -> dinar a r g e l i n o uno dos tres punto cuatro cinco
+   nakfa123.45      -> n a k f a uno dos tres punto cuatro cinco
+   birr etíope123.45 -> birr etíope123.45
+   dólar fiyiano123.45 -> dólar f i y i a n o uno dos tres punto cuatro cinco
+   lari123.45       -> l a r i uno dos tres punto cuatro cinco
+   cedi ghanés123.45 -> cedi ghanés123.45
+   dalasi123.45     -> d a l a s i uno dos tres punto cuatro cinco
+   franco guineano123.45 -> franco g u i n e a n o uno dos tres punto cuatro cinco
+   forinto123.45    -> f o r i n t o uno dos tres punto cuatro cinco
+   nuevo séquel israelí123.45 -> nuevo séquel israelí123.45
+   dinar iraquí123.45 -> dinar iraquí123.45
+   rial iraní123.45 -> rial iraní123.45
+   dólar jamaiquino123.45 -> dólar j a m a i q u i n o uno dos tres punto cuatro cinco
+   dinar jordano123.45 -> dinar j o r d a n o uno dos tres punto cuatro cinco
+   chelín keniano123.45 -> chelín k e n i a n o uno dos tres punto cuatro cinco
+   som123.45        -> s o m uno dos tres punto cuatro cinco
+   riel123.45       -> r i e l uno dos tres punto cuatro cinco
+   franco comorense123.45 -> franco c o m o r e n s e uno dos tres punto cuatro cinco
+   won norcoreano123.45 -> won n o r c o r e a n o uno dos tres punto cuatro cinco
+   dinar kuwaití123.45 -> dinar kuwaití123.45
+   dólar de las islas caimán123.45 -> dólar de las islas caimán123.45
+   tenge123.45      -> t e n g e uno dos tres punto cuatro cinco
+   kip123.45        -> k i p uno dos tres punto cuatro cinco
+   dólar liberiano123.45 -> dólar l i b e r i a n o uno dos tres punto cuatro cinco
+   loti123.45       -> l o t i uno dos tres punto cuatro cinco
+   dinar libio123.45 -> dinar l i b i o uno dos tres punto cuatro cinco
+   dírham marroquí123.45 -> dírham marroquí123.45
+   leu moldavo123.45 -> leu m o l d a v o uno dos tres punto cuatro cinco
+   ariary malgache123.45 -> ariary m a l g a c h e uno dos tres punto cuatro cinco
+   denar123.45      -> d e n a r uno dos tres punto cuatro cinco
+   kyat123.45       -> k y a t uno dos tres punto cuatro cinco
+   tugrik123.45     -> t u g r i k uno dos tres punto cuatro cinco
+   kwacha123.45     -> k w a c h a uno dos tres punto cuatro cinco
+   ringgit malayo123.45 -> ringgit m a l a y o uno dos tres punto cuatro cinco
+   metical mozambiqueño123.45 -> metical mozambiqueño123.45
+   dólar namibio123.45 -> dólar n a m i b i o uno dos tres punto cuatro cinco
+   naira123.45      -> n a i r a uno dos tres punto cuatro cinco
+   dólar neozelandés123.45 -> dólar neozelandés123.45
+   rial omaní123.45 -> rial omaní123.45
+   kina123.45       -> k i n a uno dos tres punto cuatro cinco
+   peso filipino123.45 -> peso f i l i p i n o uno dos tres punto cuatro cinco
+   esloti123.45     -> e s l o t i uno dos tres punto cuatro cinco
+   rial catarí123.45 -> rial catarí123.45
+   leu rumano123.45 -> leu r u m a n o uno dos tres punto cuatro cinco
+   dinar serbio123.45 -> dinar s e r b i o uno dos tres punto cuatro cinco
+   rublo ruso123.45 -> rublo r u s o uno dos tres punto cuatro cinco
+   franco ruandés123.45 -> franco ruandés123.45
+   rial saudí123.45 -> rial saudí123.45
+   dólar de las islas salomón123.45 -> dólar de las islas salomón123.45
+   dólar de singapur123.45 -> dólar de s i n g a p u r uno dos tres punto cuatro cinco
+   leone123.45      -> l e o n e uno dos tres punto cuatro cinco
+   chelín somalí123.45 -> chelín somalí123.45
+   dólar surinamés123.45 -> dólar surinamés123.45
+   libra sursudanesa123.45 -> libra s u r s u d a n e s a uno dos tres punto cuatro cinco
+   dobra123.45      -> d o b r a uno dos tres punto cuatro cinco
+   lilangeni123.45  -> l i l a n g e n i uno dos tres punto cuatro cinco
+   baht123.45       -> b a h t uno dos tres punto cuatro cinco
+   somoni tayiko123.45 -> somoni t a y i k o uno dos tres punto cuatro cinco
+   manat turcomano123.45 -> manat t u r c o m a n o uno dos tres punto cuatro cinco
+   dinar tunecino123.45 -> dinar t u n e c i n o uno dos tres punto cuatro cinco
+   paʻanga123.45    -> paʻanga123.45
+   nuevo dólar taiwanés123.45 -> nuevo dólar taiwanés123.45
+   chelín tanzano123.45 -> chelín t a n z a n o uno dos tres punto cuatro cinco
+   chelín ugandés123.45 -> chelín ugandés123.45
+   dólar estadounidense siguiente día123.45 -> dólar estadounidense siguiente día123.45
+   peso uruguayo en unidades indexadas123.45 -> peso uruguayo en unidades i n d e x a d a s uno dos tres punto cuatro cinco
+   som uzbeko123.45 -> som u z b e k o uno dos tres punto cuatro cinco
+   dong vietnamita123.45 -> dong v i e t n a m i t a uno dos tres punto cuatro cinco
+   vatu123.45       -> v a t u uno dos tres punto cuatro cinco
+   tala123.45       -> t a l a uno dos tres punto cuatro cinco
+   franco c f a de áfrica central123.45 -> franco c f a de áfrica c e n t r a l uno dos tres punto cuatro cinco
+   plata123.45      -> p l a t a uno dos tres punto cuatro cinco
+   oro123.45        -> o r o uno dos tres punto cuatro cinco
+   dólar del caribe oriental123.45 -> dólar del caribe o r i e n t a l uno dos tres punto cuatro cinco
+   derecho especial de giro123.45 -> derecho especial de g i r o uno dos tres punto cuatro cinco
+   franco c f a de áfrica occidental123.45 -> franco c f a de áfrica o c c i d e n t a l uno dos tres punto cuatro cinco
+   paladio123.45    -> p a l a d i o uno dos tres punto cuatro cinco
+   franco c f p123.45 -> franco c f p uno dos tres punto cuatro cinco
+   platino123.45    -> p l a t i n o uno dos tres punto cuatro cinco
+   sistema unitario de compensación regional123.45 -> sistema unitario de compensación r e g i o n a l uno dos tres punto cuatro cinco
+   rial yemení123.45 -> rial yemení123.45
+   rand123.45       -> r a n d uno dos tres punto cuatro cinco
+   kwacha zambiano123.45 -> kwacha z a m b i a n o uno dos tres punto cuatro cinco
+   dólar zimbabuense123.45 -> dólar z i m b a b u e n s e uno dos tres punto cuatro cinco
+   franco andorrano123.45 -> franco a n d o r r a n o uno dos tres punto cuatro cinco
+   kwanza angoleño123.45 -> kwanza angoleño123.45
+   kwanza angoleño reajustado123.45 -> kwanza angoleño r e a j u s t a d o uno dos tres punto cuatro cinco
+   austral argentino123.45 -> austral a r g e n t i n o uno dos tres punto cuatro cinco
+   peso moneda corriente argentino123.45 -> peso moneda corriente a r g e n t i n o uno dos tres punto cuatro cinco
+   peso fuerte argentino123.45 -> peso fuerte a r g e n t i n o uno dos tres punto cuatro cinco
+   peso oro sellado argentino123.45 -> peso oro sellado a r g e n t i n o uno dos tres punto cuatro cinco
+   peso ley argentino123.45 -> peso ley a r g e n t i n o uno dos tres punto cuatro cinco
+   peso moneda nacional argentino123.45 -> peso moneda nacional a r g e n t i n o uno dos tres punto cuatro cinco
+   chelín austríaco123.45 -> chelín austríaco123.45
+   franco belga123.45 -> franco b e l g a uno dos tres punto cuatro cinco
+   lev búlgaro123.45 -> lev búlgaro123.45
+   marco de rda123.45 -> marco de r d a uno dos tres punto cuatro cinco
+   marco alemán123.45 -> marco alemán123.45
+   marco finlandés123.45 -> marco finlandés123.45
+   franco francés123.45 -> franco francés123.45
+   franco luxemburgués123.45 -> franco luxemburgués123.45
+   florín neerlandés123.45 -> florín neerlandés123.45
+   inti123.45       -> i n t i uno dos tres punto cuatro cinco
+   esloti polaco123.45 -> esloti p o l a c o uno dos tres punto cuatro cinco
+   escudo portugués123.45 -> escudo portugués123.45
+   tólar esloveno123.45 -> tólar e s l o v e n o uno dos tres punto cuatro cinco
+   guilder surinamés123.45 -> guilder surinamés123.45
+   rublo de la unión soviética123.45 -> rublo de la unión soviética123.45
+   nuevo dinar yugoslavo123.45 -> nuevo dinar y u g o s l a v o uno dos tres punto cuatro cinco
+   dinar yugoslavo123.45 -> dinar y u g o s l a v o uno dos tres punto cuatro cinco
+   rand surafricano código de fondos123.45 -> rand surafricano código de f o n d o s uno dos tres punto cuatro cinco
+   nuevo zaire123.45 -> nuevo z a i r e uno dos tres punto cuatro cinco
+   zaire123.45      -> z a i r e uno dos tres punto cuatro cinco
+   fils123.45       -> f i l s uno dos tres punto cuatro cinco
+   pul123.45        -> p u l uno dos tres punto cuatro cinco
+   qindarke123.45   -> q i n d a r k e uno dos tres punto cuatro cinco
+   luma123.45       -> l u m a uno dos tres punto cuatro cinco
+   lwei123.45       -> l w e i uno dos tres punto cuatro cinco
+   qəpik123.45      -> qəpik123.45
+   centavo con mantenimiento de valor respecto al dólar estadounidense123.45 -> centavo con mantenimiento de valor respecto al dólar e s t a d o u n i d e n s e uno dos tres punto cuatro cinco
+   chertum123.45    -> c h e r t u m uno dos tres punto cuatro cinco
+   thebe123.45      -> t h e b e uno dos tres punto cuatro cinco
+   kap123.45        -> k a p uno dos tres punto cuatro cinco
+   haléř123.45      -> haléř123.45
+   santim123.45     -> s a n t i m uno dos tres punto cuatro cinco
+   tetri123.45      -> t e t r i uno dos tres punto cuatro cinco
+   butut123.45      -> b u t u t uno dos tres punto cuatro cinco
+   lipa123.45       -> l i p a uno dos tres punto cuatro cinco
+   krajczár123.45   -> krajczár123.45
+   sen123.45        -> s e n uno dos tres punto cuatro cinco
+   agorot123.45     -> a g o r o t uno dos tres punto cuatro cinco
+   dinar123.45      -> d i n a r uno dos tres punto cuatro cinco
+   aurar123.45      -> a u r a r uno dos tres punto cuatro cinco
+   qirsh123.45      -> q i r s h uno dos tres punto cuatro cinco
+   tiyin123.45      -> t i y i n uno dos tres punto cuatro cinco
+   att123.45        -> a t t uno dos tres punto cuatro cinco
+   sente123.45      -> s e n t e uno dos tres punto cuatro cinco
+   ban123.45        -> b a n uno dos tres punto cuatro cinco
+   deni123.45       -> d e n i uno dos tres punto cuatro cinco
+   mongo123.45      -> m o n g o uno dos tres punto cuatro cinco
+   avo123.45        -> a v o uno dos tres punto cuatro cinco
+   jum123.45        -> j u m uno dos tres punto cuatro cinco
+   laari123.45      -> l a a r i uno dos tres punto cuatro cinco
+   kobo123.45       -> k o b o uno dos tres punto cuatro cinco
+   baisa123.45      -> b a i s a uno dos tres punto cuatro cinco
+   toea123.45       -> t o e a uno dos tres punto cuatro cinco
+   groszy123.45     -> g r o s z y uno dos tres punto cuatro cinco
+   dirham123.45     -> d i r h a m uno dos tres punto cuatro cinco
+   öre123.45        -> öre123.45
+   diram123.45      -> d i r a m uno dos tres punto cuatro cinco
+   pfennig123.45    -> p f e n n i g uno dos tres punto cuatro cinco
+   kopek123.45      -> k o p e k uno dos tres punto cuatro cinco
+   para123.45       -> p a r a uno dos tres punto cuatro cinco
+   halalá123.45     -> halalá123.45
+   satang123.45     -> s a t a n g uno dos tres punto cuatro cinco
+   teňňe123.45      -> teňňe123.45
+   millime123.45    -> m i l l i m e uno dos tres punto cuatro cinco
+   seniti123.45     -> s e n i t i uno dos tres punto cuatro cinco
+   kuruş123.45      -> kuruş123.45
+   xu123.45         -> x u uno dos tres punto cuatro cinco
+   sene123.45       -> s e n e uno dos tres punto cuatro cinco
+   ngwee123.45      -> n g w e e uno dos tres punto cuatro cinco
+   heller123.45     -> h e l l e r uno dos tres punto cuatro cinco
+   stotin123.45     -> s t o t i n uno dos tres punto cuatro cinco
+## fr: no money dir
+## it (23 tokens)
+   €123.45          -> un euro due tre punto quattro cinque
+   $123.45          -> dollaro uno due tre punto quattro cinque
+   £123.45          -> una sterlina due tre punto quattro cinque
+   usd123.45        -> u s d uno due tre punto quattro cinque
+   eur123.45        -> e u r uno due tre punto quattro cinque
+   cad123.45        -> c a d uno due tre punto quattro cinque
+   chf123.45        -> c h f uno due tre punto quattro cinque
+   hkd123.45        -> h k d uno due tre punto quattro cinque
+   ¥123.45          -> ¥123.45
+   rs123.45         -> r s uno due tre punto quattro cinque
+   ₽123.45          -> un rublo due tre punto quattro cinque
+   sterlina123.45   -> s t e r l i n a uno due tre punto quattro cinque
+   rupia123.45      -> r u p i a uno due tre punto quattro cinque
+   centesimo123.45  -> c e n t e s i m o uno due tre punto quattro cinque
+   euro123.45       -> e u r o uno due tre punto quattro cinque
+   dollaro123.45    -> d o l l a r o uno due tre punto quattro cinque
+   penny123.45      -> p e n n y uno due tre punto quattro cinque
+   dollaro canadese123.45 -> dollaro c a n a d e s e uno due tre punto quattro cinque
+   franco svizzero123.45 -> franco s v i z z e r o uno due tre punto quattro cinque
+   dollaro statunitense123.45 -> dollaro s t a t u n i t e n s e uno due tre punto quattro cinque
+   rublo123.45      -> r u b l o uno due tre punto quattro cinque
+   dollaro di hong hong123.45 -> dollaro di hong h o n g uno due tre punto quattro cinque
+   copeca123.45     -> c o p e c a uno due tre punto quattro cinque
+## pt (11 tokens)
+   US$123.45        -> U S dólar um dois três ponto quatro cinco
+   R$123.45         -> R dólar um dois três ponto quatro cinco
+   €123.45          -> ERR FstOpError
+   £123.45          -> ERR FstOpError
+   $123.45          -> dólar um dois três ponto quatro cinco
+   dólar americano123.45 -> dólar a m e r i c a n o um dois três ponto quatro cinco
+   real123.45       -> r e a l um dois três ponto quatro cinco
+   euro123.45       -> e u r o um dois três ponto quatro cinco
+   libra esterlina123.45 -> libra e s t e r l i n a um dois três ponto quatro cinco
+   dólar123.45      -> ERR FstOpError
+   centavo123.45    -> c e n t a v o um dois três ponto quatro cinco
+## sv (124 tokens)
+   €123.45          -> hundratjugotre euro . fyrtiofem
+   $123.45          -> hundratjugotre dollar . fyrtiofem
+   ₩123.45          -> hundratjugotre won . fyrtiofem
+   nzd123.45        -> hundratjugotre nyzeeländska dollar . fyrtiofem
+   nz$123.45        -> hundratjugotre nyzeeländska dollar . fyrtiofem
+   rs123.45         -> hundratjugotre rupier . fyrtiofem
+   chf123.45        -> hundratjugotre schweiziska francer . fyrtiofem
+   fr123.45         -> hundratjugotre francer . fyrtiofem
+   dkk123.45        -> hundratjugotre danska kronor . fyrtiofem
+   kr123.45         -> hundratjugotre kronor . fyrtiofem
+   fim123.45        -> hundratjugotre finska mark . fyrtiofem
+   mk123.45         -> mk123.45
+   aed123.45        -> aed123.45
+   dh123.45         -> dh123.45
+   dhs123.45        -> dhs123.45
+   ¥123.45          -> hundratjugotre yen . fyrtiofem
+   czk123.45        -> hundratjugotre tjeckiska kronor . fyrtiofem
+   kč123.45         -> hundratjugotre tjeckiska kronor . fyrtiofem
+   crc123.45        -> hundratjugotre costaricanska colón . fyrtiofem
+   ₡123.45          -> hundratjugotre colón . fyrtiofem
+   awg123.45        -> hundratjugotre arubanska floriner . fyrtiofem
+   nok123.45        -> hundratjugotre norska kroner . fyrtiofem
+   sek123.45        -> hundratjugotre kronor . fyrtiofem
+   r$123.45         -> hundratjugotre realer . fyrtiofem
+   brl123.45        -> hundratjugotre realer . fyrtiofem
+   esp123.45        -> esp123.45
+   ₧123.45          -> ₧123.45
+   ptas123.45       -> ptas123.45
+   usd123.45        -> hundratjugotre amerikanska dollar . fyrtiofem
+   usd$123.45       -> hundratjugotre amerikanska dollar . fyrtiofem
+   USD$123.45       -> hundratjugotre amerikanska dollar . fyrtiofem
+   aud123.45        -> hundratjugotre australiska dollar . fyrtiofem
+   au$123.45        -> hundratjugotre australiska dollar . fyrtiofem
+   bsd123.45        -> hundratjugotre bahamanska dollar . fyrtiofem
+   bs$123.45        -> hundratjugotre bahamanska dollar . fyrtiofem
+   bbd123.45        -> hundratjugotre barbadiska dollar . fyrtiofem
+   bds$123.45       -> hundratjugotre barbadiska dollar . fyrtiofem
+   bzd123.45        -> hundratjugotre beliziska dollar . fyrtiofem
+   bz$123.45        -> hundratjugotre beliziska dollar . fyrtiofem
+   bmd123.45        -> hundratjugotre bermudiska dollar . fyrtiofem
+   bd$123.45        -> hundratjugotre bermudiska dollar . fyrtiofem
+   bnd123.45        -> hundratjugotre bruneiska dollar . fyrtiofem
+   b$123.45         -> hundratjugotre bruneiska dollar . fyrtiofem
+   kyd123.45        -> hundratjugotre caymanska dollar . fyrtiofem
+   ci$123.45        -> hundratjugotre caymanska dollar . fyrtiofem
+   fjd123.45        -> hundratjugotre fijidollar . fyrtiofem
+   fj$123.45        -> hundratjugotre fijidollar . fyrtiofem
+   gyd123.45        -> hundratjugotre guyanska dollar . fyrtiofem
+   gy$123.45        -> hundratjugotre guyanska dollar . fyrtiofem
+   hkd123.45        -> hundratjugotre hongkongdollar . fyrtiofem
+   hk$123.45        -> hundratjugotre hongkongdollar . fyrtiofem
+   jmd123.45        -> hundratjugotre jamaicanska dollar . fyrtiofem
+   ja$123.45        -> hundratjugotre jamaicanska dollar . fyrtiofem
+   cad123.45        -> hundratjugotre kanadensiska dollar . fyrtiofem
+   c$123.45         -> hundratjugotre kanadensiska dollar . fyrtiofem
+   lrd123.45        -> hundratjugotre liberianska dollar . fyrtiofem
+   lib$123.45       -> hundratjugotre liberianska dollar . fyrtiofem
+   nad123.45        -> hundratjugotre namibiska dollar . fyrtiofem
+   n$123.45         -> hundratjugotre namibiska dollar . fyrtiofem
+   sbd123.45        -> hundratjugotre salomondollar . fyrtiofem
+   si$123.45        -> hundratjugotre salomondollar . fyrtiofem
+   sgd123.45        -> hundratjugotre singaporianska dollar . fyrtiofem
+   srd123.45        -> hundratjugotre surinamesiska dollar . fyrtiofem
+   twd123.45        -> hundratjugotre taiwanesiska dollar . fyrtiofem
+   nt$123.45        -> hundratjugotre taiwanesiska dollar . fyrtiofem
+   ttd123.45        -> hundratjugotre trinidaddollar . fyrtiofem
+   tt$123.45        -> hundratjugotre trinidaddollar . fyrtiofem
+   tuv$123.45       -> hundratjugotre tuvaluanska dollar . fyrtiofem
+   zwd123.45        -> hundratjugotre zimbabwiska dollar . fyrtiofem
+   z$123.45         -> hundratjugotre zimbabwiska dollar . fyrtiofem
+   xcd123.45        -> hundratjugotre östkaribiska dollar . fyrtiofem
+   ec$123.45        -> hundratjugotre östkaribiska dollar . fyrtiofem
+   krw123.45        -> hundratjugotre sydkoreanska won . fyrtiofem
+   svc123.45        -> hundratjugotre salvadoranska colón . fyrtiofem
+   ₽123.45          -> ₽123.45
+   £123.45          -> hundratjugotre pund . fyrtiofem
+   gbp123.45        -> hundratjugotre brittiska pund . fyrtiofem
+   US$123.45        -> US$123.45
+   pln123.45        -> pln123.45
+   GBP123.45        -> GBP123.45
+   euro123.45       -> euro123.45
+   rupie123.45      -> rupie123.45
+   dollar123.45     -> dollar123.45
+   pund123.45       -> pund123.45
+   nyzeeländsk dollar123.45 -> nyzeeländsk dollar123.45
+   schweizisk franc123.45 -> schweizisk franc123.45
+   franc123.45      -> franc123.45
+   dansk krona123.45 -> dansk krona123.45
+   finsk mark123.45 -> finsk mark123.45
+   tjeckisk krona123.45 -> tjeckisk krona123.45
+   costaricansk colón123.45 -> costaricansk colón123.45
+   arubansk florin123.45 -> arubansk florin123.45
+   norsk krone123.45 -> norsk krone123.45
+   krona123.45      -> krona123.45
+   real123.45       -> real123.45
+   amerikansk dollar123.45 -> amerikansk dollar123.45
+   australisk dollar123.45 -> australisk dollar123.45
+   bahamansk dollar123.45 -> bahamansk dollar123.45
+   barbadisk dollar123.45 -> barbadisk dollar123.45
+   belizisk dollar123.45 -> belizisk dollar123.45
+   bermudisk dollar123.45 -> bermudisk dollar123.45
+   bruneisk dollar123.45 -> bruneisk dollar123.45
+   caymansk dollar123.45 -> caymansk dollar123.45
+   fijidollar123.45 -> fijidollar123.45
+   guyansk dollar123.45 -> guyansk dollar123.45
+   hongkongdollar123.45 -> hongkongdollar123.45
+   jamaicansk dollar123.45 -> jamaicansk dollar123.45
+   kanadensisk dollar123.45 -> kanadensisk dollar123.45
+   liberiansk dollar123.45 -> liberiansk dollar123.45
+   namibisk dollar123.45 -> namibisk dollar123.45
+   salomondollar123.45 -> salomondollar123.45
+   singaporiansk dollar123.45 -> singaporiansk dollar123.45
+   surinamesisk dollar123.45 -> surinamesisk dollar123.45
+   taiwanesisk dollar123.45 -> taiwanesisk dollar123.45
+   trinidaddollar123.45 -> trinidaddollar123.45
+   tuvaluansk dollar123.45 -> tuvaluansk dollar123.45
+   zimbabwisk dollar123.45 -> zimbabwisk dollar123.45
+   östkaribisk dollar123.45 -> östkaribisk dollar123.45
+   sydkoreansk won123.45 -> sydkoreansk won123.45
+   won123.45        -> won123.45
+   salvadoransk colón123.45 -> salvadoransk colón123.45
+   colón123.45      -> colón123.45
+   brittiskt pund123.45 -> brittiskt pund123.45
+   yen123.45        -> yen123.45
+## vi (51 tokens)
+   $123.45          -> ERR FstOpError
+   đô la123.45      -> đô la một trăm hai mươi ba. bốn mươi lăm
+   €123.45          -> ERR FstOpError
+   ¥123.45          -> ERR FstOpError
+   ₩123.45          -> ERR FstOpError
+   ₫123.45          -> ERR FstOpError
+   đ123.45          -> đ một trăm hai mươi ba. bốn mươi lăm
+   đồng123.45       -> đồng một trăm hai mươi ba. bốn mươi lăm
+   £123.45          -> ERR FstOpError
+   ₹123.45          -> ₹ một trăm hai mươi ba. bốn mươi lăm
+   ¢123.45          -> ¢ một trăm hai mươi ba. bốn mươi lăm
+   ₣123.45          -> ₣ một trăm hai mươi ba. bốn mươi lăm
+   cent123.45       -> cent một trăm hai mươi ba. bốn mươi lăm
+   cents123.45      -> cents một trăm hai mươi ba. bốn mươi lăm
+   CHF123.45        -> CHF một trăm hai mươi ba. bốn mươi lăm
+   FF123.45         -> FF một trăm hai mươi ba. bốn mươi lăm
+   JPY123.45        -> JPY một trăm hai mươi ba. bốn mươi lăm
+   KRW123.45        -> KRW một trăm hai mươi ba. bốn mươi lăm
+   CNY123.45        -> CNY một trăm hai mươi ba. bốn mươi lăm
+   USD123.45        -> USD một trăm hai mươi ba. bốn mươi lăm
+   usd123.45        -> usd một trăm hai mươi ba. bốn mươi lăm
+   SGD123.45        -> SGD một trăm hai mươi ba. bốn mươi lăm
+   MYR123.45        -> MYR một trăm hai mươi ba. bốn mươi lăm
+   THB123.45        -> THB một trăm hai mươi ba. bốn mươi lăm
+   IDR123.45        -> IDR một trăm hai mươi ba. bốn mươi lăm
+   PHP123.45        -> PHP một trăm hai mươi ba. bốn mươi lăm
+   AUD123.45        -> AUD một trăm hai mươi ba. bốn mươi lăm
+   CAD123.45        -> CAD một trăm hai mươi ba. bốn mươi lăm
+   NZD123.45        -> NZD một trăm hai mươi ba. bốn mươi lăm
+   HKD123.45        -> HKD một trăm hai mươi ba. bốn mươi lăm
+   TWD123.45        -> TWD một trăm hai mươi ba. bốn mươi lăm
+   ff123.45         -> ff một trăm hai mươi ba. bốn mươi lăm
+   chf123.45        -> chf một trăm hai mươi ba. bốn mươi lăm
+   jpy123.45        -> jpy một trăm hai mươi ba. bốn mươi lăm
+   krw123.45        -> krw một trăm hai mươi ba. bốn mươi lăm
+   cny123.45        -> cny một trăm hai mươi ba. bốn mươi lăm
+   vnd123.45        -> vnd một trăm hai mươi ba. bốn mươi lăm
+   vnđ123.45        -> vnđ một trăm hai mươi ba. bốn mươi lăm
+   sgd123.45        -> sgd một trăm hai mươi ba. bốn mươi lăm
+   myr123.45        -> myr một trăm hai mươi ba. bốn mươi lăm
+   thb123.45        -> thb một trăm hai mươi ba. bốn mươi lăm
+   idr123.45        -> idr một trăm hai mươi ba. bốn mươi lăm
+   php123.45        -> php một trăm hai mươi ba. bốn mươi lăm
+   aud123.45        -> aud một trăm hai mươi ba. bốn mươi lăm
+   cad123.45        -> cad một trăm hai mươi ba. bốn mươi lăm
+   nzd123.45        -> nzd một trăm hai mươi ba. bốn mươi lăm
+   hkd123.45        -> hkd một trăm hai mươi ba. bốn mươi lăm
+   twd123.45        -> twd một trăm hai mươi ba. bốn mươi lăm
+   VND123.45        -> VND một trăm hai mươi ba. bốn mươi lăm
+   VNĐ123.45        -> VNĐ một trăm hai mươi ba. bốn mươi lăm
+   pence123.45      -> pence một trăm hai mươi ba. bốn mươi lăm
+## zh (240 tokens)
+   ALL123.45        -> 十二三点四五阿尔巴尼亚列克
+   AFN123.45        -> 十二三点四五阿富汗 阿富汗尼
+   ARS123.45        -> 十二三点四五阿根廷比索
+   AWG123.45        -> 十二三点四五阿鲁巴盾
+   AUD123.45        -> 十二三点四五澳元
+   AZN123.45        -> 十二三点四五阿塞拜疆马纳特
+   BSD123.45        -> 十二三点四五巴哈马元
+   BBD123.45        -> 十二三点四五巴巴多斯元
+   BYN123.45        -> 十二三点四五白俄罗斯卢布
+   BZD123.45        -> 十二三点四五伯利兹元
+   BMD123.45        -> 十二三点四五百慕大元
+   BOB123.45        -> 十二三点四五玻利维亚玻利维亚诺
+   BAM123.45        -> 十二三点四五波斯尼亚和黑塞哥维那可兑换马克
+   BWP123.45        -> 十二三点四五博茨瓦纳普拉
+   BGN123.45        -> 十二三点四五保加利亚列弗
+   BRL123.45        -> 十二三点四五巴西雷亚尔
+   BND123.45        -> 十二三点四五文莱达鲁萨兰国元
+   KHR123.45        -> 十二三点四五柬埔寨瑞尔
+   CAD123.45        -> 十二三点四五加元
+   KYD123.45        -> 十二三点四五开曼群岛元
+   CLP123.45        -> 十二三点四五智利比索
+   CNY123.45        -> 十二三点四五人民币
+   COP123.45        -> 十二三点四五哥伦比亚比索
+   CRC123.45        -> 十二三点四五哥斯达黎加科隆
+   HRK123.45        -> 十二三点四五克罗地亚库纳
+   CUP123.45        -> 十二三点四五古巴比索
+   CZK123.45        -> 十二三点四五捷克克朗
+   DKK123.45        -> 十二三点四五丹麦克朗
+   DOP123.45        -> 十二三点四五多米尼加共和国比索
+   XCD123.45        -> 十二三点四五东加勒比元
+   EGP123.45        -> 十二三点四五埃及镑
+   SVC123.45        -> 十二三点四五萨尔瓦多科隆
+   EUR123.45        -> 十二三点四五欧元成员国
+   FKP123.45        -> 十二三点四五福克兰群岛（马尔维纳斯）镑
+   FJD123.45        -> 十二三点四五斐济元
+   GHS123.45        -> 十二三点四五加纳塞地
+   GIP123.45        -> 十二三点四五直布罗陀镑
+   GTQ123.45        -> 十二三点四五危地马拉格查尔
+   GGP123.45        -> 十二三点四五根西岛镑
+   GYD123.45        -> 十二三点四五圭亚那元
+   HNL123.45        -> 十二三点四五洪都拉斯伦皮拉
+   HKD123.45        -> 十二三点四五港元
+   HUF123.45        -> 十二三点四五匈牙利福林
+   ISK123.45        -> 十二三点四五冰岛克朗
+   INR123.45        -> 十二三点四五印度卢比
+   IDR123.45        -> 十二三点四五印尼盾
+   IRR123.45        -> 十二三点四五伊朗里亚尔
+   IMP123.45        -> 十二三点四五马恩岛英镑
+   ILS123.45        -> 十二三点四五以色列谢克尔
+   JMD123.45        -> 十二三点四五牙买加元
+   JPY123.45        -> 十二三点四五日元
+   JEP123.45        -> 十二三点四五泽西镑
+   KZT123.45        -> 十二三点四五哈萨克斯坦腾格
+   KPW123.45        -> 十二三点四五朝鲜园
+   KRW123.45        -> 十二三点四五韩元
+   KGS123.45        -> 十二三点四五吉尔吉斯斯坦索姆
+   LAK123.45        -> 十二三点四五老挝基普
+   LBP123.45        -> 十二三点四五黎巴嫩镑
+   LRD123.45        -> 十二三点四五利比里亚元
+   MKD123.45        -> 十二三点四五马其顿代纳尔
+   MYR123.45        -> 十二三点四五马来西亚令吉
+   MUR123.45        -> 十二三点四五毛里求斯卢比
+   MXN123.45        -> 十二三点四五墨西哥比索
+   MNT123.45        -> 十二三点四五蒙古图格里克
+   MZN123.45        -> 十二三点四五莫桑比克梅蒂卡尔
+   NAD123.45        -> 十二三点四五纳米比亚元
+   NPR123.45        -> 十二三点四五尼泊尔卢比
+   ANG123.45        -> 十二三点四五荷属安的列斯盾
+   NZD123.45        -> 十二三点四五新西兰元
+   NIO123.45        -> 十二三点四五尼加拉瓜科尔多瓦
+   NGN123.45        -> 十二三点四五尼日利亚奈拉
+   NOK123.45        -> 十二三点四五挪威克朗
+   OMR123.45        -> 十二三点四五阿曼里亚尔
+   PKR123.45        -> 十二三点四五巴基斯坦卢比
+   PAB123.45        -> 十二三点四五巴拿马巴尔博亚
+   PYG123.45        -> 十二三点四五巴拉圭瓜拉尼
+   PEN123.45        -> 十二三点四五秘鲁索尔
+   PHP123.45        -> 十二三点四五菲律宾比索
+   PLN123.45        -> 十二三点四五波兰兹罗提
+   QAR123.45        -> 十二三点四五卡塔尔里亚尔
+   RON123.45        -> 十二三点四五罗马尼亚列伊
+   RUB123.45        -> 十二三点四五俄罗斯卢布
+   SHP123.45        -> 十二三点四五圣赫勒拿镑
+   SAR123.45        -> 十二三点四五沙特阿拉伯里亚尔
+   RSD123.45        -> 十二三点四五塞尔维亚第纳尔
+   SCR123.45        -> 十二三点四五塞舌尔卢比
+   SGD123.45        -> 十二三点四五新加坡元
+   SBD123.45        -> 十二三点四五所罗门群岛元
+   SOS123.45        -> 十二三点四五索马里先令
+   ZAR123.45        -> 十二三点四五南非兰特
+   LKR123.45        -> 十二三点四五斯里兰卡卢比
+   SEK123.45        -> 十二三点四五瑞典克朗
+   SRD123.45        -> 十二三点四五苏里南元
+   SYP123.45        -> 十二三点四五叙利亚镑
+   TWD123.45        -> 十二三点四五新台币
+   THB123.45        -> 十二三点四五泰铢
+   TTD123.45        -> 十二三点四五特立尼达和多巴哥元
+   TRY123.45        -> 十二三点四五土耳其里拉
+   TVD123.45        -> 十二三点四五图瓦卢元
+   UAH123.45        -> 十二三点四五乌克兰格里夫纳
+   AED123.45        -> 十二三点四五阿联酋迪拉姆
+   GBP123.45        -> 十二三点四五英镑
+   USD123.45        -> 十二三点四五美元
+   UYU123.45        -> 十二三点四五乌拉圭比索
+   UZS123.45        -> 十二三点四五乌兹别克斯坦索姆
+   VEF123.45        -> 十二三点四五委内瑞拉玻利瓦尔
+   VND123.45        -> 十二三点四五越南东
+   YER123.45        -> 十二三点四五也门里亚尔
+   ZWD123.45        -> 十二三点四五津巴布韦元
+   J￥123.45         -> 十二三点四五日元
+   JPY￥123.45       -> 十二三点四五日元
+   HK＄123.45        -> 十二三点四五港元
+   A$123.45         -> 十二三点四五澳元
+   CAD$123.45       -> 十二三点四五加元
+   US$123.45        -> 十二三点四五美元
+   €123.45          -> 十二三点四五欧元
+   £123.45          -> 十二三点四五英镑
+   Fr123.45         -> 十二三点四五瑞士法郎
+   ₣123.45          -> 十二三点四五法郎
+   ¥123.45          -> 十二三点四五圆
+   Kr123.45         -> 十二三点四五韩元
+   NXN$123.45       -> 十二三点四五墨西哥比索
+   NZD$123.45       -> 十二三点四五新西兰元
+   SGD$123.45       -> 十二三点四五新加坡元
+   HKD$123.45       -> 十二三点四五港元
+   NOKKr123.45      -> 十二三点四五挪威克朗
+   ₩123.45          -> 十二三点四五韩元
+   TRY₺123.45       -> 十二三点四五土耳其里拉
+   ₽123.45          -> 十二三点四五卢布
+   BRLR$123.45      -> 十二三点四五巴西雷亚尔
+   DKKKr123.45      -> 十二三点四五丹麦克朗
+   TWDNT$123.45     -> 十二三点四五新台币
+   ฿123.45          -> 十二三点四五泰铢
+   RM123.45         -> 十二三点四五马来西亚林吉特
+   Rp123.45         -> 十二三点四五印尼盾
+   Kč123.45         -> 十二三点四五捷克克朗
+   ₪123.45          -> 十二三点四五以色列谢克尔
+   CLP$123.45       -> 十二三点四五智利披索
+   ₱123.45          -> 十二三点四五菲律宾披索
+   د.إ123.45        -> 十二三点四五阿联酋迪拉姆
+   COL$123.45       -> 十二三点四五哥伦比亚披索
+   L123.45          -> 十二三点四五罗马尼亚列伊
+   JPY¥123.45       -> 十二三点四五日元
+   ￥123.45          -> 十二三点四五人民币
+   Lek123.45        -> 十二三点四五阿尔巴尼亚列克
+   ƒ123.45          -> 十二三点四五阿鲁巴盾
+   Br123.45         -> 十二三点四五白俄罗斯卢布
+   BZ$123.45        -> 十二三点四五伯利兹元
+   $b123.45         -> 十二三点四五玻利维亚玻利维亚诺
+   KM123.45         -> 十二三点四五波斯尼亚和黑塞哥维那可兑换马克
+   P123.45          -> 十二三点四五博茨瓦纳普拉
+   лв123.45         -> 十二三点四五哈萨克斯坦腾格
+   R$123.45         -> 十二三点四五巴西雷亚尔
+   ៛123.45          -> 十二三点四五柬埔寨瑞尔
+   ₡123.45          -> 十二三点四五哥斯达黎加科隆
+   kn123.45         -> 十二三点四五克罗地亚库纳
+   kr123.45         -> 十二三点四五丹麦克朗
+   RD$123.45        -> 十二三点四五多米尼加共和国比索
+   ¢123.45          -> 十二三点四五加纳塞地
+   Q123.45          -> 十二三点四五危地马拉格查尔
+   Ft123.45         -> 十二三点四五匈牙利福林
+   ₹123.45          -> 十二三点四五印度卢比
+   ￡123.45          -> 十二三点四五英镑
+   J$123.45         -> 十二三点四五牙买加元
+   ₭123.45          -> 十二三点四五老挝基普
+   ден123.45        -> 十二三点四五马其顿代纳尔
+   ₨123.45          -> 十二三点四五毛里求斯卢比
+   ₮123.45          -> 十二三点四五蒙古图格里克
+   MT123.45         -> 十二三点四五莫桑比克梅蒂卡尔
+   C$123.45         -> 十二三点四五尼加拉瓜科尔多瓦
+   ₦123.45          -> 十二三点四五尼日利亚奈拉
+   B/.123.45        -> 十二三点四五巴拿马巴尔博亚
+   Gs123.45         -> 十二三点四五巴拉圭瓜拉尼
+   S/.123.45        -> 十二三点四五秘鲁索尔
+   zł123.45         -> 十二三点四五波兰兹罗提
+   lei123.45        -> 十二三点四五罗马尼亚列伊
+   Дин.123.45       -> 十二三点四五塞尔维亚第纳尔
+   S123.45          -> 十二三点四五索马里先令
+   R123.45          -> 十二三点四五南非兰特
+   CHF123.45        -> 十二三点四五瑞士法郎
+   NT$123.45        -> 十二三点四五新台币
+   TT$123.45        -> 十二三点四五特立尼达和多巴哥元
+   ₺123.45          -> 十二三点四五土耳其里拉
+   ₴123.45          -> 十二三点四五乌克兰格里夫纳
+   $123.45          -> 十二三点四五美元
+   $U123.45         -> 十二三点四五乌拉圭比索
+   Bs123.45         -> 十二三点四五委内瑞拉玻利瓦尔
+   ₫123.45          -> 十二三点四五越南东
+   Z$123.45         -> 十二三点四五津巴布韦元
+   美元123.45         -> 美元一百二十三点四五
+   美金123.45         -> 美金一百二十三点四五
+   欧元123.45         -> 欧元一百二十三点四五
+   英镑123.45         -> 英镑一百二十三点四五
+   加元123.45         -> 加元一百二十三点四五
+   瑞士法郎123.45       -> 瑞士法郎一百二十三点四五
+   法郎123.45         -> 法郎一百二十三点四五
+   加拿大元123.45       -> 加拿大元一百二十三点四五
+   元123.45          -> 元一百二十三点四五
+   圆123.45          -> 圆一百二十三点四五
+   韩元123.45         -> 韩元一百二十三点四五
+   墨西哥比索123.45      -> 墨西哥比索一百二十三点四五
+   比索123.45         -> 比索一百二十三点四五
+   新西兰元123.45       -> 新西兰元一百二十三点四五
+   新加坡元123.45       -> 新加坡元一百二十三点四五
+   港元123.45         -> 港元一百二十三点四五
+   港币123.45         -> 港币一百二十三点四五
+   人民币123.45        -> 人民币一百二十三点四五
+   挪威克朗123.45       -> 挪威克朗一百二十三点四五
+   克朗123.45         -> 克朗一百二十三点四五
+   土耳其里拉123.45      -> 土耳其里拉一百二十三点四五
+   里拉123.45         -> 里拉一百二十三点四五
+   印度卢比123.45       -> 印度卢比一百二十三点四五
+   卢比123.45         -> 卢比一百二十三点四五
+   俄罗斯卢布123.45      -> 俄罗斯卢布一百二十三点四五
+   卢布123.45         -> 卢布一百二十三点四五
+   巴西雷亚尔123.45      -> 巴西雷亚尔一百二十三点四五
+   雷亚尔123.45        -> 雷亚尔一百二十三点四五
+   南非兰特123.45       -> 南非兰特一百二十三点四五
+   兰特123.45         -> 兰特一百二十三点四五
+   丹麦克朗123.45       -> 丹麦克朗一百二十三点四五
+   波兰兹罗提123.45      -> 波兰兹罗提一百二十三点四五
+   罗提123.45         -> 罗提一百二十三点四五
+   新台币123.45        -> 新台币一百二十三点四五
+   台币123.45         -> 台币一百二十三点四五
+   泰铢123.45         -> 泰铢一百二十三点四五
+   马来西亚林吉特123.45    -> 马来西亚林吉特一百二十三点四五
+   印尼盾123.45        -> 印尼盾一百二十三点四五
+   盾123.45          -> 盾一百二十三点四五
+   匈牙利福林123.45      -> 匈牙利福林一百二十三点四五
+   福林123.45         -> 福林一百二十三点四五
+   捷克克朗123.45       -> 捷克克朗一百二十三点四五
+   以色列新谢克尔123.45    -> 以色列新谢克尔一百二十三点四五
+   新谢克尔123.45       -> 新谢克尔一百二十三点四五
+   智利比索123.45       -> 智利比索一百二十三点四五
+   菲律宾披索123.45      -> 菲律宾披索一百二十三点四五
+   阿联酋迪拉姆123.45     -> 阿联酋迪拉姆一百二十三点四五
+   迪拉姆123.45        -> 迪拉姆一百二十三点四五
+   哥伦比亚披索123.45     -> 哥伦比亚披索一百二十三点四五
+   马来西亚令吉123.45     -> 马来西亚令吉一百二十三点四五
+   日元123.45         -> 日元一百二十三点四五
+## ko (22 tokens)
+   ₩123.45          -> 백이십삼원사십오
+   KRW123.45        -> 백이십삼원사십오
+   krw123.45        -> 백이십삼원사십오
+   $123.45          -> 백이십삼 달러사십오
+   US$123.45        -> 백이십삼 달러사십오
+   HK$123.45        -> 백이십삼 홍콩 달러사십오
+   hk$123.45        -> 백이십삼 홍콩 달러사십오
+   €123.45          -> 백이십삼 유로사십오
+   EUR123.45        -> 백이십삼 유로사십오
+   ¥123.45          -> 백이십삼 엔사십오
+   JPY123.45        -> 백이십삼 엔사십오
+   CAD123.45        -> 백이십삼 캐나다 달러사십오
+   cad123.45        -> 백이십삼 캐나다 달러사십오
+   NZD123.45        -> 백이십삼 뉴질랜드 달러사십오
+   nzd123.45        -> 백이십삼 뉴질랜드 달러사십오
+   CHF123.45        -> 백이십삼 스위스 프랑사십오
+   chf123.45        -> 백이십삼 스위스 프랑사십오
+   AED123.45        -> 백이십삼 아랍에미리트 디르함사십오
+   aed123.45        -> 백이십삼 아랍에미리트 디르함사십오
+   Dh123.45         -> 백이십삼 디르함사십오
+   DH123.45         -> 백이십삼 디르함사십오
+   Dhs.123.45       -> 백이십삼 디르함사십오
+## hi (18 tokens)
+   ₹123.45          -> एक सौ तेईस रुपए पैंतालीस पैसे
+   £123.45          -> एक सौ तेईस पाउंड पैंतालीस पेंस
+   ₩123.45          -> एक सौ तेईस वॉन पैंतालीस जिओन
+   $123.45          -> एक सौ तेईस डॉलर पैंतालीस सेंट
+   ₺123.45          -> एक सौ तेईस लीरा पैंतालीस कुरस
+   ৳123.45          -> एक सौ तेईस टका पैंतालीस पैसे
+   ¥123.45          -> एक सौ तेईस येन पैंतालीस सेन
+   ₦123.45          -> एक सौ तेईस नाइरा पैंतालीस कोबो
+   €123.45          -> एक सौ तेईस यूरो पैंतालीस सेंट
+   रुपए123.45       -> रुपए123.45
+   पाउंड123.45      -> पाउंड123.45
+   वॉन123.45        -> वॉन123.45
+   डॉलर123.45       -> डॉलर123.45
+   लीरा123.45       -> लीरा123.45
+   टका123.45        -> टका123.45
+   येन123.45        -> येन123.45
+   नाइरा123.45      -> नाइरा123.45
+   यूरो123.45       -> यूरो123.45
+## ar (43 tokens)
+   $123.45          -> مئة وثلاثة وعشرون دولار وخمسة وأربعون سنت
+   US$123.45        -> مئة وثلاثة وعشرون دولار أمريكي وخمسة وأربعون
+   ฿123.45          -> مئة وثلاثة وعشرون بات تايلندي وخمسة وأربعون
+   £123.45          -> مئة وثلاثة وعشرون جنيه استرليني وخمسة وأربعون بنس
+   €123.45          -> مئة وثلاثة وعشرون يورو وخمسة وأربعون سنت
+   ₩123.45          -> مئة وثلاثة وعشرون ين وخمسة وأربعون
+   nzd123.45        -> مئة وثلاثة وعشرون دولار نيوزيلندي وخمسة وأربعون
+   rs123.45         -> مئة وثلاثة وعشرون روبية وخمسة وأربعون
+   chf123.45        -> مئة وثلاثة وعشرون فرنك سويسري وخمسة وأربعون
+   dkk123.45        -> مئة وثلاثة وعشرون كرونة دنماركية وخمسة وأربعون
+   aed123.45        -> مئة وثلاثة وعشرون درهم إماراتي وخمسة وأربعون
+   ¥123.45          -> مئة وثلاثة وعشرون ين ياباني وخمسة وأربعون
+   mro123.45        -> مئة وثلاثة وعشرون الأوقية الموريتانية وخمسة وأربعون
+   pkr123.45        -> مئة وثلاثة وعشرون روبية باكستانية وخمسة وأربعون
+   hk$123.45        -> مئة وثلاثة وعشرون دولار هونج كونج وخمسة وأربعون
+   npr123.45        -> مئة وثلاثة وعشرون روبية نيبالية وخمسة وأربعون
+   sar123.45        -> مئة وثلاثة وعشرون ريال سعودي وخمسة وأربعون
+   dm123.45         -> مئة وثلاثة وعشرون مارك ألماني وخمسة وأربعون
+   cad123.45        -> مئة وثلاثة وعشرون دولار الكندي وخمسة وأربعون
+   DH123.45         -> مئة وثلاثة وعشرون درهم وخمسة وأربعون
+   Dh123.45         -> مئة وثلاثة وعشرون درهم وخمسة وأربعون
+   Dhs.123.45       -> مئة وثلاثة وعشرون درهم وخمسة وأربعون
+   ₺123.45          -> مئة وثلاثة وعشرون ليرة تركية وخمسة وأربعون
+   ج.م123.45        -> ج.م123.45
+   د.ع123.45        -> د.ع123.45
+   د.ك123.45        -> د.ك123.45
+   أ.م123.45        -> أ.م123.45
+   د.إ123.45        -> د.إ123.45
+   د.ب123.45        -> د.ب123.45
+   د.ج123.45        -> د.ج123.45
+   ج.س123.45        -> ج.س123.45
+   د.أ123.45        -> د.أ123.45
+   ر.س123.45        -> ر.س123.45
+   ر ق123.45        -> ر ق123.45
+   ر.ع123.45        -> ر.ع123.45
+   ل.ل123.45        -> ل.ل123.45
+   د.م123.45        -> د.م123.45
+   د.ل123.45        -> د.ل123.45
+   د.ت123.45        -> د.ت123.45
+   ل.س123.45        -> ل.س123.45
+   ر.ي123.45        -> ر.ي123.45
+   ف.ج123.45        -> ف.ج123.45
+   ش.ص123.45        -> ش.ص123.45
+## hu (11 tokens)
+   SEK123.45        -> S E K egy kettő három pont négy öt
+   GBP123.45        -> G B P egy kettő három pont négy öt
+   £123.45          -> százhuszonhárom font . negyvenöt
+   USD123.45        -> U S D egy kettő három pont négy öt
+   US$123.45        -> U S dollárjel egy kettő három pont négy öt
+   $123.45          -> dollárjel egy kettő három pont négy öt
+   IR£123.45        -> százhuszonhárom ír font . negyvenöt
+   IEP123.45        -> I E P egy kettő három pont négy öt
+   NOK123.45        -> N O K egy kettő három pont négy öt
+   HUF123.45        -> H U F egy kettő három pont négy öt
+   Ft123.45         -> F t egy kettő három pont négy öt
+## hy: no money dir

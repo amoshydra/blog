@@ -1,0 +1,26 @@
+# flite_cmu_us_slt flite-2.2-current
+input                normalised words
+$123.45              one hundred twenty three dollars forty five cents
+$1                   one dollar
+$1.01                one dollar one cent
+$1.5                 one dollar five cents
+$0.50                zero dollars fifty cents
+$.50                 $ point five zero
+$0.01                zero dollars one cent
+$0                   zero dollars
+$12.345              twelve point three four five dollars
+$1,234.56            one thousand two hundred thirty four dollars fifty six cents
+$1000000             one million dollars
+$1 million           one million dollars
+$1M                  $ one m
+-$5.00               five dollars
+US$123.45            us one hundred twenty three dollars forty five cents
+GBP-symbol123.45     ? ? one hundred twenty three point four five
+EUR-symbol123.45     ? ? ? one hundred twenty three point four five
+JPY-symbol123.45     ? ? one hundred twenty three point four five
+USD123.45            u s d one hundred twenty three point four five
+EUR123.45            eur one hundred twenty three point four five
+SGD123.45            s g d one hundred twenty three point four five
+AUD123.45            aud one hundred twenty three point four five
+THB123.45            t h b one hundred twenty three point four five
+123.45               one hundred twenty three point four five

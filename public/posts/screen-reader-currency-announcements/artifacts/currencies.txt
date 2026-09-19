@@ -1,0 +1,20 @@
+USD	United States dollar	$
+EUR	Euro	€
+JPY	Japanese yen	¥
+GBP	Pound sterling	£
+CNY	Chinese yuan	-
+AUD	Australian dollar	-
+CAD	Canadian dollar	-
+CHF	Swiss franc	-
+HKD	Hong Kong dollar	-
+SGD	Singapore dollar	-
+KRW	South Korean won	₩
+INR	Indian rupee	₹
+NZD	New Zealand dollar	-
+SEK	Swedish krona	-
+NOK	Norwegian krone	-
+MXN	Mexican peso	-
+TWD	New Taiwan dollar	-
+ZAR	South African rand	-
+BRL	Brazilian real	R$
+THB	Thai baht	฿

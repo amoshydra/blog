@@ -1,0 +1,169 @@
+## en
+   $123.45      -> one hundred and twenty three dollars forty five cents
+   USD123.45    -> usd one two three dot four five
+   USD 123.45   -> USD one hundred and twenty three point four five
+   SGD123.45    -> sgd one two three dot four five
+   CNY123.45    -> cny one two three dot four five
+   TWD123.45    -> twd one two three dot four five
+   ZAR123.45    -> zar one two three dot four five
+   €123.45      -> one hundred and twenty three euros forty five cents
+   £123.45      -> one hundred and twenty three pounds forty five pence
+   ¥123.45      -> one hundred and twenty three yen. forty five
+   100 USD      -> one hundred USD
+## de
+   $123.45      -> dollar zeichen eins zwei drei punkt vier fünf
+   USD123.45    -> U S D eins zwei drei punkt vier fünf
+   USD 123.45   -> USD eins zwei drei punkt vier fünf
+   SGD123.45    -> S G D eins zwei drei punkt vier fünf
+   CNY123.45    -> C N Y eins zwei drei punkt vier fünf
+   TWD123.45    -> T W D eins zwei drei punkt vier fünf
+   ZAR123.45    -> Z A R eins zwei drei punkt vier fünf
+   €123.45      -> ein euro zwei drei punkt vier fünf
+   £123.45      -> ein pfund zwei drei punkt vier fünf
+   ¥123.45      -> ein yen zwei drei punkt vier fünf
+   100 USD      -> ein hundert USD
+## es
+   $123.45      -> signo de dólar uno dos tres punto cuatro cinco
+   USD123.45    -> U S D uno dos tres punto cuatro cinco
+   USD 123.45   -> USD uno dos tres punto cuatro cinco
+   SGD123.45    -> S G D uno dos tres punto cuatro cinco
+   CNY123.45    -> C N Y uno dos tres punto cuatro cinco
+   TWD123.45    -> T W D uno dos tres punto cuatro cinco
+   ZAR123.45    -> Z A R uno dos tres punto cuatro cinco
+   €123.45      -> ciento veintitrés euros . cuarenta y cinco
+   £123.45      -> ciento veintitrés libras . cuarenta y cinco
+   ¥123.45      -> ciento veintitrés yenes . cuarenta y cinco
+   100 USD      -> cien USD
+## fr
+   $123.45      -> $123.45
+   USD123.45    -> USD123.45
+   USD 123.45   -> USD un vingt-trois avril cinq
+   SGD123.45    -> SGD123.45
+   CNY123.45    -> CNY123.45
+   TWD123.45    -> TWD123.45
+   ZAR123.45    -> ZAR123.45
+   €123.45      -> €123.45
+   £123.45      -> £123.45
+   ¥123.45      -> ¥123.45
+   100 USD      -> cent USD
+## it
+   $123.45      -> dollaro uno due tre punto quattro cinque
+   USD123.45    -> U S D uno due tre punto quattro cinque
+   USD 123.45   -> USD uno due tre punto quattro cinque
+   SGD123.45    -> S G D uno due tre punto quattro cinque
+   CNY123.45    -> C N Y uno due tre punto quattro cinque
+   TWD123.45    -> T W D uno due tre punto quattro cinque
+   ZAR123.45    -> Z A R uno due tre punto quattro cinque
+   €123.45      -> un euro due tre punto quattro cinque
+   £123.45      -> una sterlina due tre punto quattro cinque
+   ¥123.45      -> ¥123.45
+   100 USD      -> cento USD
+## pt
+   $123.45      -> dólar um dois três ponto quatro cinco
+   USD123.45    -> U S D um dois três ponto quatro cinco
+   USD 123.45   -> USD um dois três ponto quatro cinco
+   SGD123.45    -> S G D um dois três ponto quatro cinco
+   CNY123.45    -> C N Y um dois três ponto quatro cinco
+   TWD123.45    -> T W D um dois três ponto quatro cinco
+   ZAR123.45    -> Z A R um dois três ponto quatro cinco
+   €123.45      -> ERR FstOpError: Operation failed
+   £123.45      -> ERR FstOpError: Operation failed
+   ¥123.45      -> ERR FstOpError: Operation failed
+   100 USD      -> cem USD
+## sv
+   $123.45      -> hundratjugotre dollar . fyrtiofem
+   USD123.45    -> USD123.45
+   USD 123.45   -> USD hundratjugotre . fyrtiofem
+   SGD123.45    -> SGD123.45
+   CNY123.45    -> CNY123.45
+   TWD123.45    -> TWD123.45
+   ZAR123.45    -> ZAR123.45
+   €123.45      -> hundratjugotre euro . fyrtiofem
+   £123.45      -> hundratjugotre pund . fyrtiofem
+   ¥123.45      -> hundratjugotre yen . fyrtiofem
+   100 USD      -> hundra USD
+## vi
+   $123.45      -> ERR FstOpError: Operation failed
+   USD123.45    -> USD một trăm hai mươi ba. bốn mươi lăm
+   USD 123.45   -> USD một trăm hai mươi ba. bốn mươi lăm
+   SGD123.45    -> SGD một trăm hai mươi ba. bốn mươi lăm
+   CNY123.45    -> CNY một trăm hai mươi ba. bốn mươi lăm
+   TWD123.45    -> TWD một trăm hai mươi ba. bốn mươi lăm
+   ZAR123.45    -> ZAR một trăm hai mươi ba. bốn mươi lăm
+   €123.45      -> ERR FstOpError: Operation failed
+   £123.45      -> ERR FstOpError: Operation failed
+   ¥123.45      -> ERR FstOpError: Operation failed
+   100 USD      -> một trăm đô la
+## zh
+   $123.45      -> 十二三点四五美元
+   USD123.45    -> 十二三点四五美元
+   USD 123.45   -> USD 一百二十三点四五
+   SGD123.45    -> 十二三点四五新加坡元
+   CNY123.45    -> 十二三点四五人民币
+   TWD123.45    -> 十二三点四五新台币
+   ZAR123.45    -> 十二三点四五南非兰特
+   €123.45      -> 十二三点四五欧元
+   £123.45      -> 十二三点四五英镑
+   ¥123.45      -> 十二三点四五圆
+   100 USD      -> 一百 USD
+## ko
+   $123.45      -> 백이십삼 달러사십오
+   USD123.45    -> USD일이삼.사오
+   USD 123.45   -> USD 백이십삼점사오
+   SGD123.45    -> SGD일이삼.사오
+   CNY123.45    -> CNY일이삼.사오
+   TWD123.45    -> TWD일이삼.사오
+   ZAR123.45    -> ZAR일이삼.사오
+   €123.45      -> 백이십삼 유로사십오
+   £123.45      -> £ 백이십삼점사오
+   ¥123.45      -> 백이십삼 엔사십오
+   100 USD      -> 백 USD
+## hi
+   $123.45      -> एक सौ तेईस डॉलर पैंतालीस सेंट
+   USD123.45    -> यू एस डी एक दो तीन. पैंतालीस
+   USD 123.45   -> यू एस डी एक सौ तेईस दशमलव चार पाँच
+   SGD123.45    -> एस जी डी एक दो तीन. पैंतालीस
+   CNY123.45    -> सी एन वाई एक दो तीन. पैंतालीस
+   TWD123.45    -> टी डब्ल्यू डी एक दो तीन. पैंतालीस
+   ZAR123.45    -> ज़ेड ए आर एक दो तीन. पैंतालीस
+   €123.45      -> एक सौ तेईस यूरो पैंतालीस सेंट
+   £123.45      -> एक सौ तेईस पाउंड पैंतालीस पेंस
+   ¥123.45      -> एक सौ तेईस येन पैंतालीस सेन
+   100 USD      -> एक सौ यू एस डी
+## ar
+   $123.45      -> مئة وثلاثة وعشرون دولار وخمسة وأربعون سنت
+   USD123.45    -> USD123.45
+   USD 123.45   -> USD مئة وثلاثة وعشرون وخمسة وأربعون من مئة
+   SGD123.45    -> SGD123.45
+   CNY123.45    -> CNY123.45
+   TWD123.45    -> TWD123.45
+   ZAR123.45    -> ZAR123.45
+   €123.45      -> مئة وثلاثة وعشرون يورو وخمسة وأربعون سنت
+   £123.45      -> مئة وثلاثة وعشرون جنيه استرليني وخمسة وأربعون بنس
+   ¥123.45      -> مئة وثلاثة وعشرون ين ياباني وخمسة وأربعون
+   100 USD      -> مئة USD
+## hu
+   $123.45      -> dollárjel egy kettő három pont négy öt
+   USD123.45    -> U S D egy kettő három pont négy öt
+   USD 123.45   -> USD egy kettő három pont négy öt
+   SGD123.45    -> S G D egy kettő három pont négy öt
+   CNY123.45    -> C N Y egy kettő három pont négy öt
+   TWD123.45    -> T W D egy kettő három pont négy öt
+   ZAR123.45    -> Z A R egy kettő három pont négy öt
+   €123.45      -> €123.45
+   £123.45      -> százhuszonhárom font . negyvenöt
+   ¥123.45      -> ¥123.45
+   100 USD      -> száz amerikai dollár
+## ru: UNAVAILABLE (ValueError: Ru TN only supports non-deterministic cases and produces multiple normalization options.)
+## hy
+   $123.45      -> $ հարյուր քսաներեք ամբողջ քառասունհինգ
+   USD123.45    -> USD123.45
+   USD 123.45   -> USD հարյուր քսաներեք ամբողջ քառասունհինգ
+   SGD123.45    -> SGD123.45
+   CNY123.45    -> CNY123.45
+   TWD123.45    -> TWD123.45
+   ZAR123.45    -> ZAR123.45
+   €123.45      -> €123.45
+   £123.45      -> £123.45
+   ¥123.45      -> ¥123.45
+   100 USD      -> հարյուր USD

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Currency announcement test cases</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    max-width: 44rem;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    line-height: 1.6;
+  }
+  h1 { font-size: 1.4rem; }
+  p.lede { color: #666; }
+  table { border-collapse: collapse; width: 100%; }
+  caption { text-align: left; padding: 1rem 0 0.5rem; font-weight: 600; }
+  th, td { border: 1px solid #bbb; padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
+  th { background: rgba(127, 127, 127, 0.15); }
+  code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
+  td.sample { font-size: 1.15rem; white-space: nowrap; }
+  footer { margin-top: 2rem; color: #666; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+  <h1>Currency announcement test cases</h1>
+  <p class="lede">
+    Open this page with a screen reader and arrow through the samples. Every
+    sample below is a plain HTML text node — no <code>aria-label</code>, no
+    <code>lang</code>, no markup around the number. What you hear is the
+    speech synthesizer's text normalizer talking.
+  </p>
+
+  <table>
+    <caption>The samples</caption>
+    <thead>
+      <tr><th>Sample (text node)</th><th>What it is</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="sample">USD123.45</td><td>ISO 4217 code, no space</td></tr>
+      <tr><td class="sample">SGD123.45</td><td>ISO 4217 code, no space</td></tr>
+      <tr><td class="sample">$123.45</td><td>Bare dollar sign</td></tr>
+      <tr><td class="sample">US$123.45</td><td>Country prefix plus symbol</td></tr>
+      <tr><td class="sample">AUD123.45</td><td>Another ISO 4217 code</td></tr>
+      <tr><td class="sample">EUR123.45</td><td>Euro, code form</td></tr>
+      <tr><td class="sample">GBP123.45</td><td>Pound sterling, code form</td></tr>
+      <tr><td class="sample">THB123.45</td><td>Thai baht, code form</td></tr>
+      <tr><td class="sample">123.45 USD</td><td>Code after the amount</td></tr>
+      <tr><td class="sample">¥123.45</td><td>Yen symbol</td></tr>
+      <tr><td class="sample">£123.45</td><td>Pound symbol</td></tr>
+      <tr><td class="sample">€123.45</td><td>Euro symbol</td></tr>
+      <tr><td class="sample">123.45</td><td>Control: a plain decimal number</td></tr>
+    </tbody>
+  </table>
+
+  <footer>
+    Regenerate the accessibility-tree dump for this page with Chrome DevTools
+    (Elements &rarr; Accessibility, or the Accessibility pane's "Full AX tree")
+    to see what the browser actually hands to the operating system.
+  </footer>
+</body>
+</html>

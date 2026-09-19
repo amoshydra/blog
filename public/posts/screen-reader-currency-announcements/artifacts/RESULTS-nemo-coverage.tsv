@@ -1,0 +1,321 @@
+iso	lang	token	category	major	output
+USD	en	$	money	dollar	one hundred and twenty three dollars forty five cents
+EUR	en	€	money	euro	one hundred and twenty three euros forty five cents
+JPY	en	¥	money	yen	one hundred and twenty three yen. forty five
+GBP	en	£	money	pound	one hundred and twenty three pounds forty five pence
+CAD	en	cad	text	canadian dollar	cad one two three dot four five
+CHF	en	chf	text	swiss franc	chf one two three dot four five
+HKD	en	hk$	money	hong kong dollar	one hundred and twenty three hong kong dollars. forty five
+KRW	en	₩	money	won	one hundred and twenty three won. forty five
+INR	en	rs	text	rupee	rs one two three dot four five
+NZD	en	nzd	text	new zealand dollar	nzd one two three dot four five
+SEK	en	sek	text	swedish kronor	sek one two three dot four five
+NOK	en	nok	text	norwegian kroner	nok one two three dot four five
+BRL	en	r	text	real	r one two three dot four five
+THB	en	฿	money	Thai Baht	one hundred and twenty three Thai Bahts. forty five
+DKK	en	dkk	text	danish kroner	dkk one two three dot four five
+CZK	en	czk	text	czech koruna	czk one two three dot four five
+PHP	en	php	text	philippine peso	php one two three dot four five
+AED	en	aed	text	arab emirates dirham	aed one two three dot four five
+SAR	en	sar	text	saudi riyal	sar one two three dot four five
+RSD	en	rsd	text	serbian dinar	rsd one two three dot four five
+CRC	en	crc	text	costa rican colon	crc one two three dot four five
+PKR	en	pkr	text	pakistani rupee	pkr one two three dot four five
+NPR	en	npr	text	nepalese rupee	npr one two three dot four five
+TZS	en	tzs	text	tanzanian shilling	tzs one two three dot four five
+USD	de	$	symbol	dollar	dollar zeichen eins zwei drei punkt vier fünf
+EUR	de	€	symbol	euro	ein euro zwei drei punkt vier fünf
+JPY	de	¥	symbol	yen	ein yen zwei drei punkt vier fünf
+GBP	de	£	symbol	pfund	ein pfund zwei drei punkt vier fünf
+CHF	de	chf	text	schweizer franken	c h f eins zwei drei punkt vier fünf
+HKD	de	hkd	text	hong kong dollar	h k d eins zwei drei punkt vier fünf
+KRW	de	₩	symbol	won	ein won zwei drei punkt vier fünf
+INR	de	rs	text	rupie	r s eins zwei drei punkt vier fünf
+NZD	de	nzd	text	neuseeland dollar	n z d eins zwei drei punkt vier fünf
+SEK	de	sek	text	schwedisch krone	s e k eins zwei drei punkt vier fünf
+NOK	de	nok	text	norwegische krone	n o k eins zwei drei punkt vier fünf
+DKK	de	dkk	text	dänische krone	d k k eins zwei drei punkt vier fünf
+CZK	de	czk	text	tschechische krone	c z k eins zwei drei punkt vier fünf
+AED	de	aed	text	dirham	a e d eins zwei drei punkt vier fünf
+CRC	de	crc	text	colon	c r c eins zwei drei punkt vier fünf
+PKR	de	pkr	text	pakistanische rupie	p k r eins zwei drei punkt vier fünf
+NPR	de	npr	text	nepalesische rupee	n p r eins zwei drei punkt vier fünf
+TZS	de	tzs	text	tansania schilling	t z s eins zwei drei punkt vier fünf
+USD	es	usd	text	dólar estadounidense	u s d uno dos tres punto cuatro cinco
+EUR	es	eur	text	euro	e u r uno dos tres punto cuatro cinco
+JPY	es	jpy	text	yen	j p y uno dos tres punto cuatro cinco
+GBP	es	£	money	libra	ciento veintitrés libras . cuarenta y cinco
+CNY	es	cny	text	yuan chino	c n y uno dos tres punto cuatro cinco
+AUD	es	aud	text	dólar australiano	a u d uno dos tres punto cuatro cinco
+CAD	es	cad	text	dólar canadiense	c a d uno dos tres punto cuatro cinco
+CHF	es	chf	text	franco suizo	c h f uno dos tres punto cuatro cinco
+HKD	es	hkd	text	dólar de hong kong	h k d uno dos tres punto cuatro cinco
+SGD	es	sgd	text	dólar de singapur	s g d uno dos tres punto cuatro cinco
+KRW	es	krw	text	won	k r w uno dos tres punto cuatro cinco
+INR	es	inr	text	rupia india	i n r uno dos tres punto cuatro cinco
+NZD	es	nzd	text	dólar neozelandés	n z d uno dos tres punto cuatro cinco
+SEK	es	sek	text	corona sueca	s e k uno dos tres punto cuatro cinco
+NOK	es	nok	text	corona noruega	n o k uno dos tres punto cuatro cinco
+MXN	es	mxn	text	peso mexicano	m x n uno dos tres punto cuatro cinco
+TWD	es	twd	text	nuevo dólar taiwanés	t w d uno dos tres punto cuatro cinco
+ZAR	es	zar	text	rand	z a r uno dos tres punto cuatro cinco
+BRL	es	brl	text	real brasileño	b r l uno dos tres punto cuatro cinco
+THB	es	thb	text	baht	t h b uno dos tres punto cuatro cinco
+PLN	es	pln	text	esloti	p l n uno dos tres punto cuatro cinco
+DKK	es	dkk	text	corona danesa	d k k uno dos tres punto cuatro cinco
+IDR	es	idr	text	rupia indonesia	i d r uno dos tres punto cuatro cinco
+HUF	es	huf	text	forinto	h u f uno dos tres punto cuatro cinco
+CZK	es	czk	text	corona checa	c z k uno dos tres punto cuatro cinco
+ILS	es	ils	text	nuevo séquel israelí	i l s uno dos tres punto cuatro cinco
+CLP	es	clp	text	peso chileno	c l p uno dos tres punto cuatro cinco
+PHP	es	php	text	peso filipino	p h p uno dos tres punto cuatro cinco
+AED	es	aed	text	dírham	a e d uno dos tres punto cuatro cinco
+COP	es	cop	text	peso colombiano	c o p uno dos tres punto cuatro cinco
+SAR	es	sar	text	rial saudí	s a r uno dos tres punto cuatro cinco
+MYR	es	myr	text	ringgit malayo	m y r uno dos tres punto cuatro cinco
+RON	es	ron	text	leu rumano	r o n uno dos tres punto cuatro cinco
+TRY	es	try	text	lira turca	t r y uno dos tres punto cuatro cinco
+BGN	es	bgn	text	leva búlgara	b g n uno dos tres punto cuatro cinco
+HRK	es	hrk	text	kuna	h r k uno dos tres punto cuatro cinco
+RSD	es	rsd	text	dinar serbio	r s d uno dos tres punto cuatro cinco
+RUB	es	rub	text	rublo ruso	r u b uno dos tres punto cuatro cinco
+UAH	es	uah	text	grivna	u a h uno dos tres punto cuatro cinco
+ISK	es	isk	text	corona islandesa	i s k uno dos tres punto cuatro cinco
+BAM	es	bam	text	marco convertible	b a m uno dos tres punto cuatro cinco
+MDL	es	mdl	text	leu moldavo	m d l uno dos tres punto cuatro cinco
+GEL	es	gel	text	lari	g e l uno dos tres punto cuatro cinco
+AMD	es	amd	text	dram armenio	a m d uno dos tres punto cuatro cinco
+AZN	es	azn	text	manat azerbaiyano	a z n uno dos tres punto cuatro cinco
+BYN	es	byn	text	rublo bielorruso	b y n uno dos tres punto cuatro cinco
+ARS	es	ars	text	peso argentino	a r s uno dos tres punto cuatro cinco
+PEN	es	pen	text	sol	p e n uno dos tres punto cuatro cinco
+UYU	es	uyu	text	peso uruguayo	u y u uno dos tres punto cuatro cinco
+DOP	es	dop	text	peso dominicano	d o p uno dos tres punto cuatro cinco
+GTQ	es	gtq	text	quetzal	g t q uno dos tres punto cuatro cinco
+CRC	es	crc	text	colón costarricense	c r c uno dos tres punto cuatro cinco
+PAB	es	pab	text	balboa	p a b uno dos tres punto cuatro cinco
+JMD	es	jmd	text	dólar jamaiquino	j m d uno dos tres punto cuatro cinco
+TTD	es	ttd	text	dólar de trinidad y tobago	t t d uno dos tres punto cuatro cinco
+BOB	es	bob	text	boliviano	b o b uno dos tres punto cuatro cinco
+PYG	es	pyg	text	guaraní	p y g uno dos tres punto cuatro cinco
+HNL	es	hnl	text	lempira	h n l uno dos tres punto cuatro cinco
+NIO	es	nio	text	córdoba	n i o uno dos tres punto cuatro cinco
+CUP	es	cup	text	peso cubano	c u p uno dos tres punto cuatro cinco
+VND	es	vnd	text	dong vietnamita	v n d uno dos tres punto cuatro cinco
+PKR	es	pkr	text	rupia pakistaní	p k r uno dos tres punto cuatro cinco
+BDT	es	bdt	text	taka	b d t uno dos tres punto cuatro cinco
+LKR	es	lkr	text	rupia de sri lanka	l k r uno dos tres punto cuatro cinco
+NPR	es	npr	text	rupia nepalí	n p r uno dos tres punto cuatro cinco
+KHR	es	khr	text	riel	k h r uno dos tres punto cuatro cinco
+MMK	es	mmk	text	kyat	m m k uno dos tres punto cuatro cinco
+KZT	es	kzt	text	tenge	k z t uno dos tres punto cuatro cinco
+UZS	es	uzs	text	som uzbeko	u z s uno dos tres punto cuatro cinco
+MNT	es	mnt	text	tugrik	m n t uno dos tres punto cuatro cinco
+KGS	es	kgs	text	som	k g s uno dos tres punto cuatro cinco
+TJS	es	tjs	text	somoni tayiko	t j s uno dos tres punto cuatro cinco
+TMT	es	tmt	text	manat turcomano	t m t uno dos tres punto cuatro cinco
+AFN	es	afn	text	afgani	a f n uno dos tres punto cuatro cinco
+IQD	es	iqd	text	dinar iraquí	i q d uno dos tres punto cuatro cinco
+IRR	es	irr	text	rial iraní	i r r uno dos tres punto cuatro cinco
+JOD	es	jod	text	dinar jordano	j o d uno dos tres punto cuatro cinco
+KWD	es	kwd	text	dinar kuwaití	k w d uno dos tres punto cuatro cinco
+LBP	es	lbp	text	libra libanesa	l b p uno dos tres punto cuatro cinco
+OMR	es	omr	text	rial omaní	o m r uno dos tres punto cuatro cinco
+QAR	es	qar	text	rial catarí	q a r uno dos tres punto cuatro cinco
+BHD	es	bhd	text	dinar bareiní	b h d uno dos tres punto cuatro cinco
+YER	es	yer	text	rial yemení	y e r uno dos tres punto cuatro cinco
+SYP	es	syp	text	libra siria	s y p uno dos tres punto cuatro cinco
+NGN	es	ngn	text	naira	n g n uno dos tres punto cuatro cinco
+KES	es	kes	text	chelín keniano	k e s uno dos tres punto cuatro cinco
+GHS	es	ghs	text	cedi ghanés	g h s uno dos tres punto cuatro cinco
+EGP	es	egp	text	libra egipcia	e g p uno dos tres punto cuatro cinco
+MAD	es	mad	text	dírham marroquí	m a d uno dos tres punto cuatro cinco
+TND	es	tnd	text	dinar tunecino	t n d uno dos tres punto cuatro cinco
+DZD	es	dzd	text	dinar argelino	d z d uno dos tres punto cuatro cinco
+ETB	es	etb	text	birr etíope	e t b uno dos tres punto cuatro cinco
+TZS	es	tzs	text	chelín tanzano	t z s uno dos tres punto cuatro cinco
+UGX	es	ugx	text	chelín ugandés	u g x uno dos tres punto cuatro cinco
+XOF	es	xof	text	franco c f a de áfrica occidental	x o f uno dos tres punto cuatro cinco
+XAF	es	xaf	text	franco c f a de áfrica central	x a f uno dos tres punto cuatro cinco
+ZMW	es	zmw	text	kwacha zambiano	z m w uno dos tres punto cuatro cinco
+MUR	es	mur	text	rupia de mauricio	m u r uno dos tres punto cuatro cinco
+RWF	es	rwf	text	franco ruandés	r w f uno dos tres punto cuatro cinco
+MZN	es	mzn	text	metical mozambiqueño	m z n uno dos tres punto cuatro cinco
+BWP	es	bwp	text	pula	b w p uno dos tres punto cuatro cinco
+NAD	es	nad	text	dólar namibio	n a d uno dos tres punto cuatro cinco
+SDG	es	sdg	text	libra sudanesa	s d g uno dos tres punto cuatro cinco
+FJD	es	fjd	text	dólar fiyiano	f j d uno dos tres punto cuatro cinco
+PGK	es	pgk	text	kina	p g k uno dos tres punto cuatro cinco
+USD	it	$	symbol	dollaro	dollaro uno due tre punto quattro cinque
+EUR	it	€	symbol	euro	un euro due tre punto quattro cinque
+JPY	it	¥	other	yen	¥123.45
+GBP	it	£	symbol	sterlina	una sterlina due tre punto quattro cinque
+CAD	it	cad	text	dollaro canadese	c a d uno due tre punto quattro cinque
+CHF	it	chf	text	franco svizzero	c h f uno due tre punto quattro cinque
+HKD	it	hkd	text	dollaro di hong kong	h k d uno due tre punto quattro cinque
+INR	it	rs	text	rupia	r s uno due tre punto quattro cinque
+USD	pt	US$	symbol	dólar americano	U S dólar um dois três ponto quatro cinco
+EUR	pt	€	err	euro	ERR FstOpError
+GBP	pt	£	err	libra esterlina	ERR FstOpError
+BRL	pt	R$	symbol	real	R dólar um dois três ponto quatro cinco
+USD	sv	$	money	dollar	hundratjugotre dollar . fyrtiofem
+EUR	sv	€	money	euro	hundratjugotre euro . fyrtiofem
+JPY	sv	¥	money	yen	hundratjugotre yen . fyrtiofem
+GBP	sv	£	money	pund	hundratjugotre pund . fyrtiofem
+AUD	sv	aud	money	australisk dollar	hundratjugotre australiska dollar . fyrtiofem
+CAD	sv	cad	money	kanadensisk dollar	hundratjugotre kanadensiska dollar . fyrtiofem
+CHF	sv	chf	money	schweizisk franc	hundratjugotre schweiziska francer . fyrtiofem
+HKD	sv	hkd	money	hongkongdollar	hundratjugotre hongkongdollar . fyrtiofem
+SGD	sv	sgd	money	singaporiansk dollar	hundratjugotre singaporianska dollar . fyrtiofem
+KRW	sv	₩	money	won	hundratjugotre won . fyrtiofem
+INR	sv	rs	money	rupie	hundratjugotre rupier . fyrtiofem
+NZD	sv	nzd	money	nyzeeländsk dollar	hundratjugotre nyzeeländska dollar . fyrtiofem
+SEK	sv	sek	money	krona	hundratjugotre kronor . fyrtiofem
+NOK	sv	nok	money	norsk krone	hundratjugotre norska kroner . fyrtiofem
+TWD	sv	twd	money	taiwanesisk dollar	hundratjugotre taiwanesiska dollar . fyrtiofem
+BRL	sv	brl	money	real	hundratjugotre realer . fyrtiofem
+PLN	sv	pln	other	groszy	pln123.45
+DKK	sv	dkk	money	dansk krona	hundratjugotre danska kronor . fyrtiofem
+CZK	sv	czk	money	tjeckisk krona	hundratjugotre tjeckiska kronor . fyrtiofem
+AED	sv	aed	other	dirham	aed123.45
+CRC	sv	crc	money	costaricansk colón	hundratjugotre costaricanska colón . fyrtiofem
+JMD	sv	jmd	money	jamaicansk dollar	hundratjugotre jamaicanska dollar . fyrtiofem
+TTD	sv	ttd	money	trinidaddollar	hundratjugotre trinidaddollar . fyrtiofem
+NAD	sv	nad	money	namibisk dollar	hundratjugotre namibiska dollar . fyrtiofem
+FJD	sv	fjd	money	fijidollar	hundratjugotre fijidollar . fyrtiofem
+USD	vi	$	err	đô la	ERR FstOpError
+EUR	vi	€	err	ơ rô	ERR FstOpError
+JPY	vi	¥	err	yên nhật	ERR FstOpError
+GBP	vi	£	err	bảng anh	ERR FstOpError
+CNY	vi	CNY	symbol	nhân dân tệ	CNY một trăm hai mươi ba. bốn mươi lăm
+AUD	vi	AUD	symbol	đô la úc	AUD một trăm hai mươi ba. bốn mươi lăm
+CAD	vi	CAD	symbol	đô la canada	CAD một trăm hai mươi ba. bốn mươi lăm
+CHF	vi	CHF	symbol	franc thụy sĩ	CHF một trăm hai mươi ba. bốn mươi lăm
+HKD	vi	HKD	symbol	đô la hồng kông	HKD một trăm hai mươi ba. bốn mươi lăm
+SGD	vi	SGD	symbol	đô la singapore	SGD một trăm hai mươi ba. bốn mươi lăm
+KRW	vi	₩	err	won	ERR FstOpError
+INR	vi	₹	symbol	rupee	₹ một trăm hai mươi ba. bốn mươi lăm
+NZD	vi	NZD	symbol	đô la new zealand	NZD một trăm hai mươi ba. bốn mươi lăm
+TWD	vi	TWD	symbol	đô la đài loan	TWD một trăm hai mươi ba. bốn mươi lăm
+THB	vi	THB	symbol	baht thái lan	THB một trăm hai mươi ba. bốn mươi lăm
+IDR	vi	IDR	symbol	rupiah indonesia	IDR một trăm hai mươi ba. bốn mươi lăm
+PHP	vi	PHP	symbol	peso philippines	PHP một trăm hai mươi ba. bốn mươi lăm
+MYR	vi	MYR	symbol	ringgit malaysia	MYR một trăm hai mươi ba. bốn mươi lăm
+VND	vi	vnd	symbol	đồng	vnd một trăm hai mươi ba. bốn mươi lăm
+USD	zh	USD	money	美元	十二三点四五美元
+EUR	zh	EUR	money	欧元成员国	十二三点四五欧元成员国
+JPY	zh	JPY	money	日元	十二三点四五日元
+GBP	zh	GBP	money	英镑	十二三点四五英镑
+CNY	zh	CNY	money	人民币	十二三点四五人民币
+AUD	zh	AUD	money	澳元	十二三点四五澳元
+CAD	zh	CAD	money	加元	十二三点四五加元
+CHF	zh	CHF	money	瑞士法郎	十二三点四五瑞士法郎
+HKD	zh	HKD	money	港元	十二三点四五港元
+SGD	zh	SGD	money	新加坡元	十二三点四五新加坡元
+KRW	zh	KRW	money	韩元	十二三点四五韩元
+INR	zh	INR	money	印度卢比	十二三点四五印度卢比
+NZD	zh	NZD	money	新西兰元	十二三点四五新西兰元
+SEK	zh	SEK	money	瑞典克朗	十二三点四五瑞典克朗
+NOK	zh	NOK	money	挪威克朗	十二三点四五挪威克朗
+MXN	zh	MXN	money	墨西哥比索	十二三点四五墨西哥比索
+TWD	zh	TWD	money	新台币	十二三点四五新台币
+ZAR	zh	ZAR	money	南非兰特	十二三点四五南非兰特
+BRL	zh	BRL	money	巴西雷亚尔	十二三点四五巴西雷亚尔
+THB	zh	THB	money	泰铢	十二三点四五泰铢
+PLN	zh	PLN	money	波兰兹罗提	十二三点四五波兰兹罗提
+DKK	zh	DKK	money	丹麦克朗	十二三点四五丹麦克朗
+IDR	zh	IDR	money	印尼盾	十二三点四五印尼盾
+HUF	zh	HUF	money	匈牙利福林	十二三点四五匈牙利福林
+CZK	zh	CZK	money	捷克克朗	十二三点四五捷克克朗
+ILS	zh	ILS	money	以色列谢克尔	十二三点四五以色列谢克尔
+CLP	zh	CLP	money	智利比索	十二三点四五智利比索
+PHP	zh	PHP	money	菲律宾比索	十二三点四五菲律宾比索
+AED	zh	AED	money	阿联酋迪拉姆	十二三点四五阿联酋迪拉姆
+COP	zh	COP	money	哥伦比亚比索	十二三点四五哥伦比亚比索
+SAR	zh	SAR	money	沙特阿拉伯里亚尔	十二三点四五沙特阿拉伯里亚尔
+MYR	zh	MYR	money	马来西亚令吉	十二三点四五马来西亚令吉
+RON	zh	RON	money	罗马尼亚列伊	十二三点四五罗马尼亚列伊
+TRY	zh	TRY	money	土耳其里拉	十二三点四五土耳其里拉
+BGN	zh	BGN	money	保加利亚列弗	十二三点四五保加利亚列弗
+HRK	zh	HRK	money	克罗地亚库纳	十二三点四五克罗地亚库纳
+RSD	zh	RSD	money	塞尔维亚第纳尔	十二三点四五塞尔维亚第纳尔
+RUB	zh	RUB	money	俄罗斯卢布	十二三点四五俄罗斯卢布
+UAH	zh	UAH	money	乌克兰格里夫纳	十二三点四五乌克兰格里夫纳
+ISK	zh	ISK	money	冰岛克朗	十二三点四五冰岛克朗
+BAM	zh	BAM	money	波斯尼亚和黑塞哥维那可兑换马克	十二三点四五波斯尼亚和黑塞哥维那可兑换马克
+AZN	zh	AZN	money	阿塞拜疆马纳特	十二三点四五阿塞拜疆马纳特
+BYN	zh	BYN	money	白俄罗斯卢布	十二三点四五白俄罗斯卢布
+ARS	zh	ARS	money	阿根廷比索	十二三点四五阿根廷比索
+PEN	zh	PEN	money	秘鲁索尔	十二三点四五秘鲁索尔
+UYU	zh	UYU	money	乌拉圭比索	十二三点四五乌拉圭比索
+DOP	zh	DOP	money	多米尼加共和国比索	十二三点四五多米尼加共和国比索
+GTQ	zh	GTQ	money	危地马拉格查尔	十二三点四五危地马拉格查尔
+CRC	zh	CRC	money	哥斯达黎加科隆	十二三点四五哥斯达黎加科隆
+PAB	zh	PAB	money	巴拿马巴尔博亚	十二三点四五巴拿马巴尔博亚
+JMD	zh	JMD	money	牙买加元	十二三点四五牙买加元
+TTD	zh	TTD	money	特立尼达和多巴哥元	十二三点四五特立尼达和多巴哥元
+BOB	zh	BOB	money	玻利维亚玻利维亚诺	十二三点四五玻利维亚玻利维亚诺
+PYG	zh	PYG	money	巴拉圭瓜拉尼	十二三点四五巴拉圭瓜拉尼
+HNL	zh	HNL	money	洪都拉斯伦皮拉	十二三点四五洪都拉斯伦皮拉
+NIO	zh	NIO	money	尼加拉瓜科尔多瓦	十二三点四五尼加拉瓜科尔多瓦
+CUP	zh	CUP	money	古巴比索	十二三点四五古巴比索
+VND	zh	VND	money	越南东	十二三点四五越南东
+PKR	zh	PKR	money	巴基斯坦卢比	十二三点四五巴基斯坦卢比
+LKR	zh	LKR	money	斯里兰卡卢比	十二三点四五斯里兰卡卢比
+NPR	zh	NPR	money	尼泊尔卢比	十二三点四五尼泊尔卢比
+KHR	zh	KHR	money	柬埔寨瑞尔	十二三点四五柬埔寨瑞尔
+KZT	zh	KZT	money	哈萨克斯坦腾格	十二三点四五哈萨克斯坦腾格
+UZS	zh	UZS	money	乌兹别克斯坦索姆	十二三点四五乌兹别克斯坦索姆
+MNT	zh	MNT	money	蒙古图格里克	十二三点四五蒙古图格里克
+KGS	zh	KGS	money	吉尔吉斯斯坦索姆	十二三点四五吉尔吉斯斯坦索姆
+AFN	zh	AFN	money	阿富汗 阿富汗尼	十二三点四五阿富汗 阿富汗尼
+IRR	zh	IRR	money	伊朗里亚尔	十二三点四五伊朗里亚尔
+LBP	zh	LBP	money	黎巴嫩镑	十二三点四五黎巴嫩镑
+OMR	zh	OMR	money	阿曼里亚尔	十二三点四五阿曼里亚尔
+QAR	zh	QAR	money	卡塔尔里亚尔	十二三点四五卡塔尔里亚尔
+YER	zh	YER	money	也门里亚尔	十二三点四五也门里亚尔
+SYP	zh	SYP	money	叙利亚镑	十二三点四五叙利亚镑
+NGN	zh	NGN	money	尼日利亚奈拉	十二三点四五尼日利亚奈拉
+GHS	zh	GHS	money	加纳塞地	十二三点四五加纳塞地
+EGP	zh	EGP	money	埃及镑	十二三点四五埃及镑
+MUR	zh	MUR	money	毛里求斯卢比	十二三点四五毛里求斯卢比
+MZN	zh	MZN	money	莫桑比克梅蒂卡尔	十二三点四五莫桑比克梅蒂卡尔
+BWP	zh	BWP	money	博茨瓦纳普拉	十二三点四五博茨瓦纳普拉
+NAD	zh	NAD	money	纳米比亚元	十二三点四五纳米比亚元
+FJD	zh	FJD	money	斐济元	十二三点四五斐济元
+USD	ko	$	money	달러	백이십삼 달러사십오
+EUR	ko	€	money	유로	백이십삼 유로사십오
+JPY	ko	¥	money	엔	백이십삼 엔사십오
+CAD	ko	CAD	money	캐나다 달러	백이십삼 캐나다 달러사십오
+CHF	ko	CHF	money	스위스 프랑	백이십삼 스위스 프랑사십오
+HKD	ko	HK$	money	홍콩 달러	백이십삼 홍콩 달러사십오
+KRW	ko	₩	money	원	백이십삼원사십오
+NZD	ko	NZD	money	뉴질랜드 달러	백이십삼 뉴질랜드 달러사십오
+AED	ko	AED	money	아랍에미리트 디르함	백이십삼 아랍에미리트 디르함사십오
+USD	hi	$	money	डॉलर	एक सौ तेईस डॉलर पैंतालीस सेंट
+EUR	hi	€	money	यूरो	एक सौ तेईस यूरो पैंतालीस सेंट
+JPY	hi	¥	money	येन	एक सौ तेईस येन पैंतालीस सेन
+GBP	hi	£	money	पाउंड	एक सौ तेईस पाउंड पैंतालीस पेंस
+KRW	hi	₩	money	वॉन	एक सौ तेईस वॉन पैंतालीस जिओन
+INR	hi	₹	money	रुपए	एक सौ तेईस रुपए पैंतालीस पैसे
+USD	ar	$	money	دولار	مئة وثلاثة وعشرون دولار وخمسة وأربعون سنت
+EUR	ar	€	money	يورو	مئة وثلاثة وعشرون يورو وخمسة وأربعون سنت
+JPY	ar	¥	money	ين ياباني	مئة وثلاثة وعشرون ين ياباني وخمسة وأربعون
+GBP	ar	£	money	جنيه استرليني	مئة وثلاثة وعشرون جنيه استرليني وخمسة وأربعون بنس
+CAD	ar	cad	money	دولار الكندي	مئة وثلاثة وعشرون دولار الكندي وخمسة وأربعون
+CHF	ar	chf	money	فرنك سويسري	مئة وثلاثة وعشرون فرنك سويسري وخمسة وأربعون
+HKD	ar	hk$	money	دولار هونج كونج	مئة وثلاثة وعشرون دولار هونج كونج وخمسة وأربعون
+KRW	ar	₩	money	ين	مئة وثلاثة وعشرون ين وخمسة وأربعون
+INR	ar	rs	money	روبية	مئة وثلاثة وعشرون روبية وخمسة وأربعون
+NZD	ar	nzd	money	دولار نيوزيلندي	مئة وثلاثة وعشرون دولار نيوزيلندي وخمسة وأربعون
+THB	ar	฿	money	بات تايلندي	مئة وثلاثة وعشرون بات تايلندي وخمسة وأربعون
+DKK	ar	dkk	money	كرونة دنماركية	مئة وثلاثة وعشرون كرونة دنماركية وخمسة وأربعون
+AED	ar	aed	money	درهم إماراتي	مئة وثلاثة وعشرون درهم إماراتي وخمسة وأربعون
+SAR	ar	sar	money	ريال سعودي	مئة وثلاثة وعشرون ريال سعودي وخمسة وأربعون
+PKR	ar	pkr	money	روبية باكستانية	مئة وثلاثة وعشرون روبية باكستانية وخمسة وأربعون
+NPR	ar	npr	money	روبية نيبالية	مئة وثلاثة وعشرون روبية نيبالية وخمسة وأربعون
+USD	hu	USD	symbol	amerikai dollár	U S D egy kettő három pont négy öt
+GBP	hu	GBP	symbol	angol font	G B P egy kettő három pont négy öt
+SEK	hu	SEK	symbol	svéd korona	S E K egy kettő három pont négy öt
+NOK	hu	NOK	symbol	norvég korona	N O K egy kettő három pont négy öt
+HUF	hu	HUF	symbol	magyar forint	H U F egy kettő három pont négy öt

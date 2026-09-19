@@ -1,0 +1,28 @@
+USD123.45    j,u:,Esd'i: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+$123.45      d'0l3 w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+EUR123.45    j'U@ w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+€123.45    j'U@roUz w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+JPY123.45    dZ,eIp,i:w'aI w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+¥123.45     j'En w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+GBP123.45    dZ,i:b,i:p'i: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+£123.45     p'aUnd w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+CNY123.45    s,i:;,Enw'aI w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+AUD123.45    'O:d w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+CAD123.45    k'ad w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+CHF123.45    s,i:;,eItS'Ef w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+HKD123.45    ,eItSk,eId'i: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+SGD123.45    ,EsdZ,i:d'i: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+KRW123.45    k,eI,A@d'Vb@Lj,u: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+₩123.45    w'0n w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+INR123.45    'In3 w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+₹123.45    r'u:pi: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+NZD123.45    ,Enz,Edd'i: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+SEK123.45    s'Ek w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+NOK123.45    n'0k w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+MXN123.45    ,Em,Eks'En w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+TWD123.45    t,i:d,Vb@Lj,u:d'i: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+ZAR123.45    z'A@ w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+BRL123.45    b,i:;,A@r'El w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+R$123.45     'A@ d'0l3 w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+THB123.45    t,i:;,eItSb'i: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+฿123.45    w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv

@@ -1,0 +1,246 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+
+// The clips live under public/ (served as-is) and are listed in a manifest so
+// the table can never drift from the files on disk. The manifest also carries
+// the human-readable form, which is what lets the table show <local> currency
+// rows without parsing the (lossy) filename encoding.
+const slug = "screen-reader-currency-announcements";
+const manifestPath = path.join(
+  process.cwd(),
+  "public/posts",
+  slug,
+  "artifacts/RESULTS-gtts-locales.tsv"
+);
+const clipsDir = path.join(process.cwd(), "public/posts", slug, "artifacts/gtts");
+
+const rows: { locale: string; form: string; file: string }[] = [];
+if (fs.existsSync(manifestPath)) {
+  const lines = fs.readFileSync(manifestPath, "utf8").split("\n");
+  for (const line of lines) {
+    if (!line.trim() || line.startsWith("locale\t")) continue;
+    const [locale, form, file] = line.split("\t");
+    if (locale && form && file && fs.existsSync(path.join(clipsDir, file))) {
+      rows.push({ locale, form, file });
+    }
+  }
+}
+
+// Transcripts are optional and filled in by hand; keyed by filename.
+const transcriptFile = path.join(process.cwd(), "content/posts", slug, "transcripts.json");
+const transcripts: Record<string, string> = fs.existsSync(transcriptFile)
+  ? JSON.parse(fs.readFileSync(transcriptFile, "utf8"))
+  : {};
+
+const base = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+const srcFor = (file: string) => `${base}posts/${slug}/artifacts/gtts/${file}`;
+
+// Group by locale, preserving manifest order (the locale's own currency is last).
+const groups = new Map<string, { form: string; file: string }[]>();
+for (const { locale, form, file } of rows) {
+  const list = groups.get(locale) ?? [];
+  list.push({ form, file });
+  groups.set(locale, list);
+}
+const locales = [...groups.keys()];
+---
+
+<div class="ag">
+  <div class="ag__bar">
+    <button type="button" data-act="all">▶ play everything</button>
+    <button type="button" data-act="stop">■ stop</button>
+    <label class="ag__filter">
+      <span>locale</span>
+      <select data-act="filter">
+        <option value="">all</option>
+        {locales.map((locale) => <option value={locale}>{locale}</option>)}
+      </select>
+    </label>
+  </div>
+
+  <p class="ag__meta">{rows.length} clips</p>
+
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Audio</th><th>Transcript</th></tr>
+    </thead>
+    <tbody>
+      {
+        locales.map((locale) => (
+          <>
+            <tr class="ag__locale" data-locale={locale}>
+              <th colspan="3">
+                {locale}
+                <button type="button" class="ag__play-locale" data-act="locale" data-locale={locale}>
+                  ▶ play all {locale}
+                </button>
+              </th>
+            </tr>
+            {groups.get(locale)!.map(({ form, file }) => {
+              const raw = (transcripts[file] ?? "").trim();
+              const predicted = raw.startsWith("~");
+              const text = predicted ? raw.replace(/^~\s*/, "") : raw;
+              return (
+                <tr data-locale={locale}>
+                  <td class="ag__form">{form}</td>
+                  <td>
+                    <audio controls preload="none" src={srcFor(file)} data-file={file} />
+                  </td>
+                  <td class="ag__transcript">
+                    {predicted && <span class="ag__tag">predicted</span>}
+                    <span class={predicted ? "ag__guess" : ""}>{text}</span>
+                  </td>
+                </tr>
+              );
+            })}
+          </>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <p class="ag__hint">
+    Transcripts are in <code>content/posts/screen-reader-currency-announcements/transcripts.json</code>,
+    keyed by clip filename.
+  </p>
+</div>
+
+<script>
+  const root = document.currentScript?.previousElementSibling as HTMLElement | null;
+  if (root) {
+    const audios = () => Array.from(root.querySelectorAll<HTMLAudioElement>("audio"));
+    let queue: HTMLAudioElement[] = [];
+    let current: HTMLAudioElement | null = null;
+
+    const clear = () => root.querySelectorAll("tr.is-playing").forEach((r) => r.classList.remove("is-playing"));
+    const next = () => {
+      clear();
+      if (!queue.length) return;
+      current = queue.shift()!;
+      current.closest("tr")?.classList.add("is-playing");
+      current.scrollIntoView({ block: "center", behavior: "smooth" });
+      void current.play();
+    };
+    const stop = () => {
+      queue = [];
+      current?.pause();
+      current = null;
+      clear();
+    };
+    audios().forEach((a) => a.addEventListener("ended", next));
+
+    root.querySelector('[data-act="all"]')?.addEventListener("click", () => {
+      stop();
+      queue = audios().filter((a) => a.offsetParent !== null);
+      next();
+    });
+    root.querySelector('[data-act="stop"]')?.addEventListener("click", stop);
+    root.querySelectorAll<HTMLButtonElement>('[data-act="locale"]').forEach((b) =>
+      b.addEventListener("click", () => {
+        const locale = b.dataset.locale;
+        stop();
+        queue = audios().filter((a) => a.closest("tr")?.dataset.locale === locale);
+        next();
+      })
+    );
+    root.querySelector<HTMLSelectElement>('[data-act="filter"]')?.addEventListener("change", (e) => {
+      stop();
+      const value = (e.target as HTMLSelectElement).value;
+      root.querySelectorAll<HTMLTableRowElement>("tr[data-locale]").forEach((row) => {
+        row.hidden = Boolean(value) && row.dataset.locale !== value;
+      });
+    });
+  }
+</script>
+
+<style>
+  .ag {
+    margin: 1.5rem auto 2.5rem;
+  }
+  .ag__bar {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0;
+    background-color: rgb(var(--white));
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .ag button {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.7rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    background-color: transparent;
+    color: rgb(var(--black));
+    cursor: pointer;
+  }
+  .ag button:hover {
+    background-color: rgb(var(--gray-light));
+  }
+  .ag__filter {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: rgb(var(--gray));
+  }
+  .ag__meta {
+    margin: 0.6rem 0 0.4rem;
+    font-size: 0.85rem;
+    color: rgb(var(--gray));
+  }
+  .ag table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .ag th,
+  .ag td {
+    text-align: left;
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--border-subtle);
+    vertical-align: middle;
+  }
+  .ag th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgb(var(--gray));
+  }
+  .ag__locale th {
+    background-color: rgb(var(--gray-light));
+    font-size: 0.95rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .ag__play-locale {
+    float: right;
+    font-size: 0.78rem !important;
+  }
+  .ag__form {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    white-space: nowrap;
+  }
+  .ag audio {
+    height: 2rem;
+    vertical-align: middle;
+  }
+  .ag tr.is-playing {
+    background-color: rgb(var(--gray-light));
+  }
+  .ag__transcript {
+    font-size: 0.9rem;
+  }
+  .ag__hint {
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+    color: rgb(var(--gray));
+  }
+</style>
