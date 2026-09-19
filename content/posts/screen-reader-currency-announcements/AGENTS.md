@@ -40,10 +40,6 @@ reader. That claim is load-bearing and rests on a few kinds of evidence.
   English glosses for the Thai clips, whose read-out is not self-evident.
 - `src/lib/transcript-render.mjs` — classifies a read-out into
   currency / number / point / minor-unit and emits the coloured spans.
-- `tools/transcript-verifier/` — a standalone Node service (`pnpm
-  verify:transcripts`) to listen to each clip, pick or edit its transcript, and
-  write `transcripts.json`. See its
-  [README](../../tools/transcript-verifier/README.md); the post links it too.
 
 ## Regenerating the engine dumps
 
@@ -95,12 +91,15 @@ the source. Do not add a claim without adding its source.
   Windows OneCore by default". eSpeak NG is bundled but is the fallback, and it
   does not expand currency. The opening observation is therefore NVDA's
   out-of-the-box reading, not a manually selected voice. (footnote [^37])
-- **The gallery compares three engines, all over the same locale × form
-  matrix:** A = Google TTS `103.12.8` (verified word transcripts, always shown),
-  B = Google TTS `google-speech-apk_20260817.01` (draft, predicted transcripts),
-  C = eSpeak NG `1.52.0` (open engine, phoneme read-out). B and C are hidden
-  behind labelled toggles; A is the verified default. The C column has no
-  Indian-English voice and reads `zh-TW` with the same `cmn` voice as `zh-CN`.
+- **The gallery compares four engines, all over the same locale × form
+  matrix:** A = Google TTS `103.12.8` (word transcripts), B = Google TTS
+  `google-speech-apk_20260817.01` (word transcripts), C = eSpeak NG `1.52.0` (open
+  engine, phoneme read-out), D = Microsoft OneCore (Windows 10 22H2, build
+  19045.2965; OneCore engine 10.3.21207.0; word transcripts). A, B and D are
+  shown by default; C is behind a labelled toggle. C has no Indian-English voice
+  (`en-IN`) and reads `zh-TW` with the same `cmn` voice as `zh-CN`; D covers all
+  fifteen locales (the Cantonese row is spoken by Windows' `zh-HK` voice,
+  `Microsoft Danny`/`Tracy`, since Windows ships no `yue-HK` voice token).
 - The currency set is a short per-locale table. `$`/`USD` for `en-US`;
   `$`/`AUD` for `en-AU`; `¥`/`JPY` for `ja-JP` (Genesys docs).
 - **TalkBack** is open source and has no currency-amount table (it does carry a
@@ -172,10 +171,9 @@ the Pango overlay and re-composite; do not try to edit the text pixels.
   colours are `--tx-*` in `src/styles/global.css`, defined for both themes), and
   the romanization is shown for non-Latin clips. Requires an explicit MDX import
   (auto-import from `src/components` did not pick it up here).
-- To (re)verify a read-out: `pnpm verify:transcripts`, listen, pick a candidate
-  (or type it under **other**), and Save. The service writes `transcripts.json`
-  and strips the leading `~`; a value with no `~` is treated as verified. All 90
-  are currently verified.
+- The read-outs were filled by listening to each clip and writing the words into
+  the engine's `transcripts.*.json`; a value with a leading `~` would mark an
+  unverified prediction. All are currently verified.
 
 **Amounts use the locale's own decimal separator** (verified against CLDR via
 `Intl.NumberFormat`): comma for `id-ID`, `de-DE`, `fr-FR`, `es-ES`, `it-IT`,

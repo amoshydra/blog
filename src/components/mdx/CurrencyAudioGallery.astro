@@ -5,13 +5,13 @@ import { renderTranscriptHtml } from "../../lib/transcript-render.mjs";
 
 // Cross-engine comparison gallery for the screen-reader currency tests.
 //
-//   A = 103.12.8 (2023, committed snapshot, human-verified transcripts)
-//   B = 20260817 (2026, later build, machine-predicted/draft transcripts)
-//   C = eSpeak NG (open source; read-out shown as its own phonemes)
+//   A = Google TTS 103.12.8 (human-verified transcripts)
+//   B = Google TTS 20260817 (verified)
+//   C = eSpeak NG           (open engine, phonemes)
+//   D = Microsoft OneCore   (Windows 10 22H2, engine 10.3.21207.0)
 //
-// A is always shown. B and C are hidden behind labelled toggles (B is
-// unverified; C is an open engine shown as phonemes, not words). One responsive
-// component: aligned columns on desktop, stacked cards on mobile (same DOM).
+// Two columns: the input, and a "Read-out" column where each engine is stacked
+// vertically. A is always shown; B/C/D are behind labelled toggles.
 const slug = "screen-reader-currency-announcements";
 const artifacts = path.join(process.cwd(), "public", "posts", slug, "artifacts");
 const contentDir = path.join(process.cwd(), "content", "posts", slug);
@@ -40,7 +40,7 @@ const SPECS = {
     manifest: "RESULTS-gtts-locales-20260817.tsv",
     clips: "gtts/20260817",
     transcripts: "transcripts.20260817.json",
-    roman: null,
+    roman: "transcripts.20260817.romanized.json",
   },
   c: {
     id: "c",
@@ -53,6 +53,18 @@ const SPECS = {
     transcripts: "transcripts.espeak.json",
     roman: null,
     noVoiceLocales: ["en-IN"],
+  },
+  d: {
+    id: "d",
+    short: "D",
+    label: "OneCore",
+    year: "Win 10 22H2",
+    kind: "words",
+    manifest: "RESULTS-gtts-windows-onecore.tsv",
+    clips: "onecore",
+    transcripts: "transcripts.onecore.json",
+    roman: "transcripts.onecore.romanized.json",
+    noVoiceLocales: [],
   },
 };
 
@@ -94,7 +106,7 @@ function loadEngine(spec) {
   return { ...spec, rows, cells };
 }
 
-const data = { a: loadEngine(SPECS.a), b: loadEngine(SPECS.b), c: loadEngine(SPECS.c) };
+const data = { a: loadEngine(SPECS.a), b: loadEngine(SPECS.b), c: loadEngine(SPECS.c), d: loadEngine(SPECS.d) };
 
 const engines = [
   {
@@ -111,13 +123,9 @@ const engines = [
     label: data.b.label,
     year: data.b.year,
     none: "not captured",
-    tag: "draft",
+    tag: null,
     cellLabel: `B · ${data.b.label}`,
-    toggle: {
-      show: `Show draft capture · B = ${data.b.label} (${data.b.year}) · unverified`,
-      hide: "Hide draft capture",
-      aria: `${data.b.label} draft capture, unverified`,
-    },
+    toggle: { aria: `${data.b.label} (${data.b.year})` },
   },
   data.c && {
     ...SPECS.c,
@@ -130,9 +138,14 @@ const engines = [
       aria: "eSpeak NG open engine, phonemes",
     },
   },
+  data.d && {
+    ...SPECS.d,
+    none: "not captured",
+    tag: null,
+    cellLabel: `D · ${SPECS.d.label}`,
+    toggle: { aria: "Microsoft OneCore (Windows)" },
+  },
 ].filter(Boolean);
-
-const active = engines.filter((e) => data[e.id]);
 
 const groups: {
   locale: string;
@@ -149,49 +162,43 @@ for (const r of data.a.rows) {
     groups.push(group);
   }
   const cells: Record<string, ReturnType<typeof data.a.cells.get>> = {};
-  for (const e of active) cells[e.id] = data[e.id].cells.get(key);
+  for (const e of engines) cells[e.id] = data[e.id].cells.get(key);
   group.rows.push({ form: r.form, cells });
 }
 const total = groups.reduce((n, g) => n + g.rows.length, 0);
 ---
 
-<div class="cmp" data-b="0" data-c="0" data-cols="2">
+<div class="cmp" data-a="1" data-b="1" data-c="0" data-d="1">
   <div class="cmp__bar">
     <p class="cmp__title">
-      {total} forms <span class="cmp__title-sub">A = {data.a.label} ({data.a.year}), verified</span>
+      {total} forms <span class="cmp__title-sub">A = {data.a.label} ({data.a.year}){data.b ? ` · B = ${data.b.label} (${data.b.year})` : ""}{data.d ? ` · D = ${data.d.label} (${data.d.year})` : ""}</span>
     </p>
-    <div class="cmp__toggles">
+    <div class="cmp__engines" role="group" aria-label="Engines to show">
+      <span class="cmp__engines-label">Engines</span>
       {
-        active
-          .filter((e) => e.toggle)
-          .map((e) => (
-            <button
-              type="button"
-              class="cmp__toggle"
-              data-engine={e.id}
-              aria-pressed="false"
-              aria-label={e.toggle.aria}
-            >
-              <span class="cmp__toggle-show">{e.toggle.show}</span>
-              <span class="cmp__toggle-hide">{e.toggle.hide}</span>
-            </button>
-          ))
+        engines.map((e) => (
+          <button
+            type="button"
+            class="cmp__chip"
+            data-engine={e.id}
+            aria-pressed={e.id === "a" || e.id === "b" || e.id === "d" ? "true" : "false"}
+            aria-label={`Toggle the ${e.label} read-out`}
+            title={e.toggle ? e.toggle.aria : `${e.label}${e.year ? ` (${e.year})` : ""}`}
+          >
+            <span class="cmp__chip-mark" aria-hidden="true" />
+            <span class="cmp__chip-name">{e.short} · {e.label}</span>
+            {e.tag && <span class="cmp__chip-tag">{e.tag}</span>}
+          </button>
+        ))
       }
+      <button type="button" class="cmp__all" aria-pressed="false">All</button>
     </div>
   </div>
 
   <div class="cmp__table" role="table" aria-label="Currency read-outs across TTS engines">
     <div class="cmp__head" role="row">
       <div class="cmp__th" role="columnheader">Input</div>
-      {
-        active.map((e) => (
-          <div class={`cmp__th cmp__col--${e.id}`} role="columnheader">
-            {e.short} · {e.label}
-            {e.year ? ` (${e.year})` : ""}
-            {e.tag && <span class="cmp__pred">{e.tag}</span>}
-          </div>
-        ))
-      }
+      <div class="cmp__th" role="columnheader">Read-out</div>
     </div>
 
     {
@@ -213,37 +220,37 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
                   ⌄
                 </button>
               </div>
-              {active.map((e) => {
-                const cell = row.cells[e.id];
-                const missing = (e.noVoiceLocales ?? []).includes(group.locale) ? "no voice" : e.none;
-                return (
-                  <div
-                    class={`cmp__cell cmp__col--${e.id}`}
-                    role="cell"
-                    data-label={e.cellLabel}
-                  >
-                    {cell ? (
-                      <>
-                        <button
-                          type="button"
-                          class="cmp__play"
-                          data-play={cell.url}
-                          aria-label={`Play the ${e.label} read-out for ${group.locale} ${row.form}`}
-                        >
-                          ▶<span class="cmp__badge">{e.short}</span>
-                        </button>
-                        <span
-                          class={`cmp__text${cell.predicted ? " cmp__text--pred" : ""}${e.kind === "phonemes" ? " cmp__text--phon" : ""}`}
-                          set:html={cell.html}
-                        />
-                        {cell.roman && <span class="cmp__roman">{cell.roman}</span>}
-                      </>
-                    ) : (
-                      <span class="cmp__none">{missing}</span>
-                    )}
-                  </div>
-                );
-              })}
+
+              <div class="cmp__cell cmp__stack" role="cell" data-label="Read-out">
+                {engines.map((e) => {
+                  const cell = row.cells[e.id];
+                  const missing = (e.noVoiceLocales ?? []).includes(group.locale) ? "no voice" : e.none;
+                  return (
+                    <div class={`cmp__lang cmp__col--${e.id}`}>
+                      <span class="cmp__lang-label">{e.short} · {e.label}</span>
+                      {cell ? (
+                        <>
+                          <button
+                            type="button"
+                            class="cmp__play"
+                            data-play={cell.url}
+                            aria-label={`Play the ${e.label} read-out for ${group.locale} ${row.form}`}
+                          >
+                            ▶
+                          </button>
+                          <span
+                            class={`cmp__text${cell.predicted ? " cmp__text--pred" : ""}${e.kind === "phonemes" ? " cmp__text--phon" : ""}`}
+                            set:html={cell.html}
+                          />
+                          {cell.roman && <span class="cmp__roman">{cell.roman}</span>}
+                        </>
+                      ) : (
+                        <span class="cmp__none">{missing}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ))}
         </div>
@@ -258,8 +265,6 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
   audio.preload = "none";
 
   // Show the expand chevron only where a transcript is actually clamped.
-  // -webkit-line-clamp clamps scrollHeight too, so measure natural height with
-  // a hidden, unclamped clone.
   function textOverflows(el: HTMLElement) {
     const rect = el.getBoundingClientRect();
     const clone = el.cloneNode(true) as HTMLElement;
@@ -287,25 +292,31 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     }
   }
 
-  function applyCols(root: HTMLElement) {
-    const toggles = [...root.querySelectorAll<HTMLElement>(".cmp__toggle")];
-    // tracks = Input + A (always) + each active toggle.
-    const shown = 2 + toggles.filter((t) => root.dataset[t.dataset.engine ?? ""] === "1").length;
-    root.dataset.cols = String(shown);
-  }
-
   const roots = [...document.querySelectorAll<HTMLElement>(".cmp")];
   for (const root of roots) {
     if (root.dataset.bound) continue;
     root.dataset.bound = "1";
 
-    for (const t of root.querySelectorAll<HTMLButtonElement>(".cmp__toggle")) {
-      t.addEventListener("click", () => {
-        const id = t.dataset.engine ?? "";
+    for (const chip of root.querySelectorAll<HTMLButtonElement>(".cmp__chip")) {
+      chip.addEventListener("click", () => {
+        const id = chip.dataset.engine ?? "";
         const on = root.dataset[id] === "1";
         root.dataset[id] = on ? "0" : "1";
-        t.setAttribute("aria-pressed", on ? "false" : "true");
-        applyCols(root);
+        chip.setAttribute("aria-pressed", on ? "false" : "true");
+        syncMore(root);
+      });
+    }
+
+    const all = root.querySelector<HTMLButtonElement>(".cmp__all");
+    if (all) {
+      all.addEventListener("click", () => {
+        const chips = [...root.querySelectorAll<HTMLButtonElement>(".cmp__chip")];
+        const everyOn = chips.every((c) => root.dataset[c.dataset.engine ?? ""] === "1");
+        for (const c of chips) {
+          root.dataset[c.dataset.engine ?? ""] = everyOn ? "0" : "1";
+          c.setAttribute("aria-pressed", everyOn ? "false" : "true");
+        }
+        all.setAttribute("aria-pressed", everyOn ? "false" : "true");
         syncMore(root);
       });
     }
@@ -333,7 +344,6 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
       });
     }
 
-    applyCols(root);
     syncMore(root);
   }
 
@@ -347,25 +357,8 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
 </script>
 
 <style>
-  /* One track for Input plus one per visible engine (A always, B/C toggled). */
-  .cmp[data-cols="1"] {
-    --cmp-cols: 10rem;
-  }
-  .cmp[data-cols="2"] {
-    --cmp-cols: 10rem minmax(0, 1fr);
-  }
-  .cmp[data-cols="3"] {
-    --cmp-cols: 10rem minmax(0, 1fr) minmax(0, 1fr);
-  }
-  .cmp[data-cols="4"] {
-    --cmp-cols: 10rem minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
-  }
-  .cmp[data-b="0"] .cmp__col--b,
-  .cmp[data-c="0"] .cmp__col--c {
-    display: none;
-  }
-
   .cmp {
+    --cmp-cols: 10rem minmax(0, 1fr);
     margin: 1.25rem auto 2.5rem;
     border: 1px solid var(--border-subtle);
     border-radius: 6px;
@@ -395,44 +388,70 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     font-weight: 400;
     margin-left: 0.35rem;
   }
-  .cmp__toggles {
+  .cmp__engines {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
+    align-items: center;
+    gap: 0.35rem;
   }
-  .cmp__toggle {
+  .cmp__engines-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgb(var(--gray));
+    margin-right: 0.1rem;
+  }
+  .cmp__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     font: inherit;
     font-size: 0.78rem;
-    padding: 0.28rem 0.7rem;
+    padding: 0.24rem 0.6rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    background: transparent;
+    color: rgb(var(--gray));
+    cursor: pointer;
+    opacity: 0.6;
+  }
+  .cmp__chip[aria-pressed="true"] {
+    opacity: 1;
+    color: inherit;
+    background: rgb(var(--gray-light));
+    font-weight: 600;
+  }
+  .cmp__chip-mark {
+    box-sizing: border-box;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+  }
+  .cmp__chip[aria-pressed="true"] .cmp__chip-mark {
+    background: currentColor;
+  }
+  .cmp__chip-tag {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 0 0.3rem;
+  }
+  .cmp__all {
+    font: inherit;
+    font-size: 0.78rem;
+    padding: 0.24rem 0.6rem;
     border: 1px solid var(--border-subtle);
     border-radius: 999px;
     background: transparent;
     color: inherit;
     cursor: pointer;
   }
-  .cmp__toggle[aria-pressed="true"] {
+  .cmp__all[aria-pressed="true"] {
     background: rgb(var(--gray-light));
     font-weight: 600;
-  }
-  .cmp__toggle-hide {
-    display: none;
-  }
-  .cmp__toggle[aria-pressed="true"] .cmp__toggle-show {
-    display: none;
-  }
-  .cmp__toggle[aria-pressed="true"] .cmp__toggle-hide {
-    display: inline;
-  }
-  .cmp__pred {
-    display: inline-block;
-    font-size: 0.66rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    border: 1px solid var(--border-subtle);
-    border-radius: 999px;
-    padding: 0 0.4rem;
-    margin-left: 0.3rem;
-    vertical-align: 0.08em;
   }
 
   .cmp__table {
@@ -461,13 +480,15 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
   }
   .cmp__cell {
     display: flex;
-    align-items: flex-start;
-    gap: 0.45rem;
+    flex-direction: column;
+    gap: 0.2rem;
     min-width: 0;
-    padding: 0.45rem 0.6rem;
+    padding: 0.5rem 0.6rem;
     border-bottom: 1px solid var(--border-subtle);
   }
   .cmp__input {
+    flex-direction: row;
+    align-items: flex-start;
     gap: 0.25rem;
   }
   .cmp__form {
@@ -485,30 +506,37 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     cursor: pointer;
     padding: 0 0.25rem;
   }
+
+  /* One stacked line per engine: label · play · text. */
+  .cmp__lang {
+    display: grid;
+    grid-template-columns: 6.5rem auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.45rem;
+  }
+  .cmp__lang-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgb(var(--gray));
+    white-space: nowrap;
+  }
   .cmp__play {
     flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.2rem;
     font: inherit;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     line-height: 1;
-    padding: 0.2rem 0.4rem;
+    padding: 0 0.35rem;
     border: 1px solid var(--border-subtle);
     border-radius: 5px;
     background: transparent;
     color: inherit;
     cursor: pointer;
   }
-  .cmp__badge {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: rgb(var(--gray));
-  }
   .cmp__text {
     min-width: 0;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
     font-size: 0.88rem;
@@ -525,19 +553,27 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     display: block;
   }
   .cmp__roman {
-    display: block;
+    grid-column: 3;
     font-size: 0.78rem;
     font-style: italic;
     color: rgb(var(--gray));
   }
   .cmp__none {
-    font-size: 0.85rem;
+    grid-column: 3;
+    font-size: 0.82rem;
     color: rgb(var(--gray));
   }
 
-  /* Mobile: same DOM, stacked cards. */
+  .cmp[data-a="0"] .cmp__col--a,
+  .cmp[data-b="0"] .cmp__col--b,
+  .cmp[data-c="0"] .cmp__col--c,
+  .cmp[data-d="0"] .cmp__col--d {
+    display: none;
+  }
+
+  /* Mobile: stacked cards. */
   @media (max-width: 760px) {
-    .cmp[data-cols] {
+    .cmp {
       --cmp-cols: 1fr;
     }
     .cmp__head {
@@ -549,20 +585,7 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     }
     .cmp__cell {
       border-bottom: 0;
-      padding: 0.3rem 0.65rem;
-    }
-    .cmp__cell::before {
-      content: attr(data-label);
-      flex: 0 0 5.5rem;
-      white-space: nowrap;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: rgb(var(--gray));
-      padding-top: 0.25rem;
-    }
-    .cmp__input::before {
-      content: none;
+      padding: 0.25rem 0.65rem;
     }
     .cmp__input {
       padding-top: 0.55rem;
@@ -571,8 +594,11 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
       font-size: 0.95rem;
       font-weight: 600;
     }
+    .cmp__lang {
+      grid-template-columns: 5.5rem auto minmax(0, 1fr);
+    }
     .cmp__text {
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 2;
     }
   }
 

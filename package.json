@@ -7,8 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "verify:transcripts": "node tools/transcript-verifier/server.mjs"
+    "astro": "astro"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^6.3.3",

@@ -81,6 +81,12 @@ function classifyToken(token, locale) {
   if (DIGITS_RE.test(token) || NUMBER.has(lower)) return "number";
   if (CURRENCY_CODES_RE.test(token) || CURRENCY_TOKENS.has(token)) return "currency";
   if (CURRENCY_RE.test(token)) return "currency";
+  // Hyphenated/compound tokens ("US-Cent", "Singapore-Dollar"): classify by part.
+  const parts = lower.split(/[^a-z\u00c0-\u024f]+/).filter(Boolean);
+  if (parts.length > 1) {
+    if (parts.some((p) => MINOR.has(p))) return "minor";
+    if (parts.some((p) => CURRENCY_CODES_RE.test(p) || CURRENCY_RE.test(p))) return "currency";
+  }
   return "other";
 }
 
@@ -100,17 +106,18 @@ function mergeSpans(spans) {
 
 const CJK_RULES = [
   ["currency", [
-    "シンガポールドル", "新加坡元", "新台币", "新台幣", "人民币", "人民幣", "日本円",
-    "米ドル", "ドル", "美元", "欧元", "歐元", "英镑", "英鎊", "港元", "元", "円", "JP",
+    "シンガポールドル", "アメリカドル", "米ドル", "USドル", "新加坡元", "新台币", "新台幣",
+    "新币", "新幣", "人民币", "人民幣", "港幣", "港币", "日本円", "ドル", "美元", "欧元",
+    "歐元", "英镑", "英鎊", "港元", "元", "円", "JP",
   ]],
   ["point", ["点", "點"]],
-  ["minor", ["美分", "セント"]],
+  ["minor", ["美分", "セント", "セン", "銭"]],
   // number chars: 零〇一二三四五六七八九十百千万亿两
   ["number", [/\u96f6|\u3007|\u4e00|\u4e8c|\u4e09|\u56db|\u4e94|\u516d|\u4e03|\u516b|\u4e5d|\u5341|\u767e|\u5343|\u4e07|\u4ebf|\u4e24/]],
 ];
 
 const THAI_RULES = [
-  ["currency", ["ดอลลาร์", "สิงคโปร์", "บาท"]],
+  ["currency", ["ดอลลาร์", "สิงคโปร์", "บาท", "สหรัฐ"]],
   ["point", ["จุด"]],
   ["minor", ["เซ็นต์", "สตางค์"]],
   ["number", [/(?:หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ|ร้อย|พัน|หมื่น|แสน|ล้าน|ยี่|ศูนย์)+/]],
