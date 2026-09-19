@@ -21,6 +21,16 @@ reader. That claim is load-bearing and rests on a few kinds of evidence.
   eSpeak and Flite columns are measured, not inferred.
 - `scripts/nemo/` + `scripts/nemo-currency-dump.sh` — the NeMo text-processing
   sweep (Podman; Python + pynini, nothing installed on the host).
+- `scripts/espeak-locale-dump.sh` + `public/.../artifacts/espeak/*.mp3` +
+  `artifacts/RESULTS-espeak-locales.tsv` + `transcripts.espeak.json` — the
+  **open-engine audio column (C)**: eSpeak NG 1.52.0 rendered on the host
+  (`espeak-ng -w` + ffmpeg) over the same locale × form matrix as the Google
+  clips, plus the six manual probe forms (`¥123`, `円123`, `JPY 123`, `₹123`,
+  `ரூபாய்123`, `INR 123`). The read-out is the engine's own phoneme output
+  (`espeak-ng -x`), so the C column shows phonemes, not words. `en-IN` is
+  skipped — it is the only locale with no eSpeak voice, so only there does a
+  missing C cell say "no voice" (elsewhere it says "not captured"). `zh-CN` and
+  `zh-TW` share the `cmn` voice (identical audio).
 - `content/posts/screen-reader-currency-announcements/transcripts.json` — the
   read-outs for the committed clips, keyed by filename. All 90 are verified
   against their clip; a leading `~` would mark an unverified prediction.
@@ -32,7 +42,8 @@ reader. That claim is load-bearing and rests on a few kinds of evidence.
   currency / number / point / minor-unit and emits the coloured spans.
 - `tools/transcript-verifier/` — a standalone Node service (`pnpm
   verify:transcripts`) to listen to each clip, pick or edit its transcript, and
-  write `transcripts.json`.
+  write `transcripts.json`. See its
+  [README](../../tools/transcript-verifier/README.md); the post links it too.
 
 ## Regenerating the engine dumps
 
@@ -84,6 +95,12 @@ the source. Do not add a claim without adding its source.
   Windows OneCore by default". eSpeak NG is bundled but is the fallback, and it
   does not expand currency. The opening observation is therefore NVDA's
   out-of-the-box reading, not a manually selected voice. (footnote [^37])
+- **The gallery compares three engines, all over the same locale × form
+  matrix:** A = Google TTS `103.12.8` (verified word transcripts, always shown),
+  B = Google TTS `google-speech-apk_20260817.01` (draft, predicted transcripts),
+  C = eSpeak NG `1.52.0` (open engine, phoneme read-out). B and C are hidden
+  behind labelled toggles; A is the verified default. The C column has no
+  Indian-English voice and reads `zh-TW` with the same `cmn` voice as `zh-CN`.
 - The currency set is a short per-locale table. `$`/`USD` for `en-US`;
   `$`/`AUD` for `en-AU`; `¥`/`JPY` for `ja-JP` (Genesys docs).
 - **TalkBack** is open source and has no currency-amount table (it does carry a
