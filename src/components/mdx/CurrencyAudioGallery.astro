@@ -3,172 +3,449 @@ import fs from "node:fs";
 import path from "node:path";
 import { renderTranscriptHtml } from "../../lib/transcript-render.mjs";
 
-// The clips live under public/ (served as-is) and are listed in a manifest so
-// the table can never drift from the files on disk. The manifest also carries
-// the human-readable form, which is what lets the table show <local> currency
-// rows without parsing the (lossy) filename encoding.
+// Cross-engine comparison gallery for the screen-reader currency tests.
+//
+// Two TTS engine builds are captured per form:
+//   A = 103.12.8 (2023, committed snapshot, human-verified transcripts)
+//   B = 20260817 (2026, later build, machine-predicted transcripts)
+//
+// One responsive component: aligned columns on desktop, stacked cards on mobile
+// (same DOM). Every row exposes both builds up front — no global mode — and
+// clamps the transcripts for scanability, with a per-row expand for the full
+// text. B is predicted until a human verifies it.
 const slug = "screen-reader-currency-announcements";
-const manifestPath = path.join(
-  process.cwd(),
-  "public/posts",
-  slug,
-  "artifacts/RESULTS-gtts-locales.tsv"
-);
-const clipsDir = path.join(process.cwd(), "public/posts", slug, "artifacts/gtts");
-
-const rows: { locale: string; form: string; file: string }[] = [];
-if (fs.existsSync(manifestPath)) {
-  const lines = fs.readFileSync(manifestPath, "utf8").split("\n");
-  for (const line of lines) {
-    if (!line.trim() || line.startsWith("locale\t")) continue;
-    const [locale, form, file] = line.split("\t");
-    if (locale && form && file && fs.existsSync(path.join(clipsDir, file))) {
-      rows.push({ locale, form, file });
-    }
-  }
-}
-
-// Transcripts are optional and filled in by hand; keyed by filename.
-const transcriptFile = path.join(process.cwd(), "content/posts", slug, "transcripts.json");
-const transcripts: Record<string, string> = fs.existsSync(transcriptFile)
-  ? JSON.parse(fs.readFileSync(transcriptFile, "utf8"))
-  : {};
-
-// Optional romanization for the non-Latin read-outs; keyed by filename.
-const romanFile = path.join(process.cwd(), "content/posts", slug, "transcripts.romanized.json");
-const romanized: Record<string, string> = fs.existsSync(romanFile)
-  ? JSON.parse(fs.readFileSync(romanFile, "utf8"))
-  : {};
-
-const base = import.meta.env.BASE_URL.endsWith("/")
+const artifacts = path.join(process.cwd(), "public", "posts", slug, "artifacts");
+const contentDir = path.join(process.cwd(), "content", "posts", slug);
+const relBase = import.meta.env.BASE_URL.endsWith("/")
   ? import.meta.env.BASE_URL
   : `${import.meta.env.BASE_URL}/`;
-const srcFor = (file: string) => `${base}posts/${slug}/artifacts/gtts/${file}`;
 
-// Group by locale, preserving manifest order (the locale's own currency is last).
-const groups = new Map<string, { form: string; file: string }[]>();
-for (const { locale, form, file } of rows) {
-  const list = groups.get(locale) ?? [];
-  list.push({ form, file });
-  groups.set(locale, list);
+const SPECS = {
+  a: {
+    label: "103.12.8",
+    year: "2023",
+    manifest: "RESULTS-gtts-locales.tsv",
+    clips: "gtts",
+    transcripts: "transcripts.json",
+    roman: "transcripts.romanized.json",
+  },
+  b: {
+    label: "20260817",
+    year: "2026",
+    manifest: "RESULTS-gtts-locales-20260817.tsv",
+    clips: "gtts/20260817",
+    transcripts: "transcripts.20260817.json",
+    roman: null,
+  },
+};
+
+function readJson(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return {};
+  }
 }
-const locales = [...groups.keys()];
+
+function loadEngine(spec) {
+  const manifestPath = path.join(artifacts, spec.manifest);
+  if (!fs.existsSync(manifestPath)) return null;
+  const clipsDir = path.join(artifacts, spec.clips);
+  const rows: { locale: string; form: string; file: string }[] = [];
+  for (const line of fs.readFileSync(manifestPath, "utf8").split("\n")) {
+    if (!line.trim() || line.startsWith("#") || line.startsWith("locale\t")) continue;
+    const [locale, form, file] = line.split("\t");
+    if (locale && form && file && fs.existsSync(path.join(clipsDir, file))) rows.push({ locale, form, file });
+  }
+  const transcripts: Record<string, string> = readJson(path.join(contentDir, spec.transcripts));
+  const romanized: Record<string, string> = spec.roman ? readJson(path.join(contentDir, spec.roman)) : {};
+  const cells = new Map<string, { url: string; html: string; predicted: boolean; roman: string }>();
+  for (const r of rows) {
+    const raw = (transcripts[r.file] ?? "").trim();
+    const predicted = raw.startsWith("~");
+    const text = predicted ? raw.replace(/^~\s*/, "") : raw;
+    cells.set(`${r.locale}\u0000${r.form}`, {
+      url: `${relBase}posts/${slug}/artifacts/${spec.clips}/${r.file}`,
+      html: renderTranscriptHtml(text, r.locale),
+      predicted,
+      roman: (romanized[r.file] ?? "").trim(),
+    });
+  }
+  return { ...spec, rows, cells };
+}
+
+const a = loadEngine(SPECS.a);
+const b = loadEngine(SPECS.b);
+const hasB = !!b;
+
+const groups: {
+  locale: string;
+  rows: { form: string; a: ReturnType<typeof a.cells.get>; b: ReturnType<typeof a.cells.get> }[];
+}[] = [];
+const seen = new Set<string>();
+for (const r of a.rows) {
+  const key = `${r.locale}\u0000${r.form}`;
+  if (seen.has(key)) continue;
+  seen.add(key);
+  let group = groups.find((g) => g.locale === r.locale);
+  if (!group) {
+    group = { locale: r.locale, rows: [] };
+    groups.push(group);
+  }
+  group.rows.push({ form: r.form, a: a.cells.get(key), b: b ? b.cells.get(key) : undefined });
+}
+const total = groups.reduce((n, g) => n + g.rows.length, 0);
 ---
 
-<div class="ag">
-  <p class="ag__meta">{rows.length} clips</p>
-
-  <p class="ag__legend">
-    <span class="tx-currency">currency</span>
-    <span class="tx-number">number</span>
-    <span class="tx-point">point</span>
-    <span class="tx-minor">minor unit</span>
-  </p>
-
-  <table>
-    <thead>
-      <tr><th>Input</th><th>Audio</th><th>Transcript</th></tr>
-    </thead>
-    <tbody>
-      {
-        locales.map((locale) => (
+<div class="cmp">
+  <div class="cmp__bar">
+    <p class="cmp__title">{total} forms</p>
+    <p class="cmp__legend">
+      <span class="cmp__key">A</span> {a.label} ({a.year}){
+        hasB && (
           <>
-            <tr class="ag__locale">
-              <th colspan="3">{locale}</th>
-            </tr>
-            {groups.get(locale)!.map(({ form, file }) => {
-              const raw = (transcripts[file] ?? "").trim();
-              const predicted = raw.startsWith("~");
-              const text = predicted ? raw.replace(/^~\s*/, "") : raw;
-              const html = renderTranscriptHtml(text, locale);
-              const roman = (romanized[file] ?? "").trim();
-              return (
-                <tr>
-                  <td class="ag__form">{form}</td>
-                  <td>
-                    <audio controls preload="none" src={srcFor(file)} data-file={file} />
-                  </td>
-                  <td class="ag__transcript">
-                    {predicted && <span class="ag__tag">predicted</span>}
-                    <span class={predicted ? "ag__guess" : ""} set:html={html} />
-                    {roman && <span class="ag__roman">{roman}</span>}
-                  </td>
-                </tr>
-              );
-            })}
+            <span class="cmp__sep">·</span> <span class="cmp__key cmp__key--b">B</span> {b.label} ({b.year})
+            <span class="cmp__pred">predicted</span>
           </>
-        ))
+        )
       }
-    </tbody>
-  </table>
+    </p>
+  </div>
+
+  <div class="cmp__table" role="table" aria-label="Currency read-outs across two TTS engine builds">
+    <div class="cmp__head" role="row">
+      <div class="cmp__th" role="columnheader">Input</div>
+      <div class="cmp__th" role="columnheader">A · {a.label}</div>
+      <div class="cmp__th" role="columnheader">B · {hasB ? b.label : "—"}</div>
+    </div>
+
+    {
+      groups.map((group) => (
+        <div class="cmp__group" role="rowgroup">
+          <div class="cmp__group-head" role="row">
+            <div class="cmp__locale" role="cell">{group.locale}</div>
+          </div>
+          {group.rows.map((row) => (
+            <div class="cmp__row" role="row" data-open="0">
+              <div class="cmp__cell cmp__input" role="cell" data-label="Input">
+                <span class="cmp__form">{row.form}</span>
+                <button
+                  type="button"
+                  class="cmp__more"
+                  aria-expanded="false"
+                  aria-label={`Show the full read-out for ${group.locale} ${row.form}`}
+                >
+                  ⌄
+                </button>
+              </div>
+
+              <div class="cmp__cell" role="cell" data-label={`A · ${a.label}`}>
+                {row.a && (
+                  <>
+                    <button
+                      type="button"
+                      class="cmp__play"
+                      data-play={row.a.url}
+                      aria-label={`Play the ${a.label} read-out for ${group.locale} ${row.form}`}
+                    >
+                      ▶<span class="cmp__badge">A</span>
+                    </button>
+                    <span class="cmp__text" set:html={row.a.html} />
+                    {row.a.roman && <span class="cmp__roman">{row.a.roman}</span>}
+                  </>
+                )}
+              </div>
+
+              <div class="cmp__cell" role="cell" data-label={`B · ${hasB ? b.label : "—"}`}>
+                {row.b ? (
+                  <>
+                    <button
+                      type="button"
+                      class="cmp__play"
+                      data-play={row.b.url}
+                      aria-label={`Play the ${b.label} predicted read-out for ${group.locale} ${row.form}`}
+                    >
+                      ▶<span class="cmp__badge cmp__badge--b">B</span>
+                    </button>
+                    <span class="cmp__text cmp__text--pred" set:html={row.b.html} />
+                  </>
+                ) : (
+                  <span class="cmp__none">not captured</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ))
+    }
+  </div>
 </div>
 
-<style>
-  .ag {
-    margin: 1.5rem auto 2.5rem;
+<script>
+  // Astro bundles this as a module; no document.currentScript. Bind per root.
+  const audio = new Audio();
+  audio.preload = "none";
+
+  // Show the expand chevron only where a transcript is actually clamped, so it
+  // never sits there doing nothing. -webkit-line-clamp clamps scrollHeight too,
+  // so measure the natural height with a hidden, unclamped clone.
+  function textOverflows(el: HTMLElement) {
+    const rect = el.getBoundingClientRect();
+    const clone = el.cloneNode(true) as HTMLElement;
+    clone.style.position = "absolute";
+    clone.style.visibility = "hidden";
+    clone.style.display = "block";
+    clone.style.webkitLineClamp = "unset";
+    clone.style.width = `${rect.width}px`;
+    el.parentElement?.appendChild(clone);
+    const natural = clone.getBoundingClientRect().height;
+    clone.remove();
+    return natural > rect.height + 1;
   }
-  .ag__meta {
-    margin: 0.6rem 0 0.4rem;
+
+  function syncMore(root: HTMLElement) {
+    for (const row of root.querySelectorAll<HTMLElement>(".cmp__row")) {
+      const btn = row.querySelector<HTMLButtonElement>(".cmp__more");
+      if (!btn) continue;
+      if (row.dataset.open === "1") {
+        btn.hidden = false;
+        continue;
+      }
+      const overflow = [...row.querySelectorAll<HTMLElement>(".cmp__text")].some(textOverflows);
+      btn.hidden = !overflow;
+    }
+  }
+
+  const roots = [...document.querySelectorAll<HTMLElement>(".cmp")];
+  for (const root of roots) {
+    if (root.dataset.bound) continue;
+    root.dataset.bound = "1";
+
+    for (const p of root.querySelectorAll<HTMLButtonElement>(".cmp__play")) {
+      p.addEventListener("click", () => {
+        const src = p.dataset.play ?? "";
+        if (audio.src.endsWith(src) && !audio.paused) {
+          audio.pause();
+          return;
+        }
+        audio.src = src;
+        audio.play().catch(() => {});
+      });
+    }
+
+    for (const m of root.querySelectorAll<HTMLButtonElement>(".cmp__more")) {
+      m.addEventListener("click", () => {
+        const row = m.closest<HTMLElement>(".cmp__row");
+        if (!row) return;
+        const open = row.dataset.open === "1";
+        row.dataset.open = open ? "0" : "1";
+        m.setAttribute("aria-expanded", open ? "false" : "true");
+        syncMore(root);
+      });
+    }
+
+    syncMore(root);
+  }
+
+  if (roots.length) {
+    let t = 0;
+    window.addEventListener("resize", () => {
+      window.clearTimeout(t);
+      t = window.setTimeout(() => roots.forEach(syncMore), 150);
+    });
+  }
+</script>
+
+<style>
+  .cmp {
+    --cmp-cols: 10rem minmax(0, 1fr) minmax(0, 1fr);
+    margin: 1.25rem auto 2.5rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .cmp__bar {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0.55rem 0.7rem;
+    background-color: rgb(var(--white));
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .cmp__title {
+    margin: 0;
     font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .cmp__legend {
+    margin: 0;
+    font-size: 0.8rem;
     color: rgb(var(--gray));
   }
-  .ag table {
-    width: 100%;
-    border-collapse: collapse;
+  .cmp__key {
+    font-weight: 700;
+    color: inherit;
   }
-  .ag th,
-  .ag td {
-    text-align: left;
-    padding: 0.4rem 0.6rem;
-    border-bottom: 1px solid var(--border-subtle);
-    vertical-align: middle;
+  .cmp__pred {
+    display: inline-block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 0 0.4rem;
+    margin-left: 0.3rem;
+    vertical-align: 0.08em;
   }
-  .ag th {
-    font-size: 0.8rem;
+  .cmp__sep {
+    margin: 0 0.35rem;
+  }
+
+  .cmp__table {
+    display: block;
+  }
+  .cmp__head,
+  .cmp__row {
+    display: grid;
+    grid-template-columns: var(--cmp-cols);
+  }
+  .cmp__th {
+    padding: 0.45rem 0.6rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: rgb(var(--gray));
+    border-bottom: 1px solid var(--border-subtle);
   }
-  .ag__locale th {
+  .cmp__group-head {
     background-color: rgb(var(--gray-light));
-    font-size: 0.95rem;
-    text-transform: none;
-    letter-spacing: 0;
   }
-  .ag__form {
-    font-family: var(--font-mono, ui-monospace, monospace);
-    white-space: nowrap;
-  }
-  .ag audio {
-    height: 2rem;
-    vertical-align: middle;
-  }
-  .ag__transcript {
+  .cmp__locale {
+    padding: 0.35rem 0.6rem;
+    font-weight: 600;
     font-size: 0.9rem;
   }
-  .ag__roman {
+  .cmp__cell {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    min-width: 0;
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .cmp__input {
+    gap: 0.25rem;
+  }
+  .cmp__form {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+  .cmp__more {
+    font: inherit;
+    line-height: 1;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    background: transparent;
+    color: rgb(var(--gray));
+    cursor: pointer;
+    padding: 0 0.25rem;
+  }
+  .cmp__play {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font: inherit;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 5px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .cmp__badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: rgb(var(--gray));
+  }
+  .cmp__text {
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.88rem;
+  }
+  .cmp__text--pred {
+    opacity: 0.82;
+  }
+  .cmp__row[data-open="1"] .cmp__text {
+    -webkit-line-clamp: unset;
     display: block;
-    margin-top: 0.15rem;
-    font-size: 0.8rem;
+  }
+  .cmp__roman {
+    display: block;
+    font-size: 0.78rem;
     font-style: italic;
     color: rgb(var(--gray));
   }
-  .ag__legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.9rem;
-    margin: 0 0 0.6rem;
-    font-size: 0.78rem;
+  .cmp__none {
+    font-size: 0.85rem;
+    color: rgb(var(--gray));
   }
-  .ag__legend span::before {
-    content: "●";
-    margin-right: 0.3rem;
+
+  /* Mobile: same DOM, stacked cards. */
+  @media (max-width: 760px) {
+    .cmp {
+      --cmp-cols: 1fr;
+    }
+    .cmp__head {
+      display: none;
+    }
+    .cmp__row {
+      padding: 0.35rem 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .cmp__cell {
+      border-bottom: 0;
+      padding: 0.3rem 0.65rem;
+    }
+    .cmp__cell::before {
+      content: attr(data-label);
+      flex: 0 0 5.5rem;
+      white-space: nowrap;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: rgb(var(--gray));
+      padding-top: 0.25rem;
+    }
+    .cmp__input::before {
+      content: none;
+    }
+    .cmp__input {
+      padding-top: 0.55rem;
+    }
+    .cmp__input .cmp__form {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .cmp__text {
+      -webkit-line-clamp: 3;
+    }
   }
+
   /* Rendered via set:html, so these spans carry no Astro scope attribute;
-     the colour rules must be global to reach them. Colours come from the
-     theme variables so both light and dark (data-color-scheme) work. Extra
-     cues are font weight (currency), italic (point) and a faint fill (minor);
-     number stays plain so nothing crosses CJK glyphs (no underlines). */
+     the colour rules must be global to reach them. */
   :global(.tx-currency) {
     color: var(--tx-currency);
     font-weight: 600;

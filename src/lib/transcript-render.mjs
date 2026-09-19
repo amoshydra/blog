@@ -71,7 +71,10 @@ const CURRENCY_TOKENS = new Set([
 const DIGITS_RE = /^[0-9][0-9.,\u066b\u066c]*$/;
 
 function classifyToken(token, locale) {
-  const lower = token.toLowerCase();
+  const lower = token
+    .toLowerCase()
+    .replace(/^[\s.,;:!?'"“”‘’()[\]…-]+|[\s.,;:!?'"“”‘’()[\]…-]+$/gu, "");
+  if (!lower) return "other";
   if (POINT.has(lower)) return "point";
   if (lower === "cent" && locale.startsWith("fr")) return "number"; // French "cent" = 100
   if (MINOR.has(lower)) return "minor";
