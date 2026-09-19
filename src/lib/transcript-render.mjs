@@ -62,7 +62,7 @@ const CURRENCY_RE =
 // ISO 4217 codes read out as codes, and Tamil words/letter-names used when the
 // engine spells a code (யு எஸ் டி = "U S D").
 const CURRENCY_CODES_RE =
-  /^(USD|EUR|JPY|GBP|CNY|AUD|CAD|CHF|HKD|SGD|KRW|INR|NZD|SEK|NOK|MXN|TWD|ZAR|BRL|THB|IDR|JP)$/i;
+  /^(USD|EUR|JPY|GBP|CNY|AUD|CAD|CHF|HKD|SGD|KRW|INR|NZD|SEK|NOK|MXN|TWD|ZAR|BRL|THB|IDR|IDER|JP)$/i;
 const CURRENCY_TOKENS = new Set([
   "டாலர்", "ரூபாய்", "பாத்",
   "யு", "எஸ்", "ஜி", "டி", "ஐ", "என்", "ஆர்",
@@ -109,6 +109,7 @@ const CJK_RULES = [
     "シンガポールドル", "アメリカドル", "米ドル", "USドル", "新加坡元", "新台币", "新台幣",
     "新币", "新幣", "人民币", "人民幣", "港幣", "港币", "日本円", "ドル", "美元", "欧元",
     "歐元", "英镑", "英鎊", "港元", "元", "円", "JP",
+    "U S D", "S G D", "I D R", "C N Y", "T W D", "U S",
   ]],
   ["point", ["点", "點"]],
   ["minor", ["美分", "セント", "セン", "銭"]],
@@ -166,11 +167,30 @@ export function classifyTranscript(text, locale) {
   if (isScripted(locale)) {
     return mergeSpans(classifyByScan(text, /^th/.test(locale) ? THAI_RULES : CJK_RULES));
   }
-  const tokens = text.split(/(\s+)/); // keep whitespace
+  const tokens = text.split(/(\s+)/).filter((t) => t !== ""); // keep whitespace
+  const isLetter = (t) => /^[A-Za-z]$/.test(t);
+  const isSpace = (t) => /^\s+$/.test(t);
+  // A run of two or more single letters separated by spaces is a code spelled
+  // out ("U S D"); mark those letters so a lone "I" or "a" in ordinary prose
+  // stays uncoloured. The spaces between them are marked too, and merged later.
+  const spelledCode = new Set();
+  for (let i = 0; i < tokens.length; i += 1) {
+    if (!isLetter(tokens[i])) continue;
+    const run = [i];
+    let j = i + 1;
+    while (j + 1 < tokens.length && isSpace(tokens[j]) && isLetter(tokens[j + 1])) {
+      run.push(j, j + 1);
+      j += 2;
+    }
+    if (run.length >= 2) run.forEach((idx) => spelledCode.add(idx));
+    i = j - 1;
+  }
   return mergeSpans(
-    tokens
-      .filter((t) => t !== "")
-      .map((t) => (/\s/.test(t) ? { text: t, kind: "other" } : { text: t, kind: classifyToken(t, locale) }))
+    tokens.map((t, i) =>
+      isSpace(t)
+        ? { text: t, kind: spelledCode.has(i) ? "currency" : "other" }
+        : { text: t, kind: spelledCode.has(i) ? "currency" : classifyToken(t, locale) }
+    )
   );
 }
 

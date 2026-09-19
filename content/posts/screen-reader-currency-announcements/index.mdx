@@ -1,6 +1,6 @@
 ---
 title: "Why `USD123.45` becomes “US dollars” but `SGD123.45` gets spelled out"
-description: "The speech engine's text normalizer decides whether a currency code becomes “US dollars and forty-five cents” or gets spelled out as letters. This traces the string from the DOM to the voice."
+description: "The speech engine's text normalizer decides whether a currency code becomes “U S dollars and forty five cents” or gets spelled out as letters. This traces the string from the DOM to the voice."
 pubDate: "2026-09-19"
 heroImage: "./hero.webp"
 ---
@@ -16,7 +16,7 @@ The sound of your page depends on that hand-off, and on which voice the reader s
 <p>SGD123.45</p>
 ```
 
-On Windows 10 and 11, NVDA speaks through Windows OneCore by default [^37]. OneCore reads the first as *"one hundred and twenty-three US dollars and forty-five cents"* and the second as a spelled-out code followed by a decimal number: *"S G D, one hundred and twenty-three point four five"*. No "Singapore dollars", no cents. Narrator, Microsoft's own screen reader, uses OneCore too and produces the same two readings [^2] [^16].
+On Windows 10 and 11, NVDA speaks through Windows OneCore by default [^37]. OneCore reads the first as *"one hundred and twenty three U S dollars and forty five cents"* and the second as a spelled-out code followed by a decimal number: *"S G D one twenty three point forty five"*. No "Singapore dollars", no cents. Narrator, Microsoft's own screen reader, uses OneCore too and produces the same two readings [^2] [^16].
 
 NVDA also bundles eSpeak NG, the fallback used where OneCore is unavailable [^11] [^37]. eSpeak NG does not expand currency [^2], so on it both lines come out as letters and a decimal. The money reading above is OneCore's doing, not a property of NVDA itself.
 
@@ -106,7 +106,7 @@ flowchart LR
     A["input text<br/>USD123.45"] --> B["classify<br/>(tokenize + tag)"]
     B --> C["<i>semiotic class</i>: MONEY<br/>integer: 123 · fraction: 45 · currency: USD"]
     C --> D["verbalize<br/>(rewrite to words)"]
-    D --> E["one hundred and twenty-three<br/>US dollars and forty-five cents"]
+    D --> E["one hundred and twenty three<br/>U S dollars and forty five cents"]
     E --> F["grapheme-to-phoneme<br/>+ acoustic model"]
     F --> G["audio"]
 ```
@@ -136,7 +136,7 @@ The engines that publish their lists put `$` and `USD` in the en-US table and li
 
 Cross-reader testing shows the same split. In a 2024 comparison of five screen readers, `AUD` was recognized by NVDA, Narrator and VoiceOver, while `THB` (Thai baht) and `VND` (Vietnamese dong) were not recognized by any of them. `THB58.96` came out as letters plus a number, *"t h b fifty-eight point nine six"*, which matches the shape of the `SGD` result above [^16].
 
-The Singapore dollar's subunit is the cent, the same word an engine already carries for USD, so the missing minor unit is not because SGD has no cent. The engine has no `SGD` entry in its en-US table, and the token never reaches the money branch. Unicode's CLDR carries a display name, a symbol and plural forms for almost every ISO 4217 code, including Singapore Dollar, yet it carries no subunit names and no spoken-form grammar [^14] [^21]. An engine that needs to say "and forty-five cents" has to carry that word itself, which is one reason each vendor keeps a hand-maintained list [^15] [^21].
+The Singapore dollar's subunit is the cent, the same word an engine already carries for USD, so the missing minor unit is not because SGD has no cent. The engine has no `SGD` entry in its en-US table, and the token never reaches the money branch. Unicode's CLDR carries a display name, a symbol and plural forms for almost every ISO 4217 code, including Singapore Dollar, yet it carries no subunit names and no spoken-form grammar [^14] [^21]. An engine that needs to say "and forty five cents" has to carry that word itself, which is one reason each vendor keeps a hand-maintained list [^15] [^21].
 
 The engine only speaks a minor unit once it has recognized a major one. That is why `USD123.45` gets "cents" and `SGD123.45` does not.
 
@@ -214,7 +214,7 @@ For some engines you can predict the read-out from the table; for others you hav
 
 Open engines that carry no currency table:
 
-- `eSpeak NG` ships its number handling in source. `numbers.c` holds no currency logic [^12], and the English dictionary's only currency-code entries are `usd $abbrev $allcaps` and `eur jU@ $only`: `USD` is an abbreviation to spell and `EUR` a word to say, and neither adds amount handling [^13]. eSpeak's behaviour is fully knowable, and it is *"S G D one hundred and twenty-three point four five"*.
+- `eSpeak NG` ships its number handling in source. `numbers.c` holds no currency logic [^12], and the English dictionary's only currency-code entries are `usd $abbrev $allcaps` and `eur jU@ $only`: `USD` is an abbreviation to spell and `EUR` a word to say, and neither adds amount handling [^13]. eSpeak's behaviour is fully knowable, and it is *"S G D one hundred and twenty three point four five"*.
 - `NVDA` [^1] and `TalkBack` [^17] are open source and likewise carry no currency-amount table, only symbol maps. Their output is whatever the selected engine produces.
 
 Open engines with small currency tables you can read:
@@ -413,7 +413,7 @@ The demo page behind this post is [currency-announcements.html](/blog/posts/scre
 
 For the browser side, inspect a page with a currency string in Chrome DevTools under **Elements → Accessibility**, or open the **Accessibility** pane and enable the full AX tree [^4]. The raw text node is there, for recognized and unrecognized currency alike.
 
-To find which layer is speaking on your machine, look at the synthesizer, not the screen reader. In NVDA, **Speech → Synthesizer** names it; on Windows 10 and 11 that is OneCore by default [^37]. `Microsoft OneCore` and `Microsoft Speech API version 5` carry the currency normalizer; `eSpeak NG` does not [^2]. Narrator uses the same Microsoft voice family [^38]. That setting is the difference between *"US dollars and forty-five cents"* and *"point four five"*.
+To find which layer is speaking on your machine, look at the synthesizer, not the screen reader. In NVDA, **Speech → Synthesizer** names it; on Windows 10 and 11 that is OneCore by default [^37]. `Microsoft OneCore` and `Microsoft Speech API version 5` carry the currency normalizer; `eSpeak NG` does not [^2]. Narrator uses the same Microsoft voice family [^38]. That setting is the difference between *"U S dollars and forty five cents"* and *"point forty five"*.
 
 
 [^1]: [NVDA issue #953, “NVDA pronouncing currency symbol before amount”](https://github.com/nvaccess/nvda/issues/953), opened 2010-10-01; closed as synthesizer-specific. Source of the two maintainer quotes and of NVDA’s symbol-dictionary approach. (The reporter’s own wording for the `$10.00` case reads “100 dollars”; the intended spoken form is “ten dollars”.)

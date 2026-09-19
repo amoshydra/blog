@@ -20,7 +20,7 @@
   "id-ID_USD0c10.mp3": "nol dolar Amerika Serikat sepuluh sen",
   "id-ID_IDR123c45.mp3": "seratus dua puluh tiga rupiah empat puluh lima sen",
   "id-ID_IDR123.mp3": "seratus dua puluh tiga rupiah",
-  "id-ID_IDR123p45.mp3": "IDR seratus dua puluh tiga titik empat lima",
+  "id-ID_IDR123p45.mp3": "I D R seratus dua puluh tiga titik empat lima",
   "yue-HK_USD123p45.mp3": "一百二十三點四五美元",
   "yue-HK_SGD123p45.mp3": "一百二十三點四五新加坡元",
   "yue-HK_SYM123p45.mp3": "一百二十三點四五港元",
@@ -80,13 +80,13 @@
   "ja-JP_JPYsym123.mp3": "百二十三円",
   "ja-JP_JPYword123.mp3": "円百二十三",
   "ja-JP_JPYspace123.mp3": "JP百二十三",
-  "ta-IN_USD123p45.mp3": "யு எஸ் டி நூற்று இருபத்து மூன்று புள்ளி நான்கு ஐந்து",
-  "ta-IN_SGD123p45.mp3": "எஸ் ஜி டி நூற்று இருபத்து மூன்று புள்ளி நான்கு ஐந்து",
+  "ta-IN_USD123p45.mp3": "U S D நூற்று இருபத்து மூன்று புள்ளி நான்கு ஐந்து",
+  "ta-IN_SGD123p45.mp3": "S G D நூற்று இருபத்து மூன்று புள்ளி நான்கு ஐந்து",
   "ta-IN_SYM123p45.mp3": "நூற்று இருபத்து மூன்று டாலர் நாற்பத்தைந்து சென்ட்",
-  "ta-IN_USD0p10.mp3": "யு எஸ் டி பூஜ்யம் புள்ளி ஒன்று பூஜ்யம்",
-  "ta-IN_INR123p45.mp3": "ஐ என் ஆர் நூற்று இருபத்து மூன்று புள்ளி நான்கு ஐந்து",
-  "ta-IN_INR123.mp3": "ஐ என் ஆர் நூற்று இருபத்து மூன்று",
+  "ta-IN_USD0p10.mp3": "U S D பூஜ்யம் புள்ளி ஒன்று பூஜ்யம்",
+  "ta-IN_INR123p45.mp3": "I N R நூற்று இருபத்து மூன்று புள்ளி நான்கு ஐந்து",
+  "ta-IN_INR123.mp3": "I N R நூற்று இருபத்து மூன்று",
   "ta-IN_INRsym123.mp3": "நூற்று இருபத்து மூன்று ரூபாய்",
   "ta-IN_INRword123.mp3": "நூற்று இருபத்து மூன்று ரூபாய்",
-  "ta-IN_INRspace123.mp3": "ஐ என் ஆர் நூற்று இருபத்து மூன்று"
+  "ta-IN_INRspace123.mp3": "I N R நூற்று இருபத்து மூன்று"
 }
