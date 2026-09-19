@@ -34,7 +34,7 @@ The synthesizer decides. Its text normalizer tags a token as *money* and rewrite
 
 What differs is the currency list, which is short and rarely published [^16]. `$` and `USD` sit in the en-US table and `SGD` does not [^6]; NVDA and TalkBack ship no amount table of their own, only a symbol dictionary [^1] [^17], and the open normalizers from Google and NVIDIA ship small ones [^24] [^25]. HTML has no currency element [^27], so write the currency name out or supply the spoken form yourself.
 
-Clips from two Google TTS builds on Android, the later one a marked, unverified draft, let you [hear what the voice actually does](#the-clips-and-their-transcripts).
+Clips from two Google TTS builds on Android and an eSpeak NG column let you [hear what the voice actually does](#the-clips-and-their-transcripts); the later Google build is a marked, unverified draft, and eSpeak appears as phonemes rather than words.
 
 ## What Narrator and NVDA share
 
@@ -395,7 +395,7 @@ The engines most people hear (Google's on Android, Microsoft's and Apple's) publ
 
 Amounts use each locale's own decimal separator, verified against CLDR: a period for `en-US`, `en-GB`, `en-IN`, `zh-CN`, `zh-TW`, `yue-HK`, `th-TH`, `ja-JP`, `ta-IN`, and a comma for `id-ID`, `de-DE`, `fr-FR`, `es-ES`, `it-IT`, `nl-NL`. The Indonesian set is `IDR123,45`, `IDR123`, and `IDR123.45` as a wrong-separator control. Each locale runs `USD123<sep>45`, `SGD123<sep>45`, `$123<sep>45`, the cents-only `USD0<sep>10`, then its own currency. `id-ID`, `en-IN`, `ja-JP` and `ta-IN` add an integer form of that currency (`IDR123`, `INR123`, `JPY123`), and `ja-JP` and `ta-IN` add three probes that swap the code for a symbol, a word, or a spaced code.
 
-Android's API returns audio and never the normalized string, so the words have to come from listening. The gallery below carries a clip and a transcript for each amount. The `103.12.8` column is verified against the audio; the `20260817` column is a draft capture, unverified and hidden behind a toggle. Currency, the number, the point word and the minor unit are each coloured, with a second, non-colour cue so the split survives without colour; non-Latin read-outs carry a romanization underneath.
+Android's API returns audio and never the normalized string, so the words have to come from listening. The gallery below carries a clip and a transcript for each amount. The `103.12.8` column is verified against the audio; the `20260817` column is a draft capture, unverified and hidden behind a toggle; the `eSpeak NG` column is an open engine shown as phonemes, also behind a toggle. Currency, the number, the point word and the minor unit are each coloured, with a second, non-colour cue so the split survives without colour; non-Latin read-outs carry a romanization underneath.
 
 Google's pipeline does show up in the data it ships. The APK's bundled en-US voice carries `en_verbalize_spec.pb`, a spec that names a `money` class with `currency`, `amount.integer_part` and `amount.fractional_part` fields. That is the same classify-then-verbalize split the other engines use [^36].
 
