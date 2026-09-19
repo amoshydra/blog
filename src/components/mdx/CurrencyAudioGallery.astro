@@ -7,11 +7,11 @@ import { renderTranscriptHtml } from "../../lib/transcript-render.mjs";
 //
 //   A = 103.12.8 (2023, committed snapshot, human-verified transcripts)
 //   B = 20260817 (2026, later build, machine-predicted/draft transcripts)
+//   C = eSpeak NG (open source; read-out shown as its own phonemes)
 //
-// A is shown by default. The B column is hidden behind a "draft capture"
-// toggle, because it is unverified. One responsive component: aligned columns
-// on desktop, stacked cards on mobile (same DOM). No global engine mode: every
-// visible row exposes both builds up front, with per-row A/B play buttons.
+// A is always shown. B and C are hidden behind labelled toggles (B is
+// unverified; C is an open engine shown as phonemes, not words). One responsive
+// component: aligned columns on desktop, stacked cards on mobile (same DOM).
 const slug = "screen-reader-currency-announcements";
 const artifacts = path.join(process.cwd(), "public", "posts", slug, "artifacts");
 const contentDir = path.join(process.cwd(), "content", "posts", slug);
@@ -21,22 +21,43 @@ const relBase = import.meta.env.BASE_URL.endsWith("/")
 
 const SPECS = {
   a: {
+    id: "a",
+    short: "A",
     label: "103.12.8",
     year: "2023",
+    kind: "words",
     manifest: "RESULTS-gtts-locales.tsv",
     clips: "gtts",
     transcripts: "transcripts.json",
     roman: "transcripts.romanized.json",
   },
   b: {
+    id: "b",
+    short: "B",
     label: "20260817",
     year: "2026",
+    kind: "words",
     manifest: "RESULTS-gtts-locales-20260817.tsv",
     clips: "gtts/20260817",
     transcripts: "transcripts.20260817.json",
     roman: null,
   },
+  c: {
+    id: "c",
+    short: "C",
+    label: "eSpeak NG",
+    year: "",
+    kind: "phonemes",
+    manifest: "RESULTS-espeak-locales.tsv",
+    clips: "espeak",
+    transcripts: "transcripts.espeak.json",
+    roman: null,
+    noVoiceLocales: ["en-IN"],
+  },
 };
+
+const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
+const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ESC[c]);
 
 function readJson(file) {
   try {
@@ -65,7 +86,7 @@ function loadEngine(spec) {
     const text = predicted ? raw.replace(/^~\s*/, "") : raw;
     cells.set(`${r.locale}\u0000${r.form}`, {
       url: `${relBase}posts/${slug}/artifacts/${spec.clips}/${r.file}`,
-      html: renderTranscriptHtml(text, r.locale),
+      html: spec.kind === "phonemes" ? escapeHtml(text) : renderTranscriptHtml(text, r.locale),
       predicted,
       roman: (romanized[r.file] ?? "").trim(),
     });
@@ -73,16 +94,52 @@ function loadEngine(spec) {
   return { ...spec, rows, cells };
 }
 
-const a = loadEngine(SPECS.a);
-const b = loadEngine(SPECS.b);
-const hasB = !!b;
+const data = { a: loadEngine(SPECS.a), b: loadEngine(SPECS.b), c: loadEngine(SPECS.c) };
+
+const engines = [
+  {
+    ...SPECS.a,
+    label: data.a.label,
+    year: data.a.year,
+    none: "",
+    tag: null,
+    cellLabel: `A · ${data.a.label}`,
+    toggle: null,
+  },
+  data.b && {
+    ...SPECS.b,
+    label: data.b.label,
+    year: data.b.year,
+    none: "not captured",
+    tag: "draft",
+    cellLabel: `B · ${data.b.label}`,
+    toggle: {
+      show: `Show draft capture · B = ${data.b.label} (${data.b.year}) · unverified`,
+      hide: "Hide draft capture",
+      aria: `${data.b.label} draft capture, unverified`,
+    },
+  },
+  data.c && {
+    ...SPECS.c,
+    none: "not captured",
+    tag: "phonemes",
+    cellLabel: "C · eSpeak NG",
+    toggle: {
+      show: "Show eSpeak NG · open engine (phonemes)",
+      hide: "Hide eSpeak NG",
+      aria: "eSpeak NG open engine, phonemes",
+    },
+  },
+].filter(Boolean);
+
+const active = engines.filter((e) => data[e.id]);
 
 const groups: {
   locale: string;
-  rows: { form: string; a: ReturnType<typeof a.cells.get>; b: ReturnType<typeof a.cells.get> }[];
+  rows: { form: string; cells: Record<string, ReturnType<typeof data.a.cells.get>> }[];
 }[] = [];
 const seen = new Set<string>();
-for (const r of a.rows) {
+for (const r of data.a.rows) {
   const key = `${r.locale}\u0000${r.form}`;
   if (seen.has(key)) continue;
   seen.add(key);
@@ -91,38 +148,50 @@ for (const r of a.rows) {
     group = { locale: r.locale, rows: [] };
     groups.push(group);
   }
-  group.rows.push({ form: r.form, a: a.cells.get(key), b: b ? b.cells.get(key) : undefined });
+  const cells: Record<string, ReturnType<typeof data.a.cells.get>> = {};
+  for (const e of active) cells[e.id] = data[e.id].cells.get(key);
+  group.rows.push({ form: r.form, cells });
 }
 const total = groups.reduce((n, g) => n + g.rows.length, 0);
 ---
 
-<div class="cmp" data-draft="0">
+<div class="cmp" data-b="0" data-c="0" data-cols="2">
   <div class="cmp__bar">
     <p class="cmp__title">
-      {total} forms <span class="cmp__title-sub">A = {a.label} ({a.year}), verified</span>
+      {total} forms <span class="cmp__title-sub">A = {data.a.label} ({data.a.year}), verified</span>
     </p>
-    {
-      hasB && (
-        <button
-          type="button"
-          class="cmp__draft"
-          aria-pressed="false"
-          aria-label="20260817 draft capture, unverified"
-        >
-          <span class="cmp__draft-show">Show draft capture · B = {b.label} ({b.year}) · unverified</span>
-          <span class="cmp__draft-hide">Hide draft capture</span>
-        </button>
-      )
-    }
+    <div class="cmp__toggles">
+      {
+        active
+          .filter((e) => e.toggle)
+          .map((e) => (
+            <button
+              type="button"
+              class="cmp__toggle"
+              data-engine={e.id}
+              aria-pressed="false"
+              aria-label={e.toggle.aria}
+            >
+              <span class="cmp__toggle-show">{e.toggle.show}</span>
+              <span class="cmp__toggle-hide">{e.toggle.hide}</span>
+            </button>
+          ))
+      }
+    </div>
   </div>
 
-  <div class="cmp__table" role="table" aria-label="Currency read-outs across two TTS engine builds">
+  <div class="cmp__table" role="table" aria-label="Currency read-outs across TTS engines">
     <div class="cmp__head" role="row">
       <div class="cmp__th" role="columnheader">Input</div>
-      <div class="cmp__th" role="columnheader">A · {a.label}</div>
-      <div class="cmp__th cmp__th--b" role="columnheader">
-        B · {hasB ? b.label : "—"} <span class="cmp__pred">draft</span>
-      </div>
+      {
+        active.map((e) => (
+          <div class={`cmp__th cmp__col--${e.id}`} role="columnheader">
+            {e.short} · {e.label}
+            {e.year ? ` (${e.year})` : ""}
+            {e.tag && <span class="cmp__pred">{e.tag}</span>}
+          </div>
+        ))
+      }
     </div>
 
     {
@@ -144,45 +213,37 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
                   ⌄
                 </button>
               </div>
-
-              <div class="cmp__cell" role="cell" data-label={`A · ${a.label}`}>
-                {row.a && (
-                  <>
-                    <button
-                      type="button"
-                      class="cmp__play"
-                      data-play={row.a.url}
-                      aria-label={`Play the ${a.label} read-out for ${group.locale} ${row.form}`}
-                    >
-                      ▶<span class="cmp__badge">A</span>
-                    </button>
-                    <span class="cmp__text" set:html={row.a.html} />
-                    {row.a.roman && <span class="cmp__roman">{row.a.roman}</span>}
-                  </>
-                )}
-              </div>
-
-              <div
-                class="cmp__cell cmp__cell--b"
-                role="cell"
-                data-label={`B · ${hasB ? b.label : "—"}`}
-              >
-                {row.b ? (
-                  <>
-                    <button
-                      type="button"
-                      class="cmp__play"
-                      data-play={row.b.url}
-                      aria-label={`Play the ${b.label} draft read-out for ${group.locale} ${row.form}`}
-                    >
-                      ▶<span class="cmp__badge cmp__badge--b">B</span>
-                    </button>
-                    <span class="cmp__text cmp__text--pred" set:html={row.b.html} />
-                  </>
-                ) : (
-                  <span class="cmp__none">not captured</span>
-                )}
-              </div>
+              {active.map((e) => {
+                const cell = row.cells[e.id];
+                const missing = (e.noVoiceLocales ?? []).includes(group.locale) ? "no voice" : e.none;
+                return (
+                  <div
+                    class={`cmp__cell cmp__col--${e.id}`}
+                    role="cell"
+                    data-label={e.cellLabel}
+                  >
+                    {cell ? (
+                      <>
+                        <button
+                          type="button"
+                          class="cmp__play"
+                          data-play={cell.url}
+                          aria-label={`Play the ${e.label} read-out for ${group.locale} ${row.form}`}
+                        >
+                          ▶<span class="cmp__badge">{e.short}</span>
+                        </button>
+                        <span
+                          class={`cmp__text${cell.predicted ? " cmp__text--pred" : ""}${e.kind === "phonemes" ? " cmp__text--phon" : ""}`}
+                          set:html={cell.html}
+                        />
+                        {cell.roman && <span class="cmp__roman">{cell.roman}</span>}
+                      </>
+                    ) : (
+                      <span class="cmp__none">{missing}</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
@@ -196,9 +257,9 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
   const audio = new Audio();
   audio.preload = "none";
 
-  // Show the expand chevron only where a transcript is actually clamped, so it
-  // never sits there doing nothing. -webkit-line-clamp clamps scrollHeight too,
-  // so measure the natural height with a hidden, unclamped clone.
+  // Show the expand chevron only where a transcript is actually clamped.
+  // -webkit-line-clamp clamps scrollHeight too, so measure natural height with
+  // a hidden, unclamped clone.
   function textOverflows(el: HTMLElement) {
     const rect = el.getBoundingClientRect();
     const clone = el.cloneNode(true) as HTMLElement;
@@ -226,17 +287,25 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     }
   }
 
+  function applyCols(root: HTMLElement) {
+    const toggles = [...root.querySelectorAll<HTMLElement>(".cmp__toggle")];
+    // tracks = Input + A (always) + each active toggle.
+    const shown = 2 + toggles.filter((t) => root.dataset[t.dataset.engine ?? ""] === "1").length;
+    root.dataset.cols = String(shown);
+  }
+
   const roots = [...document.querySelectorAll<HTMLElement>(".cmp")];
   for (const root of roots) {
     if (root.dataset.bound) continue;
     root.dataset.bound = "1";
 
-    const draft = root.querySelector<HTMLButtonElement>(".cmp__draft");
-    if (draft) {
-      draft.addEventListener("click", () => {
-        const on = root.dataset.draft === "1";
-        root.dataset.draft = on ? "0" : "1";
-        draft.setAttribute("aria-pressed", on ? "false" : "true");
+    for (const t of root.querySelectorAll<HTMLButtonElement>(".cmp__toggle")) {
+      t.addEventListener("click", () => {
+        const id = t.dataset.engine ?? "";
+        const on = root.dataset[id] === "1";
+        root.dataset[id] = on ? "0" : "1";
+        t.setAttribute("aria-pressed", on ? "false" : "true");
+        applyCols(root);
         syncMore(root);
       });
     }
@@ -264,6 +333,7 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
       });
     }
 
+    applyCols(root);
     syncMore(root);
   }
 
@@ -277,13 +347,22 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
 </script>
 
 <style>
-  /* Draft (B) column is hidden until toggled on, so the grid has 2 tracks by
-     default and 3 when revealed. */
-  .cmp[data-draft="0"] {
+  /* One track for Input plus one per visible engine (A always, B/C toggled). */
+  .cmp[data-cols="1"] {
+    --cmp-cols: 10rem;
+  }
+  .cmp[data-cols="2"] {
     --cmp-cols: 10rem minmax(0, 1fr);
   }
-  .cmp[data-draft="1"] {
+  .cmp[data-cols="3"] {
     --cmp-cols: 10rem minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .cmp[data-cols="4"] {
+    --cmp-cols: 10rem minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .cmp[data-b="0"] .cmp__col--b,
+  .cmp[data-c="0"] .cmp__col--c {
+    display: none;
   }
 
   .cmp {
@@ -316,7 +395,12 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     font-weight: 400;
     margin-left: 0.35rem;
   }
-  .cmp__draft {
+  .cmp__toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .cmp__toggle {
     font: inherit;
     font-size: 0.78rem;
     padding: 0.28rem 0.7rem;
@@ -326,17 +410,17 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     color: inherit;
     cursor: pointer;
   }
-  .cmp__draft[aria-pressed="true"] {
+  .cmp__toggle[aria-pressed="true"] {
     background: rgb(var(--gray-light));
     font-weight: 600;
   }
-  .cmp__draft-hide {
+  .cmp__toggle-hide {
     display: none;
   }
-  .cmp__draft[aria-pressed="true"] .cmp__draft-show {
+  .cmp__toggle[aria-pressed="true"] .cmp__toggle-show {
     display: none;
   }
-  .cmp__draft[aria-pressed="true"] .cmp__draft-hide {
+  .cmp__toggle[aria-pressed="true"] .cmp__toggle-hide {
     display: inline;
   }
   .cmp__pred {
@@ -349,11 +433,6 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
     padding: 0 0.4rem;
     margin-left: 0.3rem;
     vertical-align: 0.08em;
-  }
-
-  .cmp[data-draft="0"] .cmp__th--b,
-  .cmp[data-draft="0"] .cmp__cell--b {
-    display: none;
   }
 
   .cmp__table {
@@ -437,6 +516,10 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
   .cmp__text--pred {
     opacity: 0.82;
   }
+  .cmp__text--phon {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.78rem;
+  }
   .cmp__row[data-open="1"] .cmp__text {
     -webkit-line-clamp: unset;
     display: block;
@@ -454,8 +537,7 @@ const total = groups.reduce((n, g) => n + g.rows.length, 0);
 
   /* Mobile: same DOM, stacked cards. */
   @media (max-width: 760px) {
-    .cmp[data-draft="0"],
-    .cmp[data-draft="1"] {
+    .cmp[data-cols] {
       --cmp-cols: 1fr;
     }
     .cmp__head {

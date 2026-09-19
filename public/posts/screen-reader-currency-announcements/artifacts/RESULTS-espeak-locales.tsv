@@ -1,0 +1,86 @@
+# engine: eSpeak NG text-to-speech: 1.52.0  Data at: /usr/share/espeak-ng-data
+locale	form	file	bytes	phonemes
+en-US	USD123.45	en-US_USD123p45.mp3	134860	j,u:,Esd'i: w'Vnh'VndrI2d tw'Ent2i Tr'i: pOInt f'o@ f'aIv
+en-US	SGD123.45	en-US_SGD123p45.mp3	136158	,EsdZ,i:d'i: w'Vnh'VndrI2d tw'Ent2i Tr'i: pOInt f'o@ f'aIv
+en-US	$123.45	en-US_SYM123p45.mp3	127820	d'0l3 w'Vnh'VndrI2d tw'Ent2i Tr'i: pOInt f'o@ f'aIv
+en-US	USD0.10	en-US_USD0p10.mp3	88700	j,u:,Esd'i: z'i@roU pOInt w'Vn z'i@roU
+en-GB	USD123.45	en-GB_USD123p45.mp3	133618	j,u:,Esd'i: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+en-GB	SGD123.45	en-GB_SGD123p45.mp3	135280	,EsdZ,i:d'i: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+en-GB	$123.45	en-GB_SYM123p45.mp3	124008	d'0l3 w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+en-GB	USD0.10	en-GB_USD0p10.mp3	89560	j,u:,Esd'i: z'i@roU pOInt w'0n z'i@roU
+en-GB	GBP123.45	en-GB_GBP123p45.mp3	135418	dZ,i:b,i:p'i: w'0nh'VndrI2d@n tw'Enti Tr'i: pOInt f'o@ f'aIv
+id-ID	USD123,45	id-ID_USD123c45.mp3	128758	'usd s@R2'atus_| d'uap,uluht'iga _k,oma_ '@mpat l'ima
+id-ID	SGD123,45	id-ID_SGD123c45.mp3	137650	,Esg,ed'e s@R2'atus_| d'uap,uluht'iga _k,oma_ '@mpat l'ima
+id-ID	$123,45	id-ID_SYM123c45.mp3	131876	d'OlaR s@R2'atus_| d'uap,uluht'iga _k,oma_ '@mpat l'ima
+id-ID	USD0,10	id-ID_USD0c10.mp3	76140	'usd n'ol _k,oma_ s'atu n'ol
+id-ID	IDR123,45	id-ID_IDR123c45.mp3	129468	'idR s@R2'atus_| d'uap,uluht'iga _k,oma_ '@mpat l'ima
+id-ID	IDR123	id-ID_IDR123.mp3	88172	'idR s@R2'atus_| d'uap,uluht'iga
+id-ID	IDR123.45	id-ID_IDR123p45.mp3	142586	'idR s@R2'atus_| d'uap,uluht'iga t'iti? 'Empatp,uluhl'ima
+yue-HK	USD123.45	yue-HK_USD123p45.mp3	99858	(en)j,u:1,E1sd'i:1(yue)_| j,a1t_| baa3k_| j,i6sa6p_| s,aa7m_| sei3_| 'ng5_|
+yue-HK	SGD123.45	yue-HK_SGD123p45.mp3	102020	(en),E1sdZ,i:1d'i:1(yue)_| j,a1t_| baa3k_| j,i6sa6p_| s,aa7m_| sei3_| 'ng5_|
+yue-HK	$123.45	yue-HK_SYM123p45.mp3	80246	j,a1t_| baa3k_| j,i6sa6p_| s,aa7m_| sei3_| 'ng5_|
+yue-HK	USD0.10	yue-HK_USD0p10.mp3	59174	(en)V1sdz'i@1roU1(yue)_| ja1t_| l'ing4_| _!_|
+yue-HK	HKD123.45	yue-HK_HKD123p45.mp3	107200	(en),eI1tSk,eI1d'i:1(yue)_| j,a1t_| baa3k_| j,i6sa6p_| s,aa7m_| sei3_| 'ng5_|
+zh-CN	USD123.45	zh-CN_USD123p45.mp3	116344	(en)j,u:55,E55sd'i:55(cmn)_| j,i55pai21_|_| ,@r51s.i.35_|sa55n_| t'iE35n_|_| si[51_| w,u214_|
+zh-CN	SGD123.45	zh-CN_SGD123p45.mp3	118016	(en),E55sdZ,i:55d'i:55(cmn)_| j,i55pai21_|_| ,@r51s.i.35_|sa55n_| t'iE35n_|_| si[51_| w,u214_|
+zh-CN	$123.45	zh-CN_SYM123p45.mp3	96422	j,i55pai21_|_| ,@r51s.i.35_|sa55n_| t'iE35n_|_| si[51_| w,u214_|
+zh-CN	USD0.10	zh-CN_USD0p10.mp3	64398	(en)V55sdz'i@55roU55(cmn)_| ji55l'i35N_!_|
+zh-CN	CNY123.45	zh-CN_CNY123p45.mp3	118918	(en)s,i:55;,E55nw'aI55(cmn)_| j,i55pai21_|_| ,@r51s.i.35_|sa55n_| t'iE35n_|_| si[51_| w,u214_|
+zh-TW	USD123.45	zh-TW_USD123p45.mp3	116344	(en)j,u:55,E55sd'i:55(cmn)_| j,i55pai21_|_| ,@r51s.i.35_|sa55n_| t'iE35n_|_| si[51_| w,u214_|
+zh-TW	SGD123.45	zh-TW_SGD123p45.mp3	118016	(en),E55sdZ,i:55d'i:55(cmn)_| j,i55pai21_|_| ,@r51s.i.35_|sa55n_| t'iE35n_|_| si[51_| w,u214_|
+zh-TW	$123.45	zh-TW_SYM123p45.mp3	96422	j,i55pai21_|_| ,@r51s.i.35_|sa55n_| t'iE35n_|_| si[51_| w,u214_|
+zh-TW	USD0.10	zh-TW_USD0p10.mp3	64398	(en)V55sdz'i@55roU55(cmn)_| ji55l'i35N_!_|
+zh-TW	TWD123.45	zh-TW_TWD123p45.mp3	128760	(en)t,i:55d,V55b@L55j,u:55d'i:55(cmn)_| j,i55pai21_|_| ,@r51s.i.35_|sa55n_| t'iE35n_|_| si[51_| w,u214_|
+th-TH	USD123.45	th-TH_USD123p45.mp3	92308	(en)j,u:,Esd'i:(th) n,u5e5ngs,o3ng_!sa5ms'i3ha_!
+th-TH	SGD123.45	th-TH_SGD123p45.mp3	93958	(en),EsdZ,i:d'i:(th) n,u5e5ngs,o3ng_!sa5ms'i3ha_!
+th-TH	$123.45	th-TH_SYM123p45.mp3	70834	n,u5e5ngs,o3ng_!sa5ms'i3ha_!
+th-TH	USD0.10	th-TH_USD0p10.mp3	76030	(en)j,u:,Esd'i:(th) s,u5nnu'e3ngsun_!
+th-TH	THB123.45	th-TH_THB123p45.mp3	98694	(en)t,i:;,eItSb'i:(th) n,u5e5ngs,o3ng_!sa5ms'i3ha_!
+ja-JP	USD123.45	ja-JP_USD123p45.mp3	120408	_:(en)j'u: _:'Es _:d'i:(ja) ,it_si_!C,aku n,i d_zu_!san_! s'i_! go_!
+ja-JP	SGD123.45	ja-JP_SGD123p45.mp3	117908	_:(en)'Es _:dZ'i: _:d'i:(ja) ,it_si_!C,aku n,i d_zu_!san_! s'i_! go_!
+ja-JP	$123.45	ja-JP_SYM123p45.mp3	86258	,it_si_!C,aku n,i d_zu_!san_! s'i_! go_!
+ja-JP	USD0.10	ja-JP_USD0p10.mp3	86468	_:(en)j'u: _:'Es _:d'i:(ja) r,ei_! ,it_si_! r'ei_!
+ja-JP	JPY123.45	ja-JP_JPY123p45.mp3	125868	_:(en)dZ'eI _:p'i: _:w'aI(ja) ,it_si_!C,aku n,i d_zu_!san_! s'i_! go_!
+ja-JP	JPY123	ja-JP_JPY123.mp3	110444	_:(en)dZ'eI _:p'i: _:w'aI(ja) ,it_si_!C,aku ni d_z'u_!san_!
+ja-JP	¥123	ja-JP_JPYsym123.mp3	70634	,it_si_!C,aku ni d_z'u_!san_!
+ja-JP	円123	ja-JP_JPYword123.mp3	105086	_:(en)tS'aIni:z(ja)l'et@ ,it_si_!C,aku ni d_z'u_!san_!
+ja-JP	JPY 123	ja-JP_JPYspace123.mp3	110444	_:(en)dZ'eI _:p'i: _:w'aI(ja) ,it_si_!C,aku ni d_z'u_!san_!
+ta-IN	USD123.45	ta-IN_USD123p45.mp3	134510	j'ues d'olVz n'u:t.t.Ri ,irUb,VttUm,u:nRU _p,ul.l.i n,a:ngU ,aIndU
+ta-IN	SGD123.45	ta-IN_SGD123p45.mp3	130844	(en),EsdZ,i:d'i:(ta) n'u:t.t.Ri ,irUb,VttUm,u:nRU _p,ul.l.i n,a:ngU ,aIndU
+ta-IN	$123.45	ta-IN_SYM123p45.mp3	119154	d'olV n'u:t.t.Ri ,irUb,VttUm,u:nRU _p,ul.l.i n,a:ngU ,aIndU
+ta-IN	USD0.10	ta-IN_USD0p10.mp3	107088	j'ues d'olVz s'uz.ij,@m _pul.l.,i onR,U suz.,ij@m
+ta-IN	INR123.45	ta-IN_INR123p45.mp3	144060	'IndI;Vn r'u:pi:z n'u:t.t.Ri ,irUb,VttUm,u:nRU _p,ul.l.i n,a:ngU ,aIndU
+ta-IN	INR123	ta-IN_INR123.mp3	102586	'IndI;Vn r'u:pi:z n'u:t.t.Ri ,irUb,VttUm,u:nRU
+ta-IN	₹123	ta-IN_INRsym123.mp3	88100	r'u:ba:j n'u:t.t.Ri ,irUb,VttUm,u:nRU
+ta-IN	ரூபாய்123	ta-IN_INRword123.mp3	88100	r'u:ba:j n'u:t.t.Ri ,irUb,VttUm,u:nRU
+ta-IN	INR 123	ta-IN_INRspace123.mp3	102586	'IndI;Vn r'u:pi:z n'u:t.t.Ri ,irUb,VttUm,u:nRU
+de-DE	USD123,45	de-DE_USD123c45.mp3	134634	_!'Ust _'aInh'Und3t dr'aI _|Unttsv'antsIC _k,OmA: f'i:r f'ynf
+de-DE	SGD123,45	de-DE_SGD123c45.mp3	147676	_!,Esg,e:d'e: _'aInh'Und3t dr'aI _|Unttsv'antsIC _k,OmA: f'i:r f'ynf
+de-DE	$123,45	de-DE_SYM123c45.mp3	137924	dOl'A: _'aInh'Und3t dr'aI _|Unttsv'antsIC _k,OmA: f'i:r f'ynf
+de-DE	USD0,10	de-DE_USD0c10.mp3	73302	_!'Ust n'Ul _kOmA: _'aIns n'Ul
+de-DE	EUR123,45	de-DE_EUR123c45.mp3	134170	_!'OYr _'aInh'Und3t dr'aI _|Unttsv'antsIC _k,OmA: f'i:r f'ynf
+de-DE	EUR123.45	de-DE_EUR123p45.mp3	154688	_!'OYr _'aInh'Und3t dr'aI _|Unttsv'antsIC p,UNkt f'ynf _|Untf'IrtsIC
+fr-FR	USD123,45	fr-FR_USD123c45.mp3	99000	'yzd sA~ vE~ttrwa virgyl karA~ts'E~k
+fr-FR	SGD123,45	fr-FR_SGD123c45.mp3	106112	,EsZ,ed'e sA~ vE~ttrwa virgyl karA~ts'E~k
+fr-FR	$123,45	fr-FR_SYM123c45.mp3	99484	dOl'ar sA~ vE~ttrwa virgyl karA~ts'E~k
+fr-FR	USD0,10	fr-FR_USD0c10.mp3	67030	'yzd zero virgyl d'is
+fr-FR	EUR123,45	fr-FR_EUR123c45.mp3	94392	'Wr sA~ vE~ttrwa virgyl karA~ts'E~k
+fr-FR	EUR123.45	fr-FR_EUR123p45.mp3	85850	'Wr sA~ vE~ttrwa _|pwE~ karA~ts'E~k
+es-ES	USD123,45	es-ES_USD123c45.mp3	121292	'usd Tj'ento B,eIntit**'es kom,a kwa**,EntaiT'inko
+es-ES	SGD123,45	es-ES_SGD123c45.mp3	132648	,esex,eD'e Tj'ento B,eIntit**'es kom,a kwa**,EntaiT'inko
+es-ES	$123,45	es-ES_SYM123c45.mp3	123044	d'olar Tj'ento B,eIntit**'es kom,a kwa**,EntaiT'inko
+es-ES	USD0,10	es-ES_USD0c10.mp3	64560	'usd T'e**o k,oma Dj'ET
+es-ES	EUR123,45	es-ES_EUR123c45.mp3	119406	'eUr Tj'ento B,eIntit**'es kom,a kwa**,EntaiT'inko
+es-ES	EUR123.45	es-ES_EUR123p45.mp3	121594	'eUr Tj'ento B,eIntit**'es punto kwa**,EntaiT'inko
+it-IT	USD123,45	it-IT_USD123c45.mp3	127234	'uzd tS'Ento ventit@-*'e v'i;@-*gola kUa*'a:ntatS'inkwe
+it-IT	SGD123,45	it-IT_SGD123c45.mp3	139040	,EssedZ,id['i: tS'Ento ventit@-*'e v'i;@-*gola kUa*'a:ntatS'inkwe
+it-IT	$123,45	it-IT_SYM123c45.mp3	134416	d'OllaRI tS'Ento ventit@-*'e v'i;@-*gola kUa*'a:ntatS'inkwe
+it-IT	USD0,10	it-IT_USD0c10.mp3	75334	'uzd dz'E*o v'i;@-*gola dj'EtSI
+it-IT	EUR123,45	it-IT_EUR123c45.mp3	125630	'EU@-* tS'Ento ventit@-*'e v'i;@-*gola kUa*'a:ntatS'inkwe
+it-IT	EUR123.45	it-IT_EUR123p45.mp3	116790	'EU@-* tS'Ento ventit@-*'e pUnto kUa*'a:ntatS'inkwe
+nl-NL	USD123,45	nl-NL_USD123c45.mp3	112858	_!'8st h'Ond@r! tr,iEntv#,Int@x _k,Oma: v,ir v,EIf
+nl-NL	SGD123,45	nl-NL_SGD123c45.mp3	124254	_!,EsQ,e:d'e: h'Ond@r! tr,iEntv#,Int@x _k,Oma: v,ir v,EIf
+nl-NL	$123,45	nl-NL_SYM123c45.mp3	113412	d'OlAr h'Ond@r! tr,iEntv#,Int@x _k,Oma: v,ir v,EIf
+nl-NL	USD0,10	nl-NL_USD0c10.mp3	66082	_!'8st n'8l _k,Oma: ,e:n n,8l
+nl-NL	EUR123,45	nl-NL_EUR123c45.mp3	111726	_!'Y:r h'Ond@r! tr,iEntv#,Int@x _k,Oma: v,ir v,EIf
+nl-NL	EUR123.45	nl-NL_EUR123p45.mp3	114320	_!'Y:r h'Ond@r! tr,iEntv#,Int@x v'EIfEnf,I:rt@x
