@@ -59,7 +59,9 @@ export default defineConfig({
       mermaidConfig: {
         flowchart: { useMaxWidth: false, htmlLabels: true },
         sequence: { useMaxWidth: false },
-        gantt: { useMaxWidth: false },
+        // A gantt is laid out to a fixed width rather than the container, so
+        // give it a generous one; the pan/zoom viewport scrolls the result.
+        gantt: { useMaxWidth: false, useWidth: 1600 },
         themeVariables: { fontSize: '16px' },
       },
     })
