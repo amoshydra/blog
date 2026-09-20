@@ -24,6 +24,20 @@ interface View {
 
 const clamp = (value: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, value));
 
+// Mermaid centres a diagram's title (e.g. a gantt's titleText) over the whole
+// canvas, and does so in its own CSS. We anchor the initial view to the
+// top-left, which would leave a centred title off-screen on a phone, so pin it
+// to the left edge with an inline style that beats mermaid's stylesheet.
+// Idempotent, and re-run on every scan because a theme change re-renders the
+// SVG, restoring mermaid's centred title.
+function alignTitle(svg: SVGSVGElement): void {
+  svg.querySelectorAll("text.titleText, text.ganttTitle, text.chartTitle").forEach((title) => {
+    title.setAttribute("x", "0");
+    title.removeAttribute("transform");
+    (title as SVGTextElement).style.setProperty("text-anchor", "start", "important");
+  });
+}
+
 function enhance(pre: Element): void {
   const svg = pre.querySelector("svg") as SVGSVGElement | null;
   // scan() runs again on every mutation, so guard on the <pre> itself: once it
@@ -38,6 +52,8 @@ function enhance(pre: Element): void {
   const naturalH = Math.round(
     (vb && vb[3]) || parseFloat(svg.getAttribute("height") ?? "") || svg.clientHeight || 400,
   );
+
+  alignTitle(svg);
 
   // Build: wrapper > toolbar + viewport > pre.mermaid > svg
   const wrap = document.createElement("div");
@@ -216,8 +232,13 @@ function enhance(pre: Element): void {
 }
 
 function scan(): void {
-  // enhance() itself skips a pre that is already inside a panzoom wrapper.
-  document.querySelectorAll("pre.mermaid[data-processed='true']").forEach(enhance);
+  document.querySelectorAll("pre.mermaid[data-processed='true']").forEach((pre) => {
+    // enhance() skips a pre already inside a wrapper, but a re-render (theme
+    // change) replaces the SVG in place, so re-align the title every pass.
+    const svg = pre.querySelector("svg");
+    if (svg) alignTitle(svg as SVGSVGElement);
+    enhance(pre);
+  });
 }
 
 const start = () => {
