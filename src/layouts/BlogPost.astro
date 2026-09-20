@@ -11,7 +11,7 @@ import Footer from "../components/Footer.astro";
 type Props = CollectionEntry<"posts">["data"];
 
 const post = Astro.props;
-const { title, description, heroImage, tableNowrap } = post;
+const { title, description, heroImage } = post;
 ---
 
 <html lang="en">
@@ -30,7 +30,7 @@ const { title, description, heroImage, tableNowrap } = post;
         <BlogPostHeroImage
           image={heroImage}
         />
-        <BlogPostProse class={tableNowrap ? "table-nowrap" : undefined}>
+        <BlogPostProse>
           <BlogPostProseHeader
             post={post}
           />

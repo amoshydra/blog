@@ -96,33 +96,22 @@
   }
 
   /* Every markdown table is wrapped in .table-scroll by a rehype plugin, and
-     the Table component adds .scrollable-table inside it. Fill the column when
-     there is room; scroll horizontally when there isn't. */
+     the Table component adds a .scrollable-table inside it. .table-scroll is
+     the ONLY scroll container; .scrollable-table is a plain layout hook.
+     Cells keep their content on one line so a wide table scrolls sideways
+     instead of squeezing columns into unreadable stacks. */
   .table-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     margin-bottom: 2em;
     scrollbar-width: thin;
   }
-  .table-scroll > table,
-  .table-scroll > .scrollable-table > table {
-    width: 100%;
-    min-width: 36rem;
-    margin-bottom: 0;
-  }
-
-  /* Posts that opt in (see .table-nowrap below) keep cells on one line so wide
-     tables scroll instead of squeezing into unreadable columns. */
-  .table-nowrap .table-scroll > table th,
-  .table-nowrap .table-scroll > table td,
-  .table-nowrap .table-scroll > .scrollable-table > table th,
-  .table-nowrap .table-scroll > .scrollable-table > table td {
-    white-space: nowrap;
-  }
-  .table-nowrap .table-scroll > table,
-  .table-nowrap .table-scroll > .scrollable-table > table {
+  .table-scroll table {
     width: auto;
+    min-width: 100%;
     table-layout: auto;
+    margin-bottom: 0;
+    white-space: nowrap;
   }
 
   th, td {

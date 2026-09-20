@@ -26,7 +26,9 @@ const clamp = (value: number, lo: number, hi: number) => Math.min(hi, Math.max(l
 
 function enhance(pre: Element): void {
   const svg = pre.querySelector("svg") as SVGSVGElement | null;
-  if (!svg || pre.parentElement?.classList.contains("mermaid-panzoom")) return;
+  // scan() runs again on every mutation, so guard on the <pre> itself: once it
+  // has been moved into a viewport, a parent check no longer sees the wrapper.
+  if (!svg || pre.closest(".mermaid-panzoom")) return;
 
   // The diagram's natural (layout) size, before any transform.
   const vb = svg.getAttribute("viewBox")?.split(/[\s,]+/).map(Number);
@@ -214,6 +216,7 @@ function enhance(pre: Element): void {
 }
 
 function scan(): void {
+  // enhance() itself skips a pre that is already inside a panzoom wrapper.
   document.querySelectorAll("pre.mermaid[data-processed='true']").forEach(enhance);
 }
 

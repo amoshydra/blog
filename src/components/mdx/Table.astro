@@ -9,14 +9,10 @@ const props = Astro.props;
 </div>
 
 <style>
+/* Layout hook only. The rehype plugin wraps every markdown table in
+   .table-scroll, which owns the horizontal scrolling; adding overflow here too
+   would nest two scroll containers and hide the scrollbar. */
 .scrollable-table {
-  overflow-x: auto;
   margin: auto;
-
-  > table {
-    width: 100%;
-    table-layout: fixed;
-    overflow-wrap: anywhere;
-  }
 }
 </style>
