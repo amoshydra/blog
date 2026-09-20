@@ -259,25 +259,57 @@
     margin-right: auto;
   }
 
-  /* A rendered diagram is one wide SVG, so let it scroll sideways rather than
-     shrink to an unreadable size on a phone. */
-  figure:has(.mermaid),
-  figure:has(> .mermaid) {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-  }
-  figure > .mermaid {
+  /* A diagram is one SVG that can be panned and zoomed (see
+     src/scripts/mermaid-panzoom.ts). Keep a min width so a wide diagram is at
+     least reachable if that script hasn't run. */
+  .mermaid:not(.mermaid-panzoom__viewport > .mermaid) {
     min-width: 40rem;
   }
-  .mermaid[data-processed="true"] {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+
+  .mermaid-panzoom {
+    margin-bottom: 2em;
   }
-  .mermaid[data-processed="true"] > svg {
-    min-width: 40rem;
-    height: auto;
+  .mermaid-panzoom__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    margin-bottom: 0.4rem;
+  }
+  .mermaid-panzoom__toolbar button {
+    min-width: 1.9rem;
+    height: 1.9rem;
+    padding: 0 0.5rem;
+    display: inline-grid;
+    place-items: center;
+    font-size: 0.85rem;
+    line-height: 1;
+    color: rgb(var(--gray-dark));
+    background: rgb(var(--gray-light));
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.375rem;
+    cursor: pointer;
+  }
+  .mermaid-panzoom__toolbar button:hover {
+    background: rgb(var(--gray));
+    color: rgb(var(--black));
+  }
+  .mermaid-panzoom__viewport {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--shimmer-bg);
+    cursor: grab;
+    /* Hand pinch/pan to our handlers instead of the page scroll. */
+    touch-action: none;
+    overscroll-behavior: contain;
+  }
+  .mermaid-panzoom__viewport.is-dragging {
+    cursor: grabbing;
+  }
+  .mermaid-panzoom__viewport > .mermaid {
+    min-width: 0;
+    margin: 0;
+    overflow: visible;
   }
 
 @keyframes mermaid-shimmer {

@@ -54,6 +54,14 @@ export default defineConfig({
     mermaid({
       theme: 'forest',
       autoTheme: true,
+      // Keep a fixed, readable text size and let the SVG keep its natural
+      // width; wide diagrams scroll/pan instead of shrinking to fit.
+      mermaidConfig: {
+        flowchart: { useMaxWidth: false, htmlLabels: true },
+        sequence: { useMaxWidth: false },
+        gantt: { useMaxWidth: false },
+        themeVariables: { fontSize: '16px' },
+      },
     })
   ],
 });
