@@ -16,11 +16,27 @@ look broken.
 
 ## Where this comes from
 
-- **Android host:** [`amoshydra/android-webview-launcher`](https://github.com/amoshydra/android-webview-launcher)
-  — `InsetAwareWebView.java` and `MainActivity.applyWindowMode()`.
-- **iOS host:** [`amoshydra/ios-webview-launcher`](https://github.com/amoshydra/ios-webview-launcher)
-  — `InsetOverrideWebView.swift`, written as the port of the above and verified on
-  five simulator configurations.
+Both hosts are public, and small enough to read end to end. Every file link below
+is pinned to a commit instead of a branch, so the line numbers stay right after
+the code moves on.
+
+- **Android host:** [`amoshydra/android-webview-launcher`](https://github.com/amoshydra/android-webview-launcher/tree/63980eecfd92f33f9ca698cdf0d7e7b10cdee591).
+  The override is
+  [`InsetAwareWebView.onApplyWindowInsets` and `applyOverrides`](https://github.com/amoshydra/android-webview-launcher/blob/63980eecfd92f33f9ca698cdf0d7e7b10cdee591/app/src/main/java/com/amoshydra/androidapp/InsetAwareWebView.java#L70-L100).
+  The edge-to-edge window setup, and the ordering that has to happen before the
+  first layout pass, are in
+  [`MainActivity`](https://github.com/amoshydra/android-webview-launcher/blob/63980eecfd92f33f9ca698cdf0d7e7b10cdee591/app/src/main/java/com/amoshydra/androidapp/MainActivity.java#L40-L53)
+  and
+  [`applyWindowMode`](https://github.com/amoshydra/android-webview-launcher/blob/63980eecfd92f33f9ca698cdf0d7e7b10cdee591/app/src/main/java/com/amoshydra/androidapp/MainActivity.java#L91-L109).
+- **iOS host:** [`amoshydra/ios-webview-launcher`](https://github.com/amoshydra/ios-webview-launcher/tree/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957),
+  written as the port of the above and verified on five simulator
+  configurations. The whole override is one getter, in
+  [`InsetOverrideWebView`](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/InsetOverrideWebView.swift#L17-L58).
+  `contentInsetAdjustmentBehavior` and setting the override before the first
+  layout pass are in
+  [`makeUIView` and `updateUIView`](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/WebViewScreen.swift#L122-L148),
+  and the sampling behind the `history:` block further down is
+  [`EnvProbe.run`](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/EnvProbe.swift#L42-L85).
 - **Debug page in every screenshot:**
   [`amoshydra/demo-viewport`](https://github.com/amoshydra/demo-viewport), live at
   [`amoshydra.github.io/demo-viewport/?fit=cover`](https://amoshydra.github.io/demo-viewport/?fit=cover).
@@ -94,6 +110,10 @@ private WindowInsets applyOverrides(WindowInsets insets) {
     return builder.build();
 }
 ```
+
+Condensed from
+[`InsetAwareWebView.java`](https://github.com/amoshydra/android-webview-launcher/blob/63980eecfd92f33f9ca698cdf0d7e7b10cdee591/app/src/main/java/com/amoshydra/androidapp/InsetAwareWebView.java#L70-L100);
+that class is 101 lines and this is all of it that matters.
 
 Three things that each cost someone a day:
 
@@ -170,6 +190,12 @@ struct InsetOverride: Equatable {
 }
 ```
 
+Condensed from
+[`InsetOverrideWebView.swift`](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/InsetOverrideWebView.swift#L17-L58).
+The comment above `insetOverride` is the same one, and it is worth reading in
+place: UIKit memoises safe-area geometry per layout pass, so an override that is
+not read after something invalidates that cache silently does nothing.
+
 `nil` per edge means "use the real system value". Values are deliberately not
 clamped, so a value larger than the real inset pushes content further in — which
 is the point when you're inflating a fake inset.
@@ -234,8 +260,14 @@ func updateUIView(_ webView: WKWebView, context: Context) {
 }
 ```
 
+Straight from
+[`WebViewScreen.swift`](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/WebViewScreen.swift#L141-L148).
+
 **3. Set the override before the first layout pass** — in `makeUIView`, not from a
-later callback.
+later callback. It is one of the first lines of
+[`makeUIView`](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/WebViewScreen.swift#L122-L139),
+and the Android host orders it the same way, before `setContentView` rather than
+after.
 
 ## Do not measure this with a single read
 
@@ -293,12 +325,20 @@ var cs = getComputedStyle(p);
 cs.paddingTop; // "150px"
 ```
 
+This is the probe from
+[`EnvProbe.readEnv`](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/EnvProbe.swift#L12-L31),
+with the comment it carries explaining why the probe element exists at all: there
+is no JS API for `env()`, so reading the value out of the page is the only honest
+check.
+
 Two guards make that trustworthy:
 
 **Prove `env()` is supported.** Read it with a fallback. If
 `env(safe-area-inset-top, 77px)` returns `77px`, `env()` is unsupported and every
 other number is void. Reading `0px` proves it resolved to a genuine zero. This is
 what separates "the override didn't work" from "the measurement is meaningless".
+The `viewport-fit=cover` half of that guard is
+[`readViewportFit` in the same file](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/EnvProbe.swift#L33-L40).
 
 **Capture the native value too**, so the two can be compared:
 

@@ -7,7 +7,14 @@ the probe, or the launcher, the tables go stale until you re-measure.
 ## Layout
 
 - `index.mdx` — the post.
-- `hero.webp` — the hero image.
+- `hero.webp` — the hero image. Composed, not generated: it is the
+  `ios-before.webp` and `ios-after.webp` captures cropped to their top 660 rows,
+  placed side by side on a paper ground, with the title set in real font files.
+  The only crop in the post. The ember measure bar beside each capture spans the
+  top inset, which is 99px in `ios-before.webp` and 240px in `ios-after.webp`
+  (644px wide for 402pt, so 1.602 px/pt). Re-measure those two numbers if the
+  captures are replaced. The script is `/tmp/opencode/sa_photo_cover.py`; move it
+  into the repo if the hero is ever rebuilt.
 - `public/posts/webview-safe-area-inset-override/` — the in-body screenshots,
   referenced with absolute `/blog/posts/...` paths because the site base is
   `/blog`. Scaled with `sips -Z 1400` (fits within 1400px, preserves aspect
