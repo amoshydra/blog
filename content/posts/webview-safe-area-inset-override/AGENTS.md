@@ -145,7 +145,7 @@ are frames extracted from the same recording in `~/Desktop`. Notes for redoing i
 **Creating an iPhone Duo.** The device type needs runtime 27.1 or newer. Check
 `xcrun simctl list runtimes -j` for what is actually installed.
 
-## Traps
+## Watch-outs
 
 **Uninstall before re-seeding on iOS.** Relaunching an already-running app reuses
 the existing `WKWebView` and the cached `@AppStorage` values, so the report can be

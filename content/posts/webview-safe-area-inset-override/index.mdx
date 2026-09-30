@@ -197,7 +197,7 @@ genuine system values rather than being zeroed.
 | Minimum version | API 30 | iOS 11 |
 | Extra requirement | Edge-to-edge, or insets are consumed first | `contentInsetAdjustmentBehavior = .never` |
 | Per-edge `nil` fall-through | Yes | Yes |
-| Main trap | Must set all edges on all types in the mask | Values arrive non-deterministically (below) |
+| Easy to get wrong | Must set all edges on all types in the mask | Values arrive non-deterministically (below) |
 
 ## Three iOS conditions
 
@@ -237,7 +237,7 @@ func updateUIView(_ webView: WKWebView, context: Context) {
 **3. Set the override before the first layout pass** — in `makeUIView`, not from a
 later callback.
 
-## The trap: do not measure this with a single read
+## Do not measure this with a single read
 
 [WebKit bug 191872](https://bugs.webkit.org/show_bug.cgi?id=191872) — open since
 2018, still open:
