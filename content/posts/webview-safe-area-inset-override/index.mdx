@@ -1,0 +1,392 @@
+---
+title: "Overriding `env(safe-area-inset-*)` in a WebView: Android and iOS"
+description: "How do you make a WebView report safe-area insets the device doesn't have? Android overrides `onApplyWindowInsets`; iOS overrides the `safeAreaInsets` getter. Both work, both are silent when they fail, and iOS has a WebKit timing bug that will convince you it doesn't work at all. With before/after screenshots on both platforms."
+pubDate: "2026-09-30"
+heroImage: "./hero.webp"
+---
+
+Sometimes a WebView host needs to lie to the page about the safe area. A kiosk
+view, a video player that should ignore the home indicator, a test harness that
+wants deterministic insets. You need `env(safe-area-inset-bottom)` to return `0px`
+so the page stops reserving space for a home bar that isn't there.
+
+Both platforms let you do it. The mechanisms are completely different, and each
+fails silently. iOS additionally has a WebKit bug that makes a working override
+look broken.
+
+## Where this comes from
+
+- **Android host:** [`amoshydra/android-webview-launcher`](https://github.com/amoshydra/android-webview-launcher)
+  — `InsetAwareWebView.java` and `MainActivity.applyWindowMode()`.
+- **iOS host:** [`amoshydra/ios-webview-launcher`](https://github.com/amoshydra/ios-webview-launcher)
+  — `InsetOverrideWebView.swift`, written as the port of the above and verified on
+  five simulator configurations.
+- **Debug page in every screenshot:**
+  [`amoshydra/demo-viewport`](https://github.com/amoshydra/demo-viewport), live at
+  [`amoshydra.github.io/demo-viewport/?fit=cover`](https://amoshydra.github.io/demo-viewport/?fit=cover).
+  It reports the viewport, the safe-area insets and the `dvh`/`svh`/`lvh` units;
+  every number quoted below is its own `INSETS T R B L` readout.
+
+## Before and after
+
+Both platforms, same page, same requested insets. Overrides requested were
+`top 150, right 40, bottom 180, left 40`.
+
+### iOS — iPhone 16 Pro simulator, iOS 18.6
+
+| No override | Override `150/40/180/40` |
+| --- | --- |
+| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/ios-before.webp" alt="iOS before the override: insets read 62 0 34 0, the real device values" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/ios-after.webp" alt="iOS after the override: insets read 150 40 180 40, with the page's own overlays drawn at the overridden positions" /> |
+
+`62 0 34 0` → `150 40 180 40`. The real top inset is 62pt (the notch); the
+override replaced it. The blue overlay labels track the change.
+
+### Android — physical device, Android 15, WebView 153
+
+| No override | Override `150/40/180/40` |
+| --- | --- |
+| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-before.webp" alt="Android before the override: insets read 41 0 0 0, the real device values" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-after.webp" alt="Android after the override: insets read 77 21 92 21, converted from the requested device pixels at dpr 1.96" /> |
+
+`41 0 0 0` → `77 21 92 21`. **Note the unit difference.** Android's override is
+in *physical pixels* and CSS sees the result divided by `dpr` (1.96 here:
+150/1.96 ≈ 77). iOS's override is in *points*, which already are CSS pixels, so
+`150` in, `150px` out. If you port an override value between platforms you must
+multiply by `dpr` on the Android side.
+
+## Android: the mechanism
+
+Android WebView computes the page's safe-area insets inside an internal
+`AwContents` view, from the `WindowInsets` that reach it:
+
+```java
+int insetTypes = displayCutout() | systemBars();
+Insets safeArea = toWindowInsetsCompat(insets).getInsets(insetTypes);
+```
+
+So the only lever is the insets themselves. Subclass `WebView` and override
+`onApplyWindowInsets`:
+
+```java
+@Override
+public WindowInsets onApplyWindowInsets(WindowInsets insets) {
+    if (!hasInsetOverride() || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+        return super.onApplyWindowInsets(insets);
+    }
+    return super.onApplyWindowInsets(applyOverrides(insets));
+}
+
+private WindowInsets applyOverrides(WindowInsets insets) {
+    WindowInsets.Builder builder = new WindowInsets.Builder(insets);
+    int[] types = {
+        WindowInsets.Type.statusBars(),
+        WindowInsets.Type.navigationBars(),
+        WindowInsets.Type.captionBar(),
+        WindowInsets.Type.displayCutout(),
+    };
+    for (int type : types) {
+        Insets current = insets.getInsets(type);
+        builder.setInsets(type, Insets.of(
+            leftOverride   != null ? leftOverride   : current.left,
+            topOverride    != null ? topOverride    : current.top,
+            rightOverride  != null ? rightOverride  : current.right,
+            bottomOverride != null ? bottomOverride : current.bottom));
+    }
+    return builder.build();
+}
+```
+
+Three things that each cost someone a day:
+
+**`setOnApplyWindowInsetsListener` cannot do this.** The callback returns a
+boolean, and the AndroidX compat wrapper maps `!= null` onto that boolean, so a
+rebuilt `WindowInsetsCompat` never reaches the WebView. Overriding
+`onApplyWindowInsets` works because `ViewGroup.dispatchApplyWindowInsets` passes
+its return value down to children, and `AwContents` is one.
+
+**Every edge must be set on every type in the mask.** `getInsets(mask)` returns
+the per-edge *maximum* across the mask. Overriding only `navigationBars()` leaves
+a non-zero bottom wherever a display cutout also contributes one.
+
+**Requires API 30+**, and only works in edge-to-edge mode — otherwise the
+framework consumes the insets before the WebView sees them. In that mode the
+status bar stays visible but transparent; hiding it zeroes the `statusBars()`
+inset, which leaves the page with a top inset of zero and hides the cutout from
+it.
+
+## iOS: the mechanism
+
+Much smaller, because there is no interception layer to hook. WebKit derives the
+page's `env(safe-area-inset-*)` from the **receiving view's** `safeAreaInsets`, so
+overriding that one getter is the whole mechanism:
+
+```swift
+final class InsetOverrideWebView: WKWebView {
+    /// Per-edge overrides in points. `nil` leaves that edge at the real system value.
+    var insetOverride = InsetOverride() {
+        didSet {
+            guard insetOverride != oldValue else { return }
+            // UIKit memoises safe-area geometry per layout pass, so the override is
+            // only re-read once something invalidates that cache.
+            setNeedsLayout()
+            invalidateIntrinsicContentSize()
+        }
+    }
+
+    override var safeAreaInsets: UIEdgeInsets {
+        insetOverride.applying(to: super.safeAreaInsets)
+    }
+}
+
+struct InsetOverride: Equatable {
+    var top: CGFloat?
+    var right: CGFloat?
+    var bottom: CGFloat?
+    var left: CGFloat?
+
+    var isEmpty: Bool { top == nil && right == nil && bottom == nil && left == nil }
+
+    func applying(to base: UIEdgeInsets) -> UIEdgeInsets {
+        UIEdgeInsets(
+            top: top ?? base.top,
+            left: left ?? base.left,
+            bottom: bottom ?? base.bottom,
+            right: right ?? base.right
+        )
+    }
+
+    static func parseEdges(top: String, right: String,
+                           bottom: String, left: String) -> InsetOverride {
+        InsetOverride(top: parse(top), right: parse(right),
+                      bottom: parse(bottom), left: parse(left))
+    }
+
+    /// Blank = leave at the real system value. Non-numeric is treated the same
+    /// way rather than silently becoming 0.
+    private static func parse(_ raw: String) -> CGFloat? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let value = Double(trimmed), value >= 0 else { return nil }
+        return CGFloat(value)
+    }
+}
+```
+
+`nil` per edge means "use the real system value". Values are deliberately not
+clamped, so a value larger than the real inset pushes content further in — which
+is the point when you're inflating a fake inset.
+
+Verified per-edge independence on iOS 27.0, with only `top` overridden:
+
+| Config | `webView.safeAreaInsets` | page `env()` |
+| --- | --- | --- |
+| all blank | `t:62 r:0 b:34 l:0` | `62px 0px 34px 0px` |
+| `top=111` only | `t:111 r:0 b:34 l:0` | `111px 0px 34px 0px` |
+| `111/44/222/33` | `t:111 r:44 b:222 l:33` | `111px 44px 222px 33px` |
+
+Row 1 is the sanity check that the pipeline reads real data — `62px` is exactly
+`window.safeAreaInsets.top`. Row 2 shows the other three edges falling through to
+genuine system values rather than being zeroed.
+
+## Side by side
+
+| | Android | iOS |
+|---|---|---|
+| Hook | `View.onApplyWindowInsets` | `WKWebView.safeAreaInsets` getter |
+| Override units | Physical px | Points (= CSS px) |
+| `viewport-fit=cover` needed | No (WebView M136+) | **Yes** |
+| CSS injection needed | No | No |
+| Minimum version | API 30 | iOS 11 |
+| Extra requirement | Edge-to-edge, or insets are consumed first | `contentInsetAdjustmentBehavior = .never` |
+| Per-edge `nil` fall-through | Yes | Yes |
+| Main trap | Must set all edges on all types in the mask | Values arrive non-deterministically (below) |
+
+## Three iOS conditions
+
+Miss any one and all four edges read `0px` with no error.
+
+**1. `viewport-fit=cover` in the document.**
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+```
+
+WebKit reports `0` for every `env(safe-area-inset-*)` without it, and no native
+change can alter that — it's the same rule Safari follows. This is the one real
+behavioural gap versus Android, whose WebView M136+ populates the values from
+`WindowInsets` with no opt-in. **The page must cooperate.**
+
+**2. `contentInsetAdjustmentBehavior = .never`.**
+
+```swift
+webView.scrollView.contentInsetAdjustmentBehavior = .never
+```
+
+Any other value lets UIKit inset the scroll view, which suppresses the page's
+safe-area reporting entirely. Re-assert it in `updateUIView`, since a layout
+change can reset it:
+
+```swift
+func updateUIView(_ webView: WKWebView, context: Context) {
+    if let overridable = webView as? InsetOverrideWebView {
+        overridable.insetOverride = insetOverride
+    }
+    webView.scrollView.contentInsetAdjustmentBehavior = .never
+    // …
+}
+```
+
+**3. Set the override before the first layout pass** — in `makeUIView`, not from a
+later callback.
+
+## The trap: do not measure this with a single read
+
+[WebKit bug 191872](https://bugs.webkit.org/show_bug.cgi?id=191872) — open since
+2018, still open:
+
+> These CSS variables are not available on the initial load of the app, or after
+> the window load event, or the document DOMContentLoaded event. These CSS
+> variables only seem to be available at some arbitrary time after the app is
+> loaded.
+
+A comment from 2023 notes the same on iOS 16, and that because it is
+non-deterministic it is "very hard to work around manually". Measuring in
+`webView(_:didFinish:)` lands inside exactly the window where the values are
+guaranteed to be zero.
+
+I hit this. My first test read once on `didFinish`, got `0px` on all four edges,
+and I wrote it up as "the override does not work on iOS". It does work. Sampling
+12 times over 6s and recording the history:
+
+```text
+label=edgeToEdge=true top=150.0 right=40.0 bottom=180.0 left=40.0
+        | native webview=t:150 r:40 b:180 l:40 window=t:62 r:0 b:34 l:0
+settled={"top":"150px","right":"40px","bottom":"180px","left":"40px"}
+distinctReadings=2
+history:
+  [0] {"top":"0px","right":"0px","bottom":"0px","left":"0px"}
+  [1] {"top":"150px","right":"40px","bottom":"180px","left":"40px"}
+```
+
+Reading `[0]` — what the single read returned — looks like total failure.
+
+How many samples it takes is **not predictable**:
+
+| Runtime | Device | Distinct readings |
+| --- | --- | --- |
+| 18.6 | iPhone 16 Pro | 2 — zero, then override |
+| 26.5 | iPhone 17 Pro | 1 — override immediately |
+| 27.0 | iPhone 17 Pro | 2 — zero, then override |
+| 27.0 | iPhone 18 Pro | 2 — zero, then override |
+| 27.1 | iPhone Duo | 1 — override immediately |
+
+The same iPhone 17 Pro needed two samples on 27.0 and one on 26.5. Any test of
+this has to sample over time; a single read is a coin flip.
+
+`env()` has no JavaScript API, so the only way to observe what a page sees is to
+resolve it through a probe element and read the computed style:
+
+```js
+var p = document.createElement('div');
+p.style.cssText = 'position:fixed;top:0;left:0;visibility:hidden;' +
+  'padding-top:env(safe-area-inset-top,0px);' /* … */;
+document.body.appendChild(p);
+var cs = getComputedStyle(p);
+cs.paddingTop; // "150px"
+```
+
+Two guards make that trustworthy:
+
+**Prove `env()` is supported.** Read it with a fallback. If
+`env(safe-area-inset-top, 77px)` returns `77px`, `env()` is unsupported and every
+other number is void. Reading `0px` proves it resolved to a genuine zero. This is
+what separates "the override didn't work" from "the measurement is meaningless".
+
+**Capture the native value too**, so the two can be compared:
+
+```swift
+let safe = webView.safeAreaInsets           // t:150 r:40 b:180 l:40
+let window = webView.window?.safeAreaInsets // t:62  r:0  b:34  l:0
+```
+
+If they diverge, the override never reached `env()`.
+
+## Test matrix
+
+iOS, all Simulator, Xcode 27.0 (27A266a), deployment target iOS 17.0:
+
+| Runtime | Device | Overrides | Blank → real |
+| --- | --- | --- | --- |
+| 18.6 | iPhone 16 Pro | `150/40/180/40` ✓ | `62/0/34/0` ✓ |
+| 26.5 | iPhone 17 Pro | `150/40/180/40` ✓ | — |
+| 27.0 | iPhone 17 Pro | `111/44/222/33` ✓ | `62/0/34/0` ✓ |
+| 27.0 | iPhone 18 Pro | `111/44/222/33` ✓ | `62/0/34/0` ✓ |
+| 27.1 | iPhone Duo | `150/40/180/40` ✓ | — |
+
+Android, physical device on Android 15 (API 35), WebView 153.0.8010.36, dpr 1.96:
+
+| Config | Requested (px) | Page `env()` |
+| --- | --- | --- |
+| none | — | `41 0 0 0` |
+| override | `150/40/180/40` | `77 21 92 21` |
+
+## The launcher screens
+
+Both hosts expose the same controls: a URL, optional JavaScript, an edge-to-edge
+switch, and one field per edge. The Android build is captured with **edge-to-edge
+off**, which is its default — that is why the four inset fields are greyed out.
+The iOS build is captured with it **on** and `150 / 40 / 180 / 40` entered.
+
+| Android — edge-to-edge off (default) | iOS — edge-to-edge on, override entered |
+| --- | --- |
+| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-launcher.webp" alt="The Android launcher with edge-to-edge off: the four safe-area inset fields are greyed out and the label says the override needs edge-to-edge, WebView M136+ and Android 11 or newer" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/ios-launcher.webp" alt="The iOS launcher with edge to edge on and the values 150, 40 and 180 entered in the per-edge inset override fields" /> |
+
+Configurations used for every screenshot in this post:
+
+| | Android | iOS |
+| --- | --- | --- |
+| Build | `com.amoshydra.androidapp` 1.0 | `com.amoshydra.iosapp` 1.0 |
+| WebView / SDK | WebView 153.0.8010.36 (M153) | iOS Simulator 18.6 |
+| Device | physical, 1080×2340, dpr 1.96 | iPhone 16 Pro simulator, 402×874 pt, dpr 3 |
+| Edge-to-edge | on | on |
+| Inset units | pixels | points |
+| Page | `demo-viewport/?fit=cover` | `demo-viewport/?fit=cover` |
+| Override requested | `150 / 40 / 180 / 40` | `150 / 40 / 180 / 40` |
+
+## Appendix: iPhone Duo
+
+The [iPhone Duo](https://en.wikipedia.org/wiki/IPhone_Duo) is Apple's first
+foldable, announced 9 September 2026 — a 5.4" outer display (1398×2034) that opens
+to a 7.6" inner one (1878×2670). It ships with **iOS 27.1**, which is also the
+floor the simulator enforces for the device type.
+
+Worth a look because its safe area is a different shape from every Pro model, and
+it changes shape twice over. No override set, edge-to-edge on, all three states:
+
+| Outer, portrait | Outer, landscape | Unfolded, inner display |
+| --- | --- | --- |
+| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/duo-outer-portrait.webp" alt="iPhone Duo folded, outer display in portrait: viewport 386 by 678, insets read 0 0 34 0" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/duo-outer-landscape.webp" alt="iPhone Duo folded, outer display in landscape: viewport 678 by 386, insets read 0 34 20 34" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/duo-inner-unfolded.webp" alt="iPhone Duo unfolded to the inner display: viewport 871 by 669, insets read 0 34 20 34" /> |
+| `0 0 34 0` | `0 34 20 34` | `0 34 20 34` |
+
+Two things fall out of that.
+
+**No top inset, ever.** Compare the Pro models at `62 0 34 0`: the outer display
+has no notch and, in the simulator, no status-bar inset, so the top is 0 in all
+three states. A 150pt top override here is not restating an existing value the way
+it is on a Pro — it is manufacturing an inset the hardware does not have, which is
+the case where the override is most useful and hardest to test against real
+hardware.
+
+**The insets move with orientation and fold.** In portrait the whole 34pt is at
+the bottom, for the home indicator. Rotate to landscape, or open the inner
+display, and it splits: 34pt on each side, 20pt at the bottom. Anything that
+hard-codes `env(safe-area-inset-bottom)` to size a footer is wrong in two of these
+three states, and nothing in CSS warns you.
+
+With `150 / 40 / 180 / 40` requested, the outer display reported exactly those
+values back on the first sample rather than the second — the only
+runtime/device in the matrix where no settling delay was observed.
+
+## One difference worth planning for
+
+The two overrides take different units. Android's is in physical pixels and CSS
+sees it divided by `dpr`; iOS's is in points, which already are CSS pixels. If
+you port a value between platforms, multiply by `dpr` on the Android side.

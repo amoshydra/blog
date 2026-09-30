@@ -137,6 +137,33 @@
     height: auto;
     border-radius: 8px;
   }
+  /* Device screenshots are tall and narrow. Scaling one to the column width
+     makes it run off the bottom of the viewport, so cap the height and let the
+     width follow from the aspect ratio instead. Opt in per image with
+     `{/* shot */}` in MDX. */
+  img.shot {
+    max-width: none;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    display: block;
+    margin-inline: auto;
+  }
+  /* In a before/after table the two devices have different aspect ratios, so
+     natural sizing makes one column visibly wider than the other. Give both the
+     same rendered width and let the height follow from the aspect ratio.
+     max-height only caps the tall ones; setting height would pad the short ones
+     with empty space, and object-fit then letterboxes rather than distorting
+     whichever one the cap actually clamps. */
+  td img.shot {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 78vh;
+    object-fit: contain;
+    object-position: top center;
+    margin-inline: 0;
+  }
 
   pre {
     padding: 1.5em;
