@@ -322,6 +322,28 @@ collapses to one representative. Three things it has to work around:
 Verify every picked frame by eye before encoding. Two of the first three rows were
 wrong in ways no size check caught: a mid-rotation frame, and a split view.
 
+**A third one got through twice: Slide Over.** The published 27.1 inner landscape
+figure was the app in a floating window with the home screen behind it, reading
+`469 × 669`, and it carried the mouse cursor. Its device bounding box was a
+perfectly plausible 1007x775 — a *smaller* unfolded device — so every size and
+aspect check passed. The tell is **coverage**: for each column of the chassis, ask
+whether most of it is bright page. Full screen reads 92–95%; Slide Over reads well
+under half. Require coverage above 0.85 before accepting a frame, and check the page
+self-reports the full panel (`951`, not `469`).
+
+**Confirm the device is unfolded from the chassis aspect.** The inner panel is
+2670x1878, so a flat unfolded Duo in landscape has a chassis aspect of about 1.40
+once the bezel is included; the outer panel gives about 1.38 landscape and 0.73
+portrait. A frame whose aspect is well off those is not the pose it is filed under.
+
+**Confirm the letterbox is real by measuring it, not by eyeballing the black.** On
+the 27.0 inner landscape frame, scaling the white page to its self-reported 871pt
+and subtracting the two bezel widths leaves a rail of **81.4pt** against the
+**80pt** that 951 − 871 predicts. That agreement is what rules out the three
+things it could otherwise be: a Slide Over window, the folded-away inner screen,
+or a crop that ran past the display. Do this once per figure rather than trusting
+that black means letterbox.
+
 **Grouping by page size is not enough — group by stillness.** Size-keyed grouping
 still returned a frame at t=26 that carried the recorder's mouse cursor, and two
 portrait poses where only one frame in five was upright. What actually works is
