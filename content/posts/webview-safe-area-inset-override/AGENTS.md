@@ -25,6 +25,40 @@ the probe, or the launcher, the tables go stale until you re-measure.
   ratio) and encoded with `cwebp -q 84`. Do **not** crop them: the top and bottom
   inset bands are the evidence, and cropping to a fixed pixel height stretched the
   1080x2340 Android shots when forced to iOS's 1206px width.
+- `keyboard-closed.webp` and `keyboard-open.webp` — the IME pair, for the section
+  "The keyboard takes the bottom edge". Captured on the OnePlus with the override
+  `150/40/180/40`, so the page reports `77 21 92 21` and then `77 21 0 21`. The page
+  used draws its own blue band from `env()` and pads its body with the same values,
+  so the numbers sit inside the band; the readout is the first line and the band is
+  the evidence. Two traps when redoing it: uiautomator cannot see WebView text
+  unless `/data/local/tmp/webview-command-line` contains
+  `_ --force-renderer-accessibility`, and the WebView will serve a stale
+  `input.html` from cache unless the URL carries a changing query parameter. Raise
+  the keyboard by tapping the field, whose bounds come from the dump rather than
+  from a guessed coordinate.
+
+## Re-measuring the runtime-update numbers
+
+The "Changing the override while the page is loaded" section needs the value to
+change with the page still loaded, which neither launcher can do on its own:
+
+- **Android.** `InsetAwareWebView.setInsetOverride` is only read inside
+  `onApplyWindowInsets`, so a new value needs a dispatch. Either
+  `webView.dispatchApplyWindowInsets(webView.getRootWindowInsets())` or
+  `webView.getRootView().requestApplyInsets()` does it, and both were measured to
+  give the same page value. Reaching it from adb needs an intent that lands on the
+  existing activity, so `android:launchMode="singleTop"` plus an `onNewIntent`
+  that applies the values.
+- **iOS.** Assigning `insetOverride` is the whole update, since the property's
+  `didSet` invalidates UIKit's memoised geometry. Driving it without the settings
+  screen needs a DEBUG hook that polls a value from outside the app: write it into
+  the app container (a file in `Documents`, not `UserDefaults`, which caches) and
+  have a timer compare and apply. `simctl spawn <udid> defaults write` does not
+  reach a running app's `UserDefaults`.
+- **Reading the page.** Sample `env()` on every `requestAnimationFrame`, not on a
+  timer, and post each distinct value somewhere with a page id and an elapsed
+  time. The page id is what distinguishes a live change from a reload, and it is
+  the only reason the section can claim the page never reloaded.
 - `Tests/probe/index.html` — a minimal page that reads `env(safe-area-inset-*)`.
   Useful for scripted runs; **the post's own screenshots use
   [`amoshydra/demo-viewport`](https://amoshydra.github.io/demo-viewport) instead**,
@@ -183,11 +217,76 @@ actual insets (e.g. `62/0/34/0`).
 `xcrun simctl list runtimes -j` rather than the text form, which has hidden a
 runtime here.
 
+## Re-measuring `contentInsetAdjustmentBehavior`
+
+The condition-2 table needs four runs on one page, one per behaviour value, with
+the *document's* geometry reported next to `env()`. Two things make it go wrong:
+
+- **`env()` alone cannot detect this failure.** It reads `150 40 180 40` under all
+  four values. The page has to report `documentElement.clientWidth` and
+  `clientHeight` too, since that is where the scroll view's content inset shows
+  up. `window.innerWidth` and `visualViewport` also move, and `visualViewport`
+  settles late, so a single sample can catch it mid-animation.
+- **The env toggles reach the app as `SIMCTL_CHILD_<NAME>`.** A plain
+  `env NAME=1 xcrun simctl launch` silently does nothing, and because
+  `makeUIView` still sets `.never` by default the run looks like a valid control
+  rather than a failure. Have the app log the toggle it read on every run and
+  check it before trusting anything else. `.never` is WKWebView's own default
+  here, so "I removed the line" and "the value is 2" are indistinguishable
+  without that log line.
+
+Do not `return` early out of `updateUIView` to skip the behaviour: the pending
+URL load lives in that same function, so the early return skips the navigation and
+the page renders blank. That looked exactly like suppression and cost two runs.
+Wrap only the assignment in `if`.
+
+The four-way matrix also needs a second layout, because "the web view fills its
+window" turns out not to be what decides this. Dropping `.ignoresSafeArea()` makes
+the frame `402x778` inside a `402x874` window, and the insets land identically.
+The override values were `150/40/180/40` throughout.
+
+## Screenshot tables must line up
+
+Both images in a before/after row have to render at the same height. The CSS in
+`src/styles/markdown.css` does this with equal columns and width-driven sizing.
+Three things about it are load-bearing and each one silently does nothing if you
+get it wrong:
+
+- **Name `.scrollable-table`, not `.table-scroll`.** The Table component adds an
+  inner `.scrollable-table` inside the rehype plugin's `.table-scroll`. The inner
+  wrapper's rules outrank the outer ones, so a selector written against
+  `.table-scroll` is parsed, matches nothing decisive, and loses.
+- **Widths go on `td`, never `th`.** The images live in the body cells.
+  `th:has(img.shot)` matches zero elements in this post, which is what left the
+  columns content-driven and the heights unequal.
+- **`table-layout: fixed` plus `white-space: normal` on shot tables.** With the
+  general `white-space: nowrap` still applied, two 644px captures set the table's
+  own width and the browser divides that by content, giving columns like 123px
+  and 213px and a 195px height difference on a phone.
+
+Verify by measuring, never by eye. Read `getBoundingClientRect().height` for
+every image in the row and check the spread is 0, at several viewport heights.
+**A `max-height` clamp will make the spread read 0 at some viewport sizes and
+non-zero at others**, which is how this stayed broken through repeated attempts:
+the clamp equalises the heights whenever it binds, so 600px and 720px always
+looked correct and 1400px did not. Pinning an explicit height instead is also
+wrong, because `max-width` still clamps the width and leaves a tall box holding a
+small letterboxed image, which reads as a broken picture on a phone.
+
+The Duo row cannot match on width, since its three captures are 0.727, 1.378 and
+1.303 aspect by design. It uses `img.shot-wide`, which sets height directly and
+lets the widths follow, with its cells exempted from the 50% column width.
+
+`ios-launcher.webp` was rescaled from 644 to 646px wide to match
+`android-launcher.webp`. They are the one pair that came from different devices,
+and the 2px difference was a visible 2.79px height spread in that row.
+
 ## Environment the current numbers came from
 
 **iOS** — Xcode 27.0 (27A266a), iOS Simulator SDK, deployment target iOS 17.0.
 Runtimes 18.6 / 26.5 / 27.0 / 27.1; devices iPhone 16 Pro, 17 Pro, 18 Pro,
-iPhone Duo. Simulator only — no physical iOS device.
+iPhone Duo. Simulator only — no physical iOS device. Condition 2 was measured on
+18.6 (iPhone 16 Pro) and re-checked on 26.5 (iPhone 17 Pro), which agree exactly.
 
 **Android** — physical device, Android 15 (API 35), WebView 153.0.8010.36,
 1080x2340 at density 314 override (dpr 1.96).
