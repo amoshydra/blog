@@ -450,19 +450,36 @@ and `386 × 678` / `0 0 34 0` for the 27.0 outer portrait; the real values are
 `951 × 669` / `0 84 34 0` and `466 × 678` / `0 84 34 0`. The 34pt on a 27.0 build
 is the letterbox boundary surfacing as a fake safe-area inset.
 
-**Outer display, landscape is now complete; it came from the older recording.** The
-27.0 take never settles in that pose — every frame showing `678 × 386` is
-mid-rotation with the device drawn at an angle, so there is no axis-aligned crop to
-take from it. The figure already in the post, from the earlier 1430x1394 session,
-turned out to be exactly right: upright, cursor-free, `678 × 386`, `0 34 20 34`. It
-was carried over rather than re-shot, so that row's two halves come from different
-recordings and different device scales (1200x871 against 766x554); the pair is
-normalised to 1209x871 to compensate. Do not read anything into that mismatch.
+**Outer display, landscape: both halves come from the standard takes.** The 27.1
+half is `t=13.0`: `678 × 466`, `0 0 34 84`. The 27.0 half is **frame 574**, which
+matters for two reasons.
 
-The 27.1 half is `t=13.0` of the 27.1 recording: `678 × 466`, `0 0 34 84`. Note the
-84 is on the **left** here, not the right — that is the edge with the camera cutout,
-and it is why the post says the status bar's reserve follows the hardware rather than
-a fixed edge.
+*The figure that was there before was upside down.* It came from the older
+1430x1394 session and had the device rotated 180° relative to the 27.1 figure — page
+at the top, black band and home indicator at the bottom, camera end at the bottom
+instead of the top. Two images of "the same pose" that are mirror images of each
+other read as a comparison until you look for the camera cutout. **Check the camera
+cutout is on the same edge in both halves of every row.** On the Duo it is a black
+circle and it is unmistakable, which makes it the cheapest orientation check there
+is.
+
+*Frame 579 does not work.* It is in the right orientation, but it is already 37px
+into the rotation animation and the device is visibly tilted. The settled window is
+frames **562–574**, all at a 755x543 bounding box; at 578 the tilt is 12px and at
+579 it is 37px. Use 574.
+
+Measuring that needs the **top-edge rise** test: find the device's dark bounding
+box, then scan down the first and last tenth of its width for the topmost dark
+pixel. An axis-aligned device gives 1px (antialiasing); frame 578 gives 12 and 579
+gives 37. Eyeballing the contact sheet called 579 upright when a contact-sheet tile
+is far too small to judge a five-degree rotation.
+
+**Do not dump a VFR recording to rawvideo to index frames.** `ffmpeg -i in.mov -f
+rawvideo` on these files does **not** preserve a 1:1 frame mapping, so reading
+offset `n * W * H * 3` out of it gives a different frame than `select=eq(n,N)` does.
+That produced a bounding box of 545x755 for a frame that is plainly 767x555
+landscape, and a tilt reading of 5-10px for frames that are actually axis-aligned.
+Any measurement that cites a frame number must go through `select=eq(n,N)`.
 
 **The retired table.** The appendix used to carry a second, three-pose table of
 nothing but 27.0 figures (`duo-outer-portrait.webp`, `duo-outer-landscape.webp`,
