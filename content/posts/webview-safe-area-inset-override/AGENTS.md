@@ -289,6 +289,45 @@ the point of those figures.
 
 ## The iPhone Duo SDK comparison figures
 
+**Both recordings are variable frame rate, so select by frame index, never by
+time.** `avg_frame_rate` is 46.54fps on the 27.0 take and 38.14fps on the 27.1 one,
+against an `r_frame_rate` of 240/1, so converting a frame number to a timestamp with
+the average lands in the wrong place. Pull the exact frame with:
+
+```
+ffmpeg -i in.mov -vf "select=eq(n\,2096)" -frames:v 1 out.png
+```
+
+`-vsync 0` is **not** accepted by the ffmpeg on this machine; `-frames:v 1` after
+the `select` filter is enough.
+
+The split-view ("snapped") figures were located by frame index, recorded here so
+they do not have to be found again:
+
+| State | 27.0 take (newest, 12.30.11) | 27.1 take (12.27.10) |
+| --- | --- | --- |
+| Unfolded, snapped left | frame 2096 | frame 1156 |
+| Unfolded, snapped right | frame 1830 | frame 1018 |
+
+which read:
+
+| State | 27.0 | 27.1 |
+| --- | --- | --- |
+| Snapped left | `469 × 669`, `0 34 20 34` | `469 × 669`, `0 0 34 0` |
+| Snapped right | `389 × 669`, `0 34 20 34` | `469 × 669`, `0 84 34 0` |
+
+Two traps when re-reading these four numbers. First, **the insets are too small to
+read at contact-sheet scale** — `0 0 34 0` and `0 34 0 0` are indistinguishable
+until the readout is cropped and enlarged, and getting them backwards would invert
+the post's conclusion. Crop roughly `520x300` around the readout and scale 2× before
+believing any inset. Second, **the app is snapped to different sides in the two
+takes' frames**, so the readout sits at a different x offset in each; crop from
+`x=60` for left-snapped and `x=560` for right-snapped.
+
+The 27.0 snapped-left frame reading `469 × 669` is the reason the letterbox bug
+survives casual testing: that arrangement loses nothing, and only the snapped-right
+frame shows the 80pt shortfall.
+
 `duo-<pose>-sdk27-0.webp` and `duo-<pose>-sdk27-1.webp` are the same app, same
 page, same pose, differing only in the SDK it was built against. Three poses are
 published — outer portrait, inner landscape, inner portrait — and they come from
@@ -380,6 +419,26 @@ because scaling to the shared height can make a frame wider than the widest
 original. Then set the MDX `width`/`height` attributes from the real canvas, not
 from the points, or the row misreports its own geometry.
 
+**Pad transparent, never black.** The normalisation step adds a few pixels to the
+shorter frame so both halves of a pair share a width, and that pad must not be
+opaque. It was `0x0d0d0d`, which is invisible against the chassis but is still a
+fabricated colour sitting next to the device, and on a dark page background it
+reads as a black bar. Use:
+
+```
+scale=-2:H:flags=lanczos,format=rgba,pad=W:H:(ow-iw)/2:0:color=0x00000000
+```
+
+`format=rgba` has to come *before* `pad` or the pad colour's alpha is dropped. Then
+encode with `cwebp -alpha_q 100`, which preserves it; the resulting files gain a
+`VP8X,ALPH,VP8` chunk triple instead of plain `VP8 `. Verify by compositing over
+magenta (`color=c=0xFF00FF` + `overlay`) — any remaining opaque strip shows up
+immediately.
+
+Do not "fix" the black *inside* the screenshot. The black rail on the 27.0 frames
+is iOS's own letterbox and is the evidence the whole comparison rests on; only the
+padding this pipeline adds is synthetic.
+
 The recorder's mouse cursor lands in frame on some takes. `ffmpeg -vf delogo=`
 removes it, but over the black bezel a large box smears visibly, so keep the box
 tight to the cursor. A faint tail can survive at the very bottom edge — check the
@@ -391,11 +450,27 @@ and `386 × 678` / `0 0 34 0` for the 27.0 outer portrait; the real values are
 `951 × 669` / `0 84 34 0` and `466 × 678` / `0 84 34 0`. The 34pt on a 27.0 build
 is the letterbox boundary surfacing as a fake safe-area inset.
 
-**Still missing: outer display, landscape on 27.0.** It is absent from the table
-because the 27.0 take never settles in that pose — every frame showing
-`678 × 386` is mid-rotation with the device drawn at an angle, so there is no
-axis-aligned crop to take. The 27.1 side of that pose (`678 × 466`) captured fine.
-To fill it, record the 27.0 build held in outer landscape for a few seconds.
+**Outer display, landscape is now complete; it came from the older recording.** The
+27.0 take never settles in that pose — every frame showing `678 × 386` is
+mid-rotation with the device drawn at an angle, so there is no axis-aligned crop to
+take from it. The figure already in the post, from the earlier 1430x1394 session,
+turned out to be exactly right: upright, cursor-free, `678 × 386`, `0 34 20 34`. It
+was carried over rather than re-shot, so that row's two halves come from different
+recordings and different device scales (1200x871 against 766x554); the pair is
+normalised to 1209x871 to compensate. Do not read anything into that mismatch.
+
+The 27.1 half is `t=13.0` of the 27.1 recording: `678 × 466`, `0 0 34 84`. Note the
+84 is on the **left** here, not the right — that is the edge with the camera cutout,
+and it is why the post says the status bar's reserve follows the hardware rather than
+a fixed edge.
+
+**The retired table.** The appendix used to carry a second, three-pose table of
+nothing but 27.0 figures (`duo-outer-portrait.webp`, `duo-outer-landscape.webp`,
+`duo-inner-unfolded.webp`). It was redundant once the SDK comparison existed, since
+two of its three cells were reproduced exactly by the 27.0 column, so it was removed
+after its only unique cell was migrated. All three source files are deleted; if a
+figure like that reappears, check whether the SDK table already covers it before
+adding a second table for the same poses.
 
 The current numbers came from
 
