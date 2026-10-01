@@ -632,30 +632,27 @@ built against, not by anything in the app:
 | iOS 27.0 SDK | Letterboxed | 871 of 951 points |
 | **iOS 27.1 SDK** | **Edge to edge** | **Edge to edge** |
 
-Same app, same code, same page, same pose — only the SDK differs:
+Same app, same code, same page, same pose — only the SDK differs. Each row is one
+orientation, the 27.0 build on the left and the 27.1 build on the right:
 
-<div class="shot-pair-wrap">
-  <img
-    class="shot shot-pair"
-    src="/blog/posts/webview-safe-area-inset-override/duo-sdk-27-0.webp"
-    alt="Built with Xcode 27.0: the app is confined to an 871 by 669 window with a black rail down the right carrying the status bar, and the page reports insets 0 34 20 34"
-    width="560"
-    height="448"
-  />
-  <img
-    class="shot shot-pair"
-    src="/blog/posts/webview-safe-area-inset-override/duo-sdk-27-1.webp"
-    alt="Built with Xcode 27.1: the app fills the 951 by 669 display edge to edge, and the page now reports insets 0 84 34 0 with the status bar as a real 84 point right inset"
-    width="560"
-    height="432"
-  />
-</div>
+| Pose | Xcode 27.0 — letterboxed | Xcode 27.1 — edge to edge |
+| --- | --- | --- |
+| Outer, portrait | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-outer-portrait-sdk27-0.webp" alt="Outer display in portrait, built with Xcode 27.0: the page reports a 386 by 678 viewport and insets 0 0 34 0, with a black rail carrying the status bar down the right" width="300" height="410" /> | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-outer-portrait-sdk27-1.webp" alt="Outer display in portrait, built with Xcode 27.1: the same page now reports 466 by 678 and insets 0 84 34 0, filling the width with the status bar as a real 84 point inset" width="300" height="410" /> |
+| Inner, landscape | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-inner-landscape-sdk27-0.webp" alt="Inner display in landscape, built with Xcode 27.0: the page reports 871 by 669 rather than the panel's 951, with a black rail at the right" width="300" height="231" /> | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-inner-landscape-sdk27-1.webp" alt="Inner display in landscape, built with Xcode 27.1: the page reports the full 951 by 669 and insets 0 84 34 0" width="300" height="231" /> |
+| Inner, portrait | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-inner-portrait-sdk27-0.webp" alt="Inner display in portrait, built with Xcode 27.0, showing the letterbox down one side" width="300" height="401" /> | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-inner-portrait-sdk27-1.webp" alt="Inner display in portrait, built with Xcode 27.1, edge to edge" width="300" height="401" /> |
 
-Read the two readouts together. Under 27.0 the page sees `0 34 20 34` and the
-right-hand 34pt is just the letterbox boundary being reported as a safe area, not a
-system inset. Under 27.1 it sees `0 84 34 0`: the app owns the full width, and the
-84pt on the right is the status bar's reserved region, now a genuine inset the page
-can lay out against.
+Read the readouts across each row. On the outer display in portrait the page goes
+from `386 × 678` with insets `0 0 34 0` to `466 × 678` with `0 84 34 0`. On the
+inner display in landscape it goes from `871 × 669` to the panel's full
+`951 × 669`, again gaining an 84pt right inset. In portrait the inset moves to the
+other edge: `669 × 871` with `0 0 34 0` becomes `669 × 951` with `82 0 34 0`, so the
+status bar's reserved region follows the rotation, sitting along the top in
+portrait and down one side in landscape.
+
+That 34pt on a 27.0 build is the trap: it is the letterbox boundary being reported
+as if it were a safe area, not a system inset. A 27.1 build reports 0 there and
+instead gives a real 84pt for the status bar, which is the inset a page can
+actually lay out against.
 
 This matters for the override. The `left` and `right` insets it writes are
 per-edge, so it still works either way — but on a 27.0 build it is writing into a

@@ -289,35 +289,66 @@ the point of those figures.
 
 ## The iPhone Duo SDK comparison figures
 
-`duo-sdk-27-0.webp` and `duo-sdk-27-1.webp` are the same app, same page, same
-pose (inner display, landscape), differing only in the SDK it was built against.
-They come from two screen recordings of the simulator window with the device frame
-enabled, taken one after the other.
+`duo-<pose>-sdk27-0.webp` and `duo-<pose>-sdk27-1.webp` are the same app, same
+page, same pose, differing only in the SDK it was built against. Three poses are
+published — outer portrait, inner landscape, inner portrait — and they come from
+two screen recordings of the simulator window with the device frame enabled, taken
+one after the other. The 27.0 recording is the newer of the two on disk, so
+**select by mtime, not by name**: the timestamp in the filename will not tell you
+which SDK a take belongs to.
 
 There is no Simulator GUI in either Xcode — it moved into `DeviceHub`
 (`com.apple.dt.Devices`) — so `simctl io screenshot` only ever captures the bare
 screen with no chassis. Recording the window and cutting the device out is the
 only way to get the frame, which is why the extraction is scripted.
 
-`pick_frames.py` does the extraction. Two things it has to work around:
+`group_poses.py` samples every frame, finds the device from its own dark pixels,
+finds the near-white page inside it, and groups frames by page size so each pose
+collapses to one representative. Three things it has to work around:
 
 - **The filename has a narrow no-break space (U+202F) before AM/PM.** Passing the
   name through the shell's word splitting breaks it into pieces and ffmpeg cannot
   open the file, so the script globs and never quotes a literal name.
-- **The device is rendered at an angle mid-rotation**, which makes its bounding box
-  far larger than any settled pose. Detect the box per frame from its own dark
-  pixels and ignore anything where the shape looks like a transition; picking a
-  timestamp blindly lands on a half-rotated frame more often than not.
+- **The device is drawn at an angle mid-rotation**, so its dark bounding box is
+  much larger than any settled pose and still looks plausible. Do not pick frames
+  by timestamp; a half-rolled frame survives a size check. The reliable test is
+  the page's own rectangle: on a settled frame it fills its bounding box almost
+  completely, and on a tilted frame the same scan comes back sparse.
+- **Picking the largest bright region per group selects wallpaper, not the app.**
+  A split-view or Springboard frame is brighter and bigger than the debug page and
+  wins any area contest, which is how the first pass returned a loading page and a
+  home screen for the inner landscape row. Score for UI contrast instead.
+
+Verify every picked frame by eye before encoding. Two of the first three rows were
+wrong in ways no size check caught: a mid-rotation frame, and a split view.
+
+**Normalise each pair to identical pixel dimensions.** The same device is rendered
+at a slightly different scale in the two recordings, so the raw crops differ by a
+few pixels and the row renders with a height spread. Scale both to a shared height
+*preserving aspect ratio*, then `pad` the width out to
+`max(round(w*H/h))` across the pair — taking `max` of the raw widths is wrong,
+because scaling to the shared height can make a frame wider than the widest
+original. Then set the MDX `width`/`height` attributes from the real canvas, not
+from the points, or the row misreports its own geometry.
 
 The recorder's mouse cursor lands in frame on some takes. `ffmpeg -vf delogo=`
 removes it, but over the black bezel a large box smears visibly, so keep the box
 tight to the cursor. A faint tail can survive at the very bottom edge — check the
 encoded result rather than assuming the delogo worked.
 
-The 27.0 figure is the one to re-take if either side is ever swapped: the post
-quotes `871 × 669` and `0 34 20 34` for it, and those are the *letterboxed*
-numbers, not the panel's real size. The 27.1 side reads `951 × 669` and
-`0 84 34 0`. the current numbers came from
+**The 27.0 numbers are letterboxed, not wrong, but do not quote them as panel
+sizes.** The post quotes `871 × 669` / `0 34 20 34` for the 27.0 inner landscape
+and `386 × 678` / `0 0 34 0` for the 27.0 outer portrait; the real values are
+`951 × 669` / `0 84 34 0` and `466 × 678` / `0 84 34 0`. The 34pt on a 27.0 build
+is the letterbox boundary surfacing as a fake safe-area inset.
+
+**Still missing: outer display, landscape on 27.0.** It is absent from the table
+because the 27.0 take never settles in that pose — every frame showing
+`678 × 386` is mid-rotation with the device drawn at an angle, so there is no
+axis-aligned crop to take. The 27.1 side of that pose (`678 × 466`) captured fine.
+To fill it, record the 27.0 build held in outer landscape for a few seconds.
+
+The current numbers came from
 
 **iOS** — Xcode 27.0 (27A266a), iOS Simulator SDK, deployment target iOS 17.0.
 Runtimes 18.6 / 26.5 / 27.0 / 27.1; devices iPhone 16 Pro, 17 Pro, 18 Pro,
