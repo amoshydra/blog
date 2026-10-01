@@ -614,8 +614,68 @@ it changes shape twice over. No override set, edge-to-edge on, all three states:
 | <img class="shot shot-wide" src="/blog/posts/webview-safe-area-inset-override/duo-outer-portrait.webp" alt="iPhone Duo folded, outer display in portrait: viewport 386 by 678, insets read 0 0 34 0" /> | <img class="shot shot-wide" src="/blog/posts/webview-safe-area-inset-override/duo-outer-landscape.webp" alt="iPhone Duo folded, outer display in landscape: viewport 678 by 386, insets read 0 34 20 34" /> | <img class="shot shot-wide" src="/blog/posts/webview-safe-area-inset-override/duo-inner-unfolded.webp" alt="iPhone Duo unfolded to the inner display: viewport 871 by 669, insets read 0 34 20 34" /> |
 | `0 0 34 0` | `0 34 20 34` | `0 34 20 34` |
 
-Two things fall out of that.
+### The SDK decides whether you get edge-to-edge at all
 
+Everything above was captured with **Xcode 27.0**, and that is what the `871 × 669`
+in the unfolded row is. It is not the real display size. The Duo's inner panel is
+951 points wide, and an app built with the iOS 27.0 SDK does not get it: iOS gives
+the app a window of 871 points and leaves the remaining 80 in a black rail, so the
+page never learns the extra space exists.
+
+The status bar is a vertical bar on the Duo, occupying a reserved region at the
+outer edge. Whether an app may extend underneath it is decided by the SDK it is
+built against, not by anything in the app:
+
+| Built against | Outer display | Inner display |
+| --- | --- | --- |
+| Pre-iOS 27 SDK | Letterboxed | Letterboxed |
+| iOS 27.0 SDK | Letterboxed | 871 of 951 points |
+| **iOS 27.1 SDK** | **Edge to edge** | **Edge to edge** |
+
+Same app, same code, same page, same pose — only the SDK differs:
+
+<div class="shot-pair-wrap">
+  <img
+    class="shot shot-pair"
+    src="/blog/posts/webview-safe-area-inset-override/duo-sdk-27-0.webp"
+    alt="Built with Xcode 27.0: the app is confined to an 871 by 669 window with a black rail down the right carrying the status bar, and the page reports insets 0 34 20 34"
+    width="560"
+    height="448"
+  />
+  <img
+    class="shot shot-pair"
+    src="/blog/posts/webview-safe-area-inset-override/duo-sdk-27-1.webp"
+    alt="Built with Xcode 27.1: the app fills the 951 by 669 display edge to edge, and the page now reports insets 0 84 34 0 with the status bar as a real 84 point right inset"
+    width="560"
+    height="432"
+  />
+</div>
+
+Read the two readouts together. Under 27.0 the page sees `0 34 20 34` and the
+right-hand 34pt is just the letterbox boundary being reported as a safe area, not a
+system inset. Under 27.1 it sees `0 84 34 0`: the app owns the full width, and the
+84pt on the right is the status bar's reserved region, now a genuine inset the page
+can lay out against.
+
+This matters for the override. The `left` and `right` insets it writes are
+per-edge, so it still works either way — but on a 27.0 build it is writing into a
+window the system already cropped, and any page compensating for
+`env(safe-area-inset-right)` is compensating for a boundary that would not exist on
+a 27.1 build. **For the Duo, use Xcode 27.1 or later.** Getting there is only
+`DEVELOPER_DIR`:
+
+```bash
+DEVELOPER_DIR=/path/to/Xcode-27.1.app/Contents/Developer \
+  xcodebuild -project WebViewLauncher.xcodeproj -scheme WebViewLauncher \
+  -sdk iphonesimulator build CODE_SIGNING_ALLOWED=NO
+```
+
+Note that the *runtime* is not the *SDK*. A 27.1 simulator runtime is enough to
+create the device and run on it, which is how the two SDKs can be compared on the
+same pose, but the app still compiles against whatever SDK the selected Xcode
+ships.
+
+Two things fall out of that.
 **No top inset, ever.** Compare the Pro models at `62 0 34 0`: the outer display
 has no notch and, in the simulator, no status-bar inset, so the top is 0 in all
 three states. A 150pt top override here is not restating an existing value the way
