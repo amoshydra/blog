@@ -149,53 +149,74 @@
     display: block;
     margin-inline: auto;
   }
-  /* Before/after tables mix devices with different aspect ratios — a portrait
-     872px shot beside a landscape 1200px one. Under the default auto layout the
-     table sizes each column from its content, so the narrow image's column comes
-     out smaller: measured 189px beside 273px, an 84px mismatch.
+/* Paired shots must come out the same height. The columns are forced equal so
+     each image gets the same width, and the width then yields the same height
+     because the pair shares an aspect ratio.
 
-     Two things fix it, and both are needed.
+     Two selector details are load-bearing, and each one fails silently:
 
-     `table-layout: fixed` stops column widths depending on content, so
-     percentage widths stop feeding back into the column they resolve against.
+     `.scrollable-table` is the inner wrapper the Table component adds, inside the
+     rehype plugin's `.table-scroll`. Its rules outrank the bare `.table-scroll`
+     block above, so a selector written against the outer wrapper parses, matches,
+     and still loses. And the widths go on `td`, never `th`: the images are in the
+     body cells, so `th:has(img.shot)` matches zero elements in this post.
 
-     A *fixed* table width then makes the columns exactly equal. It has to be a
-     multiple of the column count or the division leaves a fraction, and
-     getBoundingClientRect then reports the images as different widths — 253.33
-     vs 253.34 — which is invisible but still a mismatch. 45rem is 720px, an
-     exact multiple of both 2 and 3, giving 360px and 240px columns. Because
-     .table-scroll is already an overflow-x container, a viewport narrower than
-     the table scrolls instead of squashing, so the width stays 720 at every
-     size. max-width and round() were both tried and neither held: max-width
-     re-clamps to the fractional column, and round() silently stops rounding at
-     some viewport widths. */
-  .table-scroll:has(td img.shot) table {
-    table-layout: fixed;
-    width: 45rem;
-    /* The base table rule is Astro-scoped and does not reach these tables, so
-       2px of border-spacing is still live. That overhead is what breaks the
-       division: 720 - 8px of gaps is 712, and 712/3 is 237.33. Collapsing
-       removes the gaps, so 720/2 is 360 and 720/3 is 240 — both exact. */
-    border-collapse: collapse;
-  }
-  /* The base rule puts `white-space: nowrap` on every cell so wide data tables
-     scroll rather than stack. On a shot table the column captions are long
-     enough that nowrap sets a min-content width past the table's own 720px, the
-     table then overflows to 721px, and 721/3 is fractional again — which is the
-     whole thing this is here to prevent. Let the captions wrap. */
-  .table-scroll:has(td img.shot) table th {
+     `white-space: normal` is needed because the general table rule sets nowrap,
+     under which the two 644px captures set the table's own width and the browser
+     divides that by content, giving columns of 123px and 213px on a phone.
+
+     Pinning an explicit height instead does not work: max-width still clamps the
+     width, leaving a tall box holding a small letterboxed image, which on a
+     phone reads as a broken picture rather than a taller neighbour. And a
+     max-height clamp is worse than useless here, because it equalises the
+     heights whenever it binds, so the mismatch only shows up at viewport heights
+     where it does not. */
+  .scrollable-table table:has(td img.shot) {
     white-space: normal;
+    table-layout: fixed;
+    width: 100%;
+    min-width: 0;
   }
-  /* max-height only caps the tall ones; setting height would pad the short ones
-     with empty space, and object-fit then letterboxes rather than distorting
-     whichever one the cap actually clamps. */
+  .scrollable-table td:has(img.shot) {
+    width: 50%;
+  }
   td img.shot {
     width: 100%;
     height: auto;
-    max-height: 78vh;
-    object-fit: contain;
-    object-position: top center;
     margin-inline: 0;
+  }
+  /* Rows mixing portrait and landscape captures cannot match on width at all,
+     since the aspect ratios differ by design. Height is the only axis the three
+     share, so it is set directly and the widths are allowed to follow, which
+     means these cells must not be pinned to a fraction of the table. */
+  .scrollable-table td:has(img.shot-wide) {
+    width: auto;
+  }
+  td img.shot-wide {
+    height: 26vh;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+  }
+  /* Two shots of the same device differing in one setting, rather than two
+     devices. The width/height attributes in the MDX set the rendered size, and
+     the max-height only clamps them on short viewports, so both halves stay the
+     same size and the only difference on screen is the one the caption names. */
+  img.shot-pair {
+    max-width: none;
+    max-height: 74vh;
+    width: auto;
+    height: auto;
+    display: inline-block;
+    vertical-align: top;
+    margin-inline: 0;
+  }
+  img.shot-pair + img.shot-pair {
+    margin-inline-start: 1.2em;
+  }
+  .shot-pair-wrap {
+    text-align: center;
+    margin-block: 1.6em;
   }
 
   pre {
