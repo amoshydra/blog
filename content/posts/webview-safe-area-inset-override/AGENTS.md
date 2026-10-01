@@ -322,6 +322,33 @@ collapses to one representative. Three things it has to work around:
 Verify every picked frame by eye before encoding. Two of the first three rows were
 wrong in ways no size check caught: a mid-rotation frame, and a split view.
 
+**Grouping by page size is not enough — group by stillness.** Size-keyed grouping
+still returned a frame at t=26 that carried the recorder's mouse cursor, and two
+portrait poses where only one frame in five was upright. What actually works is
+`stable_runs.py`: sample every frame, compute the device's dark bounding box, and
+keep only runs of three or more consecutive frames whose box has not moved or
+resized. Rotation and folding animate that box, so the runs that survive *are* the
+poses. Review one frame per run as a contact sheet and pick.
+
+Pick the **midpoint** frame of a run, not its first. On this recording the outer
+portrait pose appears at t≈8.5, 9.0, 12.5, 15.0 and 18.5, of which 8.5, 9.0 and
+15.0 are drawn rotated 90° — the same bounding box, the content on its side. A
+tilt test has to look at the content, not the chassis.
+
+The 27.0 take has only two genuinely settled frames, both inner landscape at
+`871 × 669`, at t≈1 and t≈64; everything else that holds still for 1.5s is split
+view, a half-finished fold, or the Springboard. Do not assume a pose is available
+because the device size for it appears somewhere in the recording.
+
+**The 27.0 letterbox is not stable across the whole session.** At t≈2.5 the inner
+portrait reads `669 × 871` with the 80pt band visible above the page; at t≈45.5 the
+same build reads `669 × 951` with no band, same page, same insets `0 0 34 0`. Both
+frames are in the 27.0 recording and neither is a rotation artefact. The cause was
+not identified — the app appears to have been backgrounded and relaunched around
+t≈47–58, so a window change is plausible, but that was not confirmed. So the
+post's "27.0 letterboxes" is a claim about the frames shown, not a proven invariant
+of the SDK, and if anyone challenges it this is the frame that shows the counterexample.
+
 **Normalise each pair to identical pixel dimensions.** The same device is rendered
 at a slightly different scale in the two recordings, so the raw crops differ by a
 few pixels and the row renders with a height spread. Scale both to a shared height
