@@ -7,7 +7,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "readme": "astro build && node scripts/update-readme.mjs",
+    "readme:check": "astro build && node scripts/update-readme.mjs --check"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^6.3.3",

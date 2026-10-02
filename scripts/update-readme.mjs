@@ -11,6 +11,10 @@ const lines = readme.split(NL)
 const a = lines.findIndex(x => x === MARK_START)
 const b = lines.findLastIndex(x => x === MARK_END)
 
+if (a < 0 || b < 0) {
+  throw new Error(`README.md is missing the ${MARK_START} / ${MARK_END} markers.`);
+}
+
 const pre = lines.slice(0, a).join(NL);
 const post = lines.slice(b + 1).join(NL);
 
@@ -25,7 +29,15 @@ const content = await (async () => {
 
   });
   const { rss } = parser.parse(xml);
-  const blocks = rss.channel.item.map(item => {
+
+  // Sorted here rather than trusting the feed's order. The feed is sorted too,
+  // but this script is the only consumer that cares, and reading a build
+  // artefact should not depend on an unrelated file having sorted it first.
+  const items = [...rss.channel.item].sort(
+    (x, y) => new Date(y.pubDate) - new Date(x.pubDate),
+  );
+
+  const blocks = items.map(item => {
     const d = new Date(item.pubDate);
     const date = [
       d.getFullYear(),
@@ -47,4 +59,15 @@ const updated = [
   post,
 ].join("\n")
 
-await fs.writeFile("README.md", updated, "utf-8");
+// --check reports staleness without touching the file, so CI can fail on a
+// README that has drifted instead of silently shipping one.
+if (process.argv.includes("--check")) {
+  if (updated !== readme) {
+    console.error("README.md post list is out of date. Run `pnpm readme` and commit.");
+    process.exit(1);
+  }
+  console.log("README.md post list is up to date.");
+} else {
+  await fs.writeFile("README.md", updated, "utf-8");
+  console.log("README.md post list updated.");
+}
