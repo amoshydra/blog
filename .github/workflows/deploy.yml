@@ -35,9 +35,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # pnpm is not on a stock runner. The build job gets it for free from
+      # withastro/action, which detects it from the lockfile, so this job has to
+      # install it explicitly. Pinned to match the packageManager field.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
       - run: pnpm i --frozen-lockfile
       - run: pnpm build
       - run: node scripts/update-readme.mjs --check
