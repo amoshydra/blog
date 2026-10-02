@@ -199,13 +199,19 @@
     object-fit: contain;
   }
   /* Two shots of the same device differing in one setting, rather than two
-     devices. The width/height attributes in the MDX set the rendered size, and
-     the max-height only clamps them on short viewports, so both halves stay the
-     same size and the only difference on screen is the one the caption names. */
+     devices. Sized from the width/height attributes in the MDX, which fix both
+     halves at the same size so the only difference on screen is the one the
+     caption names.
+
+     Deliberately no max-height or viewport units here. An earlier version used
+     max-height: 74vh, which made each image taller as the viewport grew and so
+     wider too, until at 3440px wide the pair no longer fitted the 896px column
+     and wrapped. The failure scaled with the window instead of the phone, and
+     it was invisible at every size below that. A fixed width cannot wrap: two
+     322px images plus the gap fit the column at any viewport. */
   img.shot-pair {
     max-width: none;
-    max-height: 74vh;
-    width: auto;
+    width: 322px;
     height: auto;
     display: inline-block;
     vertical-align: top;
