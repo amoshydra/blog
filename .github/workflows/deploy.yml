@@ -27,8 +27,23 @@ jobs:
         # node-version: 20 # The specific version of Node that should be used to build your site. Defaults to 20. (optional)
         # package-manager: pnpm@latest # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
 
+  readme:
+    # The README post list is generated from dist/rss.xml by
+    # scripts/update-readme.mjs and nothing else regenerates it, so it drifted for
+    # weeks with a live post missing. Fail the build when it is stale rather than
+    # auto-committing from CI, which would fight concurrent pushes.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm i --frozen-lockfile
+      - run: pnpm build
+      - run: node scripts/update-readme.mjs --check
+
   deploy:
-    needs: build
+    needs: [build, readme]
     runs-on: ubuntu-latest
     environment:
       name: github-pages
