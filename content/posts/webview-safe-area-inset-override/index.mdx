@@ -282,10 +282,10 @@ the page's own padding. The demo page's scroll range shows it: 797 under `.never
   />
 </div>
 
-`.never` on the left, `.always` on the right. Same page, same override, same
-`env()` readout, different layout, and the `insets T R B L` line reads the same in
-both. Re-assert the line in `updateUIView` regardless, since a layout change can
-reset it:
+Two shots of the same page with the same override. `env()` and the
+`insets T R B L` readout are identical; what differs is the viewport the page is
+laid out in. Re-assert the line in `updateUIView` regardless, since a layout
+change can reset it:
 
 ```swift
 func updateUIView(_ webView: WKWebView, context: Context) {
