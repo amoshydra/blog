@@ -401,14 +401,31 @@ The 27.0 take has only two genuinely settled frames, both inner landscape at
 view, a half-finished fold, or the Springboard. Do not assume a pose is available
 because the device size for it appears somewhere in the recording.
 
-**The 27.0 letterbox is not stable across the whole session.** At t≈2.5 the inner
-portrait reads `669 × 871` with the 80pt band visible above the page; at t≈45.5 the
-same build reads `669 × 951` with no band, same page, same insets `0 0 34 0`. Both
-frames are in the 27.0 recording and neither is a rotation artefact. The cause was
-not identified — the app appears to have been backgrounded and relaunched around
-t≈47–58, so a window change is plausible, but that was not confirmed. So the
-post's "27.0 letterboxes" is a claim about the frames shown, not a proven invariant
-of the SDK, and if anyone challenges it this is the frame that shows the counterexample.
+**The t≈45.5 full-size window is stale geometry, not a counterexample.** Earlier this
+file called the post's "27.0 letterboxes" unproven because one frame in the 27.0
+recording reads `669 × 951` with no rail. That caveat was wrong and has been removed.
+The cause is a reproducible sequence, confirmed against the recording:
+
+| t | state | reads |
+| --- | --- | --- |
+| ≈39–44 | app snapped to one side, split view | `469 × 669`, `0 34 20 34` |
+| ≈45.5 | device rotated to portrait | `669 × 951`, `0 0 34 0` — no rail |
+| ≈46.5 | unchanged | `669 × 951`, `0 0 34 0` — still no rail |
+| ≈47–52 | app backgrounded (Springboard) | — |
+| ≈53 | app reopened | `669 × 871`, `0 0 34 0` — rail back |
+| ≈58 | still running | `669 × 871`, `0 0 34 0` |
+
+So **rotating out of split view does not re-apply the compatibility letterbox**, and
+only a fresh launch restores it. Every 27.0 frame taken from a clean launch is
+letterboxed by exactly 80pt — all four pose rows and both snap rows agree — which is
+the invariant the post claims. The stale window is plausibly an iOS 27 bug in
+re-applying letterboxing across the split-to-fullscreen transition, but that is not
+confirmed against Apple's releases, so treat it as an observation with a repro rather
+than a diagnosed defect.
+
+Practical consequence for anyone re-measuring: **relaunch the app between
+measurements.** A 27.0 window that looks edge-to-edge means the app came out of split
+view, not that the letterbox is gone.
 
 **Normalise each pair to identical pixel dimensions.** The same device is rendered
 at a slightly different scale in the two recordings, so the raw crops differ by a

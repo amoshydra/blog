@@ -688,6 +688,15 @@ by `env(safe-area-inset-right)` pads 34 against a real requirement of 84 and
 under-pads by half. The override does not help here: it can only add insets, and
 the value it would be correcting is one the page believes.
 
+**Relaunch before you measure.** Rotating the Duo out of split view does not
+re-apply the letterbox. Snap the app to one side, turn the device to portrait, and
+the window comes back at the full `669 × 951` even on a 27.0 build — no rail, and
+the readout looks exactly like a 27.1 result. Hiding and reopening the app puts the
+`669 × 871` rail straight back. So a 27.0 window that looks edge-to-edge is stale
+geometry carried over from the split view rather than a change in behaviour, and a
+measurement taken in that state records a full-size window that no clean launch of
+that build will ever produce.
+
 This matters for the override. The `left` and `right` insets it writes are
 per-edge, so it still works either way — but on a 27.0 build it is writing into a
 window the system already cropped, and any page compensating for
