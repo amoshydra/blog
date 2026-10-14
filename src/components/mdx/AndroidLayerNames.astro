@@ -1,0 +1,283 @@
+---
+// Android-only anatomy figure for "Overriding env(safe-area-inset-*) in a WebView".
+//
+// The base is a real screenshot: OnePlus 6T, Android 15, WebView 153, density 314,
+// the launcher in edge-to-edge mode showing the post's debug page, three-button
+// navigation, keyboard open, page theme forced to light. The regions are annotated
+// in HTML over the image, so the badges scale with it and nothing is baked into
+// the pixels.
+//
+// Hovering or focusing a numbered region lights up that region and its legend row
+// together, which is the whole reason this is a component and not a picture: the
+// mapping from name to part of the screen is the thing the figure is teaching.
+//
+// Every name here — window, system bars, navigationBars(), ime(), decor view,
+// android.R.id.content — is Android's. iOS has a single safe area and none of this
+// vocabulary, so the badge and the title are load-bearing: this figure must not be
+// read as a cross-platform diagram.
+//
+// The region percentages are measured off the screenshot itself (1080x2340):
+//   status bar  0.00% ..  3.42%   (80px  = the 41 CSS px top inset)
+//   ime        70.68% .. 95.73%   (the keyboard, 1654px to the navigation bar)
+//   nav bar    95.73% .. 100.0%   (the three-button bar, 100px)
+// Re-measure them if the screenshot is ever replaced.
+---
+<figure class="aln">
+  <figcaption class="aln-cap">
+    <div class="aln-title">
+      <span class="aln-badge">Android</span>
+      <span>The parts of the screen, and what Android calls them</span>
+    </div>
+    <p class="aln-hint">Hover or focus a number to highlight it on the screen.</p>
+  </figcaption>
+
+  <div class="aln-body">
+    <div class="aln-screen">
+      <img
+        class="aln-shot"
+        src="/blog/posts/webview-safe-area-inset-override/android-screen-anatomy.webp"
+        width="1080"
+        height="2340"
+        alt="A real Android screen: the status bar across the top, the page in the middle, the keyboard above the navigation bar at the bottom"
+      />
+      <div class="aln-win" data-n="1" aria-hidden="true">
+        <button type="button" class="aln-n" aria-label="1: the app's window" aria-describedby="aln-row-1">1</button>
+      </div>
+      <div class="aln-region sb" data-n="2" aria-hidden="true">
+        <button type="button" class="aln-n" aria-label="2: the system bars" aria-describedby="aln-row-2">2</button>
+      </div>
+      <div class="aln-region ime" data-n="4" aria-hidden="true">
+        <button type="button" class="aln-n warn" aria-label="4: ime(), the keyboard inset" aria-describedby="aln-row-4">4</button>
+      </div>
+      <div class="aln-region nav" data-n="3" aria-hidden="true">
+        <button type="button" class="aln-n warn" aria-label="3: navigationBars()" aria-describedby="aln-row-3">3</button>
+      </div>
+    </div>
+
+    <div class="aln-stack">
+      <div class="aln-hdr">On the screen</div>
+      <div class="aln-box" id="aln-row-1" data-n="1">
+        <span class="aln-n">1</span>
+        <div><div class="aln-t">The app's window</div><div class="aln-d">The rectangle the screen draws into. This app is <i>edge-to-edge</i>, so that is the whole screen and the content sits behind the bars.</div></div>
+      </div>
+      <div class="aln-box" id="aln-row-2" data-n="2">
+        <span class="aln-n">2</span>
+        <div><div class="aln-t">The system bars</div><div class="aln-d">The status bar, the navigation bar and the caption bar. Android reports their sizes together as <code>systemBars()</code>.</div></div>
+      </div>
+      <div class="aln-box" id="aln-row-3" data-n="3">
+        <span class="aln-n warn">3</span>
+        <div><div class="aln-t">navigationBars()</div><div class="aln-d">The bottom bar on its own. With the keyboard up it reports the keyboard's height, which is where the double-count in this post starts.</div></div>
+      </div>
+      <div class="aln-box" id="aln-row-4" data-n="4">
+        <span class="aln-n warn">4</span>
+        <div><div class="aln-t">ime()</div><div class="aln-d">The keyboard's own inset. The WebView reads it separately from the system bars and uses it to resize the visual viewport.</div></div>
+      </div>
+
+      <div class="aln-hdr">Inside the window, outermost first</div>
+      <div class="aln-box">
+        <span class="aln-n dim">5</span>
+        <div><div class="aln-t">The decor view</div><div class="aln-d">Android's frame inside the window: the title bar, if the app has one, plus the content frame.</div></div>
+      </div>
+      <div class="aln-box">
+        <span class="aln-n dim">6</span>
+        <div><div class="aln-t">android.R.id.content</div><div class="aln-d">The frame Android puts <i>your</i> layout into. Gadgetbridge adds padding to <b>this</b> view, and that padding is what causes the problem.</div></div>
+      </div>
+      <div class="aln-box">
+        <span class="aln-n dim">7</span>
+        <div><div class="aln-t">The app's layout</div><div class="aln-d">Whatever the app puts inside that frame. In this launcher it is a <code>ConstraintLayout</code> holding nothing but the WebView; Gadgetbridge wraps a <code>LinearLayout</code> around it.</div></div>
+      </div>
+      <div class="aln-box">
+        <span class="aln-n dim">8</span>
+        <div><div class="aln-t">The WebView</div><div class="aln-d">The browser widget the page runs in. It has its own opinion about the keyboard, which is the second half of the problem.</div></div>
+      </div>
+    </div>
+  </div>
+</figure>
+
+<style>
+  .aln {
+    /* Centred block, not full-bleed: the prose column is ~56rem wide and a
+       full-width figure reads as a band rather than a figure.
+
+       width:100% is load-bearing. The site's `.markdown > *` rule sets
+       width:56rem and clamps it with max-width:calc(100% - 2rem); overriding
+       that max-width without also resetting the width leaves the figure 704px
+       wide on a phone, overflowing the column. */
+    width: 100%;
+    max-width: 44rem;
+    margin: 2rem auto;
+    padding: 1rem 1.15rem 1.25rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    background: rgba(var(--gray-light), 0.28);
+  }
+  .aln-cap { margin-bottom: 1rem; }
+  .aln-title {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    font-weight: 600; font-size: 1.05rem; line-height: 1.3;
+    color: rgb(var(--gray-dark));
+  }
+  .aln-badge {
+    flex: 0 0 auto;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.15rem 0.45rem; border-radius: 999px;
+    background: var(--accent); color: #fff;
+  }
+  .aln-hint { margin: 0.35rem 0 0; font-size: 0.8rem; color: rgb(var(--gray)); }
+
+  .aln-body { display: flex; gap: 1.5rem; align-items: flex-start; }
+
+  /* The screenshot. Everything else in here is positioned in percentages of the
+     image box, so the annotations track it at any width. */
+  .aln-screen {
+    position: relative;
+    flex: 0 0 auto;
+    width: 300px;
+    aspect-ratio: 1080 / 2340;
+    border-radius: 0.6rem;
+    overflow: hidden;
+    background: #0b0b0d;
+    /* lets the badges be sized in cqw so they scale with the image */
+    container-type: inline-size;
+  }
+  .aln-shot { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  /* The window is the whole screen, so its outline hugs the image. It takes no
+     pointer events of its own: hovering the page area should not fire it, only
+     its badge should. */
+  .aln-win {
+    position: absolute; inset: 2px;
+    border: 2px dashed var(--aln-line);
+    border-radius: 0.5rem;
+    pointer-events: none;
+  }
+
+  /* The two system bars and the keyboard, outlined where they actually are. These
+     use a border rather than an inset box-shadow so the window, the regions and
+     the legend rows all fade through the one border-color property. */
+  .aln-region { position: absolute; left: 0; right: 0; border: 2px solid var(--aln-line); }
+  .aln-region.sb  { top: 0;       height: 3.42%; }
+  .aln-region.ime { top: 70.68%;  height: 25.05%; }
+  .aln-region.nav { top: 95.73%;  height: 4.27%; }
+
+  /* Badges. In the legend they are plain circles; on the screenshot they are
+     buttons, so a keyboard user can tab through them and see each region light up. */
+  .aln-n {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.05rem; height: 1.05rem; flex: 0 0 1.05rem;
+    border-radius: 50%; background: var(--accent); color: #fff;
+    font-size: 0.68rem; font-weight: 700;
+  }
+  .aln-n.warn { background: var(--tx-point); color: #fff; }
+  .aln-n.dim { background: rgb(var(--gray-light)); color: rgb(var(--gray-dark)); }
+  .aln-screen .aln-n {
+    position: absolute; pointer-events: auto; cursor: pointer;
+    appearance: none; border: 0; padding: 0; line-height: 1;
+    /* rem first, then the proportional size where container queries exist */
+    width: 1.05rem; height: 1.05rem;
+    width: 5.4cqw; height: 5.4cqw;
+    font-size: 0.68rem;
+    font-size: 3.4cqw;
+  }
+  .aln-screen .aln-n:focus-visible { outline: 2px solid rgb(var(--white)); outline-offset: 2px; }
+  .aln-win  .aln-n { left: 4%; top: 44%; }
+  .aln-region.sb  .aln-n { left: 5%; top: 50%; transform: translateY(-50%); }
+  .aln-region.ime .aln-n { left: 5%; top: 0.5rem; }
+  .aln-region.nav .aln-n { left: 5%; top: 50%; transform: translateY(-50%); }
+
+  .aln-stack { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+  .aln-hdr {
+    margin-top: 0.35rem;
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.09em;
+    color: rgb(var(--gray));
+  }
+  .aln-hdr:first-child { margin-top: 0; }
+  .aln-box {
+    display: flex; gap: 0.65rem; align-items: flex-start;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border-subtle); border-radius: 0.6rem;
+    background: rgb(var(--white));
+  }
+  .aln-t { font-weight: 600; font-size: 0.88rem; color: rgb(var(--gray-dark)); }
+  .aln-d { margin-top: 0.1rem; font-size: 0.82rem; line-height: 1.4; color: rgb(var(--gray)); }
+  .aln-d code {
+    font-family: var(--font-family-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+
+  /* Hover / focus pairing. The pair is selected by the shared data-n, so pointing
+     at either a region or its legend row lights up both, and the name and the part
+     of the screen are always shown together.
+
+     The hover and focus target is the .aln-box rectangle itself. Nothing inside it
+     is a trigger and nothing inside it is styled separately: the whole row fades as
+     one rectangle.
+
+     The screenshot's regions cannot fade with opacity, because a child cannot be
+     more opaque than its parent and the numbered buttons have to stay at full
+     strength. They fade their border instead, which is why the regions and the
+     window use a border rather than an inset shadow.
+
+     The dimming rules sit in :where(), which gives them no specificity, so the
+     highlight rules always win for the pair itself.
+
+     Hover is behind (hover: hover) and (pointer: fine): on a touch device a tap
+     leaves a stuck :hover, and the figure should not light up at random after one.
+     Focus works everywhere, which is also what makes this reachable by keyboard. */
+  [data-n="1"], [data-n="2"] { --aln-c: var(--accent); }
+  [data-n="3"], [data-n="4"] { --aln-c: var(--tx-point); }
+
+  .aln-region.sb { --aln-line: var(--accent); --aln-line-dim: color-mix(in srgb, var(--accent) 30%, transparent); }
+  .aln-region.ime, .aln-region.nav { --aln-line: var(--tx-point); --aln-line-dim: color-mix(in srgb, var(--tx-point) 30%, transparent); }
+  .aln-win { --aln-line: var(--accent); --aln-line-dim: color-mix(in srgb, var(--accent) 30%, transparent); }
+
+  .aln-box[data-n] { border-color: var(--aln-c); }
+
+  .aln :is(.aln-region, .aln-win, .aln-box) {
+    transition: background-color .14s ease, border-color .14s ease, opacity .14s ease;
+  }
+  .aln :is(.aln-region, .aln-win, .aln-box)[data-n] { outline: 2px solid transparent; outline-offset: -2px; }
+
+  /* Focus: every device. */
+  .aln:has([data-n="1"]:focus-within) [data-n="1"],
+  .aln:has([data-n="2"]:focus-within) [data-n="2"],
+  .aln:has([data-n="3"]:focus-within) [data-n="3"],
+  .aln:has([data-n="4"]:focus-within) [data-n="4"] {
+    background-color: color-mix(in srgb, var(--aln-c) 16%, transparent);
+    border-color: var(--aln-line, var(--aln-c));
+    outline-color: var(--aln-c);
+    opacity: 1;
+  }
+  :where(.aln:has([data-n]:focus-within)) .aln-box:where(:not(:focus-within)) { opacity: .4; }
+  :where(.aln:has([data-n]:focus-within))
+    :where(.aln-region, .aln-win):where(:not(:focus-within)) { border-color: var(--aln-line-dim); }
+
+  /* Hover: only where a pointer can actually hover. */
+  @media (hover: hover) and (pointer: fine) {
+    .aln:has([data-n="1"]:hover) [data-n="1"],
+    .aln:has([data-n="2"]:hover) [data-n="2"],
+    .aln:has([data-n="3"]:hover) [data-n="3"],
+    .aln:has([data-n="4"]:hover) [data-n="4"] {
+      background-color: color-mix(in srgb, var(--aln-c) 16%, transparent);
+      border-color: var(--aln-line, var(--aln-c));
+      outline-color: var(--aln-c);
+      opacity: 1;
+    }
+    :where(.aln:has([data-n]:hover)) .aln-box:where(:not(:hover)):where(:not(:focus-within)) { opacity: .4; }
+    :where(.aln:has([data-n]:hover))
+      :where(.aln-region, .aln-win):where(:not(:hover)):where(:not(:focus-within)) { border-color: var(--aln-line-dim); }
+  }
+
+  /* Narrow screens: stack, and centre the screenshot. It keeps its aspect ratio,
+     so it simply scales down and the annotations scale with it. */
+  @media (max-width: 40rem) {
+    .aln { padding: 0.85rem 0.85rem 1rem; }
+    .aln-body { flex-direction: column; gap: 1rem; }
+    .aln-screen { width: 100%; max-width: 250px; margin-inline: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aln :is(.aln-region, .aln-win, .aln-box) { transition: none; }
+  }
+</style>

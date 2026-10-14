@@ -1,9 +1,15 @@
 ---
 title: "Overriding `env(safe-area-inset-*)` in a WebView: Android and iOS"
-description: "How do you make a WebView report safe-area insets the device doesn't have? Android overrides `onApplyWindowInsets`; iOS overrides the `safeAreaInsets` getter. Both work, both are silent when they fail, both can be changed while the page is loaded, and iOS has a WebKit timing bug that will convince you it doesn't work at all. With before/after screenshots on both platforms."
+description: "How do you make a WebView report safe-area insets the device doesn't have? Android overrides `onApplyWindowInsets`; iOS overrides the `safeAreaInsets` getter. Both work, both are silent when they fail, both can be changed while the page is loaded, and iOS has a WebKit timing bug that will convince you it doesn't work at all. With before/after screenshots on both platforms, plus the second inset channel, the keyboard, and the double-count it causes in a host that pads for the system bars."
 pubDate: "2026-09-30"
+updatedDate: "2026-10-15"
 heroImage: "./hero.webp"
 ---
+
+import AndroidLayerNames from "../../../src/components/mdx/AndroidLayerNames.astro";
+import ConsumedVsRebuilt from "../../../src/components/mdx/ConsumedVsRebuilt.astro";
+import AndroidInsetReport from "../../../src/components/mdx/AndroidInsetReport.astro";
+import AndroidDoubleCount from "../../../src/components/mdx/AndroidDoubleCount.astro";
 
 Sometimes a WebView host needs the page to see a safe area the device does not
 have. A kiosk view, a video player that should ignore the home indicator, a test
@@ -11,9 +17,30 @@ harness that wants deterministic insets. You need `env(safe-area-inset-bottom)`
 to return `0px` so the page stops reserving space for a home bar that isn't
 there.
 
-Both platforms let you do it. The mechanisms are completely different, and each
-fails silently. iOS additionally has a WebKit bug that makes a working override
-look broken.
+Since this post went up, the case I keep running into is the opposite one: a host
+needs to *remove* an inset the device really has, because the app has already
+handled it. Gadgetbridge's Bangle.js app manager is one. On Android 15 the app is
+edge-to-edge, so the platform hands its WebView the real status-bar and
+navigation-bar insets, and the app's own native title bar has already made room for
+them. The page pads for a safe area that is already padded, and sits one status bar
+too low. The host's fix is to stop passing those insets down, which is the override
+this post is about.
+
+The figure below is a reference for the Android terms this post uses. iOS has a
+single safe area and no equivalent names, so it is Android-only.
+
+<AndroidLayerNames />
+
+**The window** is the rectangle the screen draws into. Here that is the whole
+screen, because the app is edge-to-edge. **The system bars** are the status bar,
+the navigation bar and the caption bar; Android reports their sizes together as
+`systemBars()`. **`android.R.id.content`** is the frame Android puts the app's
+layout into. A host pads this view to keep its content clear of the bars.
+
+Both platforms let you override those numbers. The mechanisms are completely
+different, and each fails silently. iOS additionally has a WebKit bug that makes a
+working override look broken. The keyboard is a second channel of the same
+mechanism, covered in *The keyboard is a second channel* below.
 
 ## Before and after
 
@@ -92,11 +119,19 @@ is API 30, and the floor is really 31, for the dispatch-order reason given below
 
 Three things that each cost someone a day:
 
-**`setOnApplyWindowInsetsListener` cannot do this.** The callback returns a
-boolean, and the AndroidX compat wrapper maps `!= null` onto that boolean, so a
-rebuilt `WindowInsetsCompat` never reaches the WebView. Overriding
-`onApplyWindowInsets` works because `ViewGroup.dispatchApplyWindowInsets` passes
-its return value down to children, and `AwContents` is one.
+**A listener *on the WebView* cannot do this.** A listener is called instead of
+the view's own `onApplyWindowInsets`, so one set on the WebView replaces the
+handling that feeds `AwContents`: the rebuilt insets go back to the caller, not
+down into the widget. Overriding `onApplyWindowInsets` works because
+`ViewGroup.dispatchApplyWindowInsets` passes its return value down to children,
+and `AwContents` is one.
+
+A listener on the WebView's parent also works, for the same reason in reverse: the
+parent's dispatch hands the modified insets to each of its children. The keyboard
+fix later in this post uses that.
+
+*Correction:* the first version of this post said a listener could never do this.
+That is only true when the listener is on the WebView itself.
 
 **Every edge must be set on every type in the mask.** `getInsets(mask)` returns
 the per-edge *maximum* across the mask. Overriding only `navigationBars()` leaves
@@ -210,7 +245,7 @@ four back.
 | Cost of skipping that requirement | Insets never reach the page | Page reads them, but in a viewport already shrunk by them |
 | Per-edge `nil` fall-through | Yes | Yes |
 | Change while the page is loaded | Yes, after an insets dispatch | Yes, assign the property |
-| Bottom edge with the keyboard open | Reclaimed by the IME | Not measured |
+| Bottom edge with the keyboard open | `env()` reads `0`; the keyboard arrives as `ime()` instead | Not measured |
 | Easy to get wrong | Must set all edges on all types in the mask | Values arrive non-deterministically (below) |
 
 ## Three iOS conditions
@@ -397,13 +432,148 @@ safe area it was given:
 override is still set throughout and the value returns when the IME closes, so
 nothing reports a problem.
 
-This matters most for the case this post is about. A kiosk page that inflates its
+This matters most for the inflating case. A kiosk page that inflates its
 bottom inset to clear a home bar the device does not have loses exactly that
 margin the moment an input takes focus. The keyboard really does occupy that
 space, so read it as the platform handing the edge back rather than as the
 override failing, and do not build a layout that needs the bottom inset to
 survive a keyboard. iOS was not measured: raising the software keyboard needs
 Simulator.app, which this run did not have.
+
+## The keyboard is a second channel
+
+The keyboard arrives through Android's inset types, so this section is
+Android-only. iOS has a single safe area and reports the keyboard only as a
+`visualViewport` resize, with no inset type to override.
+
+`env(safe-area-inset-*)` is only one of the two things a WebView reads out of the
+same `WindowInsets`. Chromium's [WebView insets documentation](https://chromium.googlesource.com/chromium/src/+/main/android_webview/docs/insets.md)
+splits them:
+
+> WebView respects the following inset types: `displayCutout()`, `systemBars()`,
+> `ime()`. displayCutout and systemBars are forwarded to the web content via the
+> safe-area-insets API. **The `ime()` insets directly affect the size of the
+> Visual Viewport.**
+
+The keyboard does not appear in `env()`. It arrives as a *visual viewport* resize,
+and has done since WebView M139. An override that zeroes the safe-area types and
+leaves `ime()` alone misses the keyboard.
+
+### What Android reports, before and after the keyboard
+
+Measured on a Pixel 7 Pro (Android 17), in Gadgetbridge's app-manager screen, by
+logging every inset dispatch. Values are device pixels; divide by ~3 for CSS
+pixels.
+
+<AndroidInsetReport />
+
+`navigationBars()` grew from `71` to `966`, the height of the keyboard.
+Gadgetbridge pads its content with `getInsets(systemBars() | displayCutout())`, so
+that padding grew by the keyboard too.
+
+### Why the page then sees the keyboard twice
+
+Two independent mechanisms each make room for the keyboard:
+
+<AndroidDoubleCount />
+
+The page's layout viewport shrinks because its container got shorter; its visual
+viewport shrinks because the WebView applied `ime()`. The keyboard is subtracted
+twice, and the page is left with a band of empty, scrollable space between its
+content and the keyboard.
+
+The double-count needs a host that pads by `systemBars()` on a device where that
+mask carries the keyboard. The launcher this post uses elsewhere does not pad, so
+it does not show this; I could not reproduce it there in any configuration,
+including matching Gadgetbridge's target SDK, theme, soft-input mode and content
+padding.
+
+### Which of the two to remove
+
+The two captures below are the same build, page, override (`150/40/180/40`) and
+keyboard; they differ by one line, whether the override zeroes `ime()` as well.
+
+| `ime()` passed through | `ime()` zeroed |
+| --- | --- |
+| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-ime-passed-through.webp" alt="The debug page with the keyboard up, reading innerHeight 1192px and visualViewport 842.8px, with the input focused above the keyboard" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-ime-zeroed.webp" alt="The same page and keyboard, now reading innerHeight 1192px and visualViewport 1192.36px — the page never shrank, and the keyboard covers the lower part of it" /> |
+
+Read the keyboard card rather than the inset bands; the bands read `77 21 92 21`
+in both:
+
+| | `ime()` passed through | `ime()` zeroed |
+| --- | --- | --- |
+| `innerHeight` | `1192` | `1192` |
+| `visualViewport.height` | `842.8` | `1192.36` |
+| keyboard | up | up |
+
+Passing it through, the visual viewport sits 349.2px below the layout viewport,
+which is the keyboard height, and the page can scroll the focused field into view.
+Zeroing it, the WebView gets no `ime()` inset: the visual viewport stays at the
+layout viewport, and anything laid out against the bottom of the viewport is behind
+the keyboard with no event to say so. Chromium warns about exactly this in the same
+document:
+
+> If you decide to opt out, some features may not work as expected. The keyboard
+> may cover inputs near the bottom of the page and in some cases, `scrollIntoView`
+> may not work properly.
+
+### Zeroing a type without stopping the dispatch
+
+There is a second way to get this wrong, and it is the tempting one. A host that
+removes the insets by returning `WindowInsetsCompat.CONSUMED` from a listener on
+the WebView's parent is not replacing the values, it is stopping the dispatch.
+`ViewGroup.dispatchApplyWindowInsets` skips its children once the insets come back
+consumed, so the WebView is never handed anything at all, `ime()` included.
+
+The two runs below are the same build, page and device, with the listener's return
+value as the only difference:
+
+<ConsumedVsRebuilt />
+
+Both runs leave the page reading `0 0 0 0`, so both look like a fix in a
+screenshot:
+
+<img class="diagram" src="/blog/posts/webview-safe-area-inset-override/android-consumed-vs-rebuilt.webp" width="1080" height="848" alt="Two crops of the same page with the keyboard up. The rebuilt run reads visual viewport 842.8px, the CONSUMED run reads 1192.36px, and both read insets 0 0 0 0" />
+
+What separates them is the keyboard. The rebuilt run steps the visual viewport down
+by the keyboard's height; the consumed run does not move. A page that lays out
+against the bottom of the viewport ends up behind the keyboard, with the same
+missing event as zeroing `ime()` directly, except that nothing in the page's
+`env()` values hints at it.
+
+### `interactive-widget` cannot help from the page
+
+The obvious page-side answer is the viewport meta:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content">
+```
+
+`overlays-content` promises that neither viewport is resized by the keyboard.
+Android WebView ignores it. Chrome for Android has honoured `interactive-widget`
+since [Chrome 108](https://developer.chrome.com/blog/viewport-resize-behavior), and
+that announcement says so outright:
+
+> **Note: These changes do not affect WebView**
+
+Chromium's [issue tracker](https://issues.chromium.org/issues/40287394) agrees, in
+the entry recording it: *"There is no intended behavior change for Android WebView.
+The Android app is responsible for sizing the WebView and can implement either mode
+via `windowSoftInputMode`"*, and its compatibility table reads `Android Chrome: OK · iOS Safari: OK · iOS WKWebView: OK · Android Firefox:
+OK (>= 132.0) · **Android WebView: FAIL**`.
+
+Blink does parse it: `ViewportDescription.virtual_keyboard_mode` is populated from
+the meta and forwarded to the browser process, and the embedder does not act on
+it. The capture below declares `overlays-content`; the page reports it, and nothing
+else moves:
+
+| declared `overlays-content` |
+| --- |
+| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-interactive-widget.webp" alt="The same page declaring interactive-widget=overlays-content, shown in green in the keyboard card, still reading innerHeight 1192px and visualViewport 842.8px" /> |
+
+`innerHeight 1192`, `visualViewport 842.8`, the same two numbers as the
+`ime()`-passed-through capture: the keyboard resized the visual viewport as if the
+property were absent.
 
 ## Reading what the page sees
 

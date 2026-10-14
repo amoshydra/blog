@@ -149,6 +149,20 @@
     display: block;
     margin-inline: auto;
   }
+  /* Landscape diagrams (the annotated figures in this post) want the opposite
+     treatment: fill the column and let the height follow. Opt in with
+     `class="diagram"`. */
+  img.diagram {
+    /* Capped. At 100% of the column a 1080px capture is upscaled past its own
+       resolution, which is how the CONSUMED comparison was rendering at 1136x892
+       from a 1080x848 file. */
+    width: 100%;
+    max-width: 40rem;
+    height: auto;
+    display: block;
+    margin-inline: auto;
+    border-radius: 0.5rem;
+  }
 /* Paired shots must come out the same height. The columns are forced equal so
      each image gets the same width, and the width then yields the same height
      because the pair shares an aspect ratio.

@@ -1,0 +1,205 @@
+---
+// Measured comparison of the two shapes a parent insets listener can return, for
+// "Overriding env(safe-area-inset-*) in a WebView".
+//
+// The data is from the post's own Android launcher on the OnePlus 6T (Android 15,
+// WebView 153, dpr 1.96, density 314, three-button navigation), loading the demo
+// page and sampling env(safe-area-inset-*) plus visualViewport.height every 250 ms
+// while the keyboard was raised. Same build, same page, same device; the only
+// difference between the two runs is the listener's return value.
+//
+//   rebuilt   -> new WindowInsetsCompat.Builder(insets)
+//                  .setInsets(systemBars(), Insets.NONE)
+//                  .setInsets(displayCutout(), Insets.NONE).build()
+//   consumed  -> WindowInsetsCompat.CONSUMED
+//
+// WebView dispatches received: rebuilt 3, consumed 0.
+// The harness that produced this lives in the launcher repo and is temporary.
+const SAMPLES_BEFORE = 16;   // 4 s at 250 ms
+const SAMPLES_AFTER = 8;     // 2 s
+const VV_CLOSED = 1192.36;   // css px, keyboard closed
+const VV_OPEN = 842.8;       // css px, keyboard open
+const VV_MIN = 800;
+const VV_MAX = 1250;
+const W = 660, H = 240;
+const PAD = { l: 62, r: 74, t: 18, b: 34 };
+const plotW = W - PAD.l - PAD.r;
+const plotH = H - PAD.t - PAD.b;
+const N = SAMPLES_BEFORE + SAMPLES_AFTER;
+
+const x = (i) => PAD.l + (i / (N - 1)) * plotW;
+const y = (v) => PAD.t + ((VV_MAX - v) / (VV_MAX - VV_MIN)) * plotH;
+
+const rebuiltPts = Array.from({ length: N + 1 }, (_, i) => {
+  const idx = i - SAMPLES_BEFORE;
+  const v = idx < 0 ? VV_CLOSED : VV_OPEN;
+  return `${x(i).toFixed(1)},${y(v).toFixed(1)}`;
+}).join(" ");
+const consumedPts = Array.from({ length: N + 1 }, (_, i) => {
+  const idx = i - SAMPLES_BEFORE;
+  return `${x(i).toFixed(1)},${y(VV_CLOSED).toFixed(1)}`;
+}).join(" ");
+const yClosed = y(VV_CLOSED).toFixed(1);
+const yOpen = y(VV_OPEN).toFixed(1);
+const xZero = x(0).toFixed(1);
+---
+
+<figure class="cvr">
+  <figcaption class="cvr-cap">
+    <div class="cvr-title">
+      <span class="cvr-badge">Android</span>
+      <span>Returning the insets instead of consuming them</span>
+    </div>
+    <p class="cvr-hint">Same build, same page, same device. The listener's return value is the only difference.</p>
+  </figcaption>
+
+  <div class="cvr-rows">
+    <div class="cvr-row ok">
+      <div class="cvr-label">Returns a rebuilt instance</div>
+      <div class="cvr-chain">
+        <span class="cvr-node">parent listener</span>
+        <span class="cvr-arrow" aria-hidden="true">&rarr;</span>
+        <span class="cvr-node">WebView gets <code>sysBars 0, ime 686</code></span>
+        <span class="cvr-arrow" aria-hidden="true">&rarr;</span>
+        <span class="cvr-node">page: <code>env 0</code>, visual viewport <code>842.8</code></span>
+      </div>
+      <div class="cvr-note">The insets still flow, so the keyboard still arrives.</div>
+    </div>
+
+    <div class="cvr-row bad">
+      <div class="cvr-label">Returns <code>WindowInsetsCompat.CONSUMED</code></div>
+      <div class="cvr-chain">
+        <span class="cvr-node">parent listener</span>
+        <span class="cvr-arrow" aria-hidden="true">&rarr;</span>
+        <span class="cvr-node">WebView gets nothing (0 dispatches)</span>
+        <span class="cvr-arrow" aria-hidden="true">&rarr;</span>
+        <span class="cvr-node">page: <code>env 0</code>, visual viewport <code>1192.36</code></span>
+      </div>
+      <div class="cvr-note">The page reads zero, which looks like success, but the keyboard is invisible to it.</div>
+    </div>
+  </div>
+
+  <svg class="cvr-chart" viewBox={`0 0 ${W} ${H}`} role="img"
+       aria-label="visualViewport.height over the four seconds before and two seconds after the keyboard opens. With a rebuilt instance it steps down from 1192.36 to 842.8 css px. With CONSUMED it stays flat at 1192.36.">
+    <line class="cvr-axis" x1={PAD.l} y1={yClosed} x2={W - PAD.r} y2={yClosed} />
+    <line class="cvr-axis" x1={PAD.l} y1={yOpen} x2={W - PAD.r} y2={yOpen} />
+    <text class="cvr-tick" x={PAD.l - 8} y={+yClosed + 4} text-anchor="end">1192.36</text>
+    <text class="cvr-tick" x={PAD.l - 8} y={+yOpen + 4} text-anchor="end">842.8</text>
+    <text class="cvr-axislabel" x={PAD.l - 8} y={PAD.t - 4} text-anchor="end">css px</text>
+
+    <line class="cvr-kb" x1={xZero} y1={PAD.t} x2={xZero} y2={H - PAD.b} />
+    <text class="cvr-kbtick" x={+xZero + 6} y={H - PAD.b - 4}>keyboard opens</text>
+
+    <polyline class="cvr-line consumed" points={consumedPts} />
+    <polyline class="cvr-line rebuilt" points={rebuiltPts} />
+
+    <text class="cvr-series consumed" x={W - PAD.r + 6} y={+yClosed - 6}>CONSUMED</text>
+    <text class="cvr-series rebuilt" x={W - PAD.r + 6} y={+yOpen + 14}>rebuilt</text>
+    <text class="cvr-gap" x={PAD.l + 10} y={((y(VV_CLOSED) + y(VV_OPEN)) / 2 + 4).toFixed(1)}>349.56 px of keyboard</text>
+    <text class="cvr-tick" x={PAD.l} y={H - PAD.b + 16}>-4 s</text>
+    <text class="cvr-tick" x={W - PAD.r} y={H - PAD.b + 16} text-anchor="end">+2 s</text>
+  </svg>
+
+  <div class="cvr-tablewrap">
+    <table class="cvr-table">
+      <thead>
+        <tr><th></th><th>WebView dispatches</th><th><code>env()</code></th><th><code>innerHeight</code></th><th><code>visualViewport.height</code></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>rebuilt</td><td>3</td><td><code>0 0 0 0</code></td><td><code>1192</code></td><td><code>1192.36</code> &rarr; <code>842.8</code></td></tr>
+        <tr><td><code>CONSUMED</code></td><td>0</td><td><code>0 0 0 0</code></td><td><code>1192</code></td><td><code>1192.36</code> (flat)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</figure>
+
+<style>
+  .cvr {
+    width: 100%;
+    max-width: 44rem;
+    margin: 2rem auto;
+    padding: 1rem 1.15rem 1.25rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    background: rgba(var(--gray-light), 0.28);
+  }
+  .cvr-cap { margin-bottom: 1rem; }
+  .cvr-title {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    font-weight: 600; font-size: 1.05rem; line-height: 1.3;
+    color: rgb(var(--gray-dark));
+  }
+  .cvr-badge {
+    flex: 0 0 auto;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.15rem 0.45rem; border-radius: 999px;
+    background: var(--accent); color: #fff;
+  }
+  .cvr-hint { margin: 0.35rem 0 0; font-size: 0.8rem; color: rgb(var(--gray)); }
+
+  .cvr-rows { display: flex; flex-direction: column; gap: 0.6rem; }
+  .cvr-row {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border-subtle);
+    border-left-width: 3px;
+    border-radius: 0.6rem;
+    background: rgb(var(--white));
+  }
+  .cvr-row.ok { border-left-color: var(--accent); }
+  .cvr-row.bad { border-left-color: var(--tx-point); }
+  .cvr-label { font-weight: 600; font-size: 0.85rem; color: rgb(var(--gray-dark)); }
+  .cvr-chain {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem;
+    margin-top: 0.4rem;
+  }
+  .cvr-node {
+    font-size: 0.78rem; line-height: 1.35;
+    padding: 0.2rem 0.45rem; border-radius: 0.35rem;
+    border: 1px solid var(--border-subtle);
+    background: rgb(var(--gray-light) / 0.35);
+    color: rgb(var(--gray-dark));
+  }
+  .cvr-node code, .cvr-table code, .cvr-label code {
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+  .cvr-arrow { color: rgb(var(--gray)); font-size: 0.85rem; }
+  .cvr-note { margin-top: 0.35rem; font-size: 0.8rem; color: rgb(var(--gray)); }
+
+  .cvr-chart { display: block; width: 100%; height: auto; margin: 1.1rem 0 0.4rem; }
+  .cvr-axis { stroke: var(--border-subtle); stroke-width: 1; stroke-dasharray: 3 3; }
+  .cvr-kb { stroke: rgb(var(--gray)); stroke-width: 1; stroke-dasharray: 4 3; }
+  .cvr-line { fill: none; stroke-width: 2.5; stroke-linejoin: round; }
+  .cvr-line.rebuilt { stroke: var(--accent); }
+  .cvr-line.consumed { stroke: var(--tx-point); }
+  .cvr-tick, .cvr-axislabel, .cvr-kbtick, .cvr-series, .cvr-gap {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    fill: rgb(var(--gray));
+  }
+  .cvr-axislabel { font-size: 10px; }
+  .cvr-series.rebuilt { fill: var(--accent); font-weight: 700; }
+  .cvr-series.consumed { fill: var(--tx-point); font-weight: 700; }
+  .cvr-gap { font-size: 10px; }
+
+  .cvr-tablewrap { overflow-x: auto; margin-top: 0.6rem; }
+  .cvr-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.78rem; color: rgb(var(--gray));
+  }
+  .cvr-table th, .cvr-table td {
+    text-align: left; padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .cvr-table th { font-weight: 600; color: rgb(var(--gray-dark)); font-size: 0.72rem; }
+  .cvr-table tr:last-child td { border-bottom: 0; }
+
+  @media (max-width: 40rem) {
+    .cvr { padding: 0.85rem 0.85rem 1rem; }
+    .cvr-chain { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+    .cvr-arrow { transform: rotate(90deg); }
+    .cvr-table { font-size: 0.7rem; }
+    .cvr-table th, .cvr-table td { padding: 0.25rem 0.3rem; }
+  }
+</style>

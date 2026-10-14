@@ -1,0 +1,141 @@
+---
+// "Why the page then sees the keyboard twice", as a live component.
+//
+// Replaces android-keyboard-twice.webp. The heading, the one-line intro and the
+// closing sentence that were baked into that image now live in the post's prose.
+//
+// The numbers are the same Pixel 7 Pro run as the report figure above it, in CSS
+// pixels after the division by dpr. The two phone mocks are drawn, not captured,
+// and stay dark in both themes because they stand in for a device.
+---
+<figure class="adc">
+  <div class="adc-panels">
+    <div class="adc-panel">
+      <div class="adc-h">1 &middot; The app makes room</div>
+      <div class="adc-who">Gadgetbridge pads <code>android.R.id.content</code> by <code>systemBars()</code></div>
+      <div class="adc-stage">
+        <div class="adc-phone">
+          <span class="adc-pad" style="height:92px" aria-hidden="true"></span>
+          <span class="adc-web" style="height:106px" aria-hidden="true"></span>
+          <span class="adc-kb" aria-hidden="true"></span>
+          <span class="adc-cap" style="top:6px">the padding the app added</span>
+          <span class="adc-cap accent" style="top:100px">the WebView's box, now 895px shorter</span>
+          <span class="adc-cap" style="bottom:6px">keyboard</span>
+        </div>
+        <div class="adc-notes">
+          The WebView is an ordinary view. Padding its parent <b>shrinks it</b>, so the page's
+          <b>layout viewport</b> gets shorter.
+          <span class="adc-m">webview height 2715 &rarr; 1820 px</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="adc-panel">
+      <div class="adc-h">2 &middot; The WebView makes room</div>
+      <div class="adc-who">The WebView reads <code>ime()</code> itself and shrinks its <b>visual viewport</b></div>
+      <div class="adc-stage">
+        <div class="adc-phone">
+          <span class="adc-web" style="height:106px" aria-hidden="true"></span>
+          <span class="adc-pad bad" style="top:106px;height:92px" aria-hidden="true"></span>
+          <span class="adc-kb" aria-hidden="true"></span>
+          <span class="adc-cap accent" style="top:6px">layout viewport, from the box on the left</span>
+          <span class="adc-cap bad" style="top:200px">the part the page can still see, the visual viewport</span>
+          <span class="adc-cap" style="bottom:6px">keyboard</span>
+        </div>
+        <div class="adc-notes">
+          Chromium's own rule: <b>&ldquo;the <code>ime()</code> insets directly affect the size of the
+          Visual Viewport.&rdquo;</b> Nothing to do with the app's padding.
+          <span class="adc-m">this shrink is the WebView's doing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="adc-result">
+    <div class="adc-nums">
+      <div><span>layout viewport (100dvh)</span>912.6 &rarr; <b>611.8</b> css px</div>
+      <div><span>visual viewport</span>611.8 &rarr; <b>310.9</b> css px</div>
+      <div><span>keyboard height</span><b>300.8</b> css px</div>
+    </div>
+  </div>
+</figure>
+
+<style>
+  .adc {
+    width: 100%;
+    max-width: 44rem;
+    margin: 2rem auto;
+    padding: 1rem 1.15rem 1.25rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    background: rgba(var(--gray-light), 0.28);
+  }
+  .adc-panels { display: flex; gap: 1rem; align-items: stretch; }
+  .adc-panel {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.85rem 0.9rem 0.9rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.6rem;
+    background: rgb(var(--white));
+  }
+  .adc-h { font-weight: 600; font-size: 0.85rem; color: rgb(var(--gray-dark)); }
+  .adc-who { margin: 0.15rem 0 0.7rem; font-size: 0.78rem; color: rgb(var(--gray)); }
+  .adc-who code, .adc-notes code, .adc-m {
+    font-family: var(--font-family-mono);
+    font-size: 0.74rem;
+  }
+  .adc-who code, .adc-notes code { color: var(--accent); }
+
+  .adc-stage { display: flex; gap: 0.8rem; align-items: flex-start; }
+  .adc-phone {
+    position: relative;
+    flex: 0 0 auto;
+    width: 152px; height: 262px;
+    border: 2px solid #2a2a31;
+    border-radius: 0.7rem;
+    background: #101013;
+    overflow: hidden;
+  }
+  .adc-pad { position: absolute; left: 0; right: 0; top: 0; background: rgba(251, 191, 36, 0.16); border-bottom: 2px solid #fbbf24; }
+  .adc-pad.bad { background: rgba(251, 113, 133, 0.14); border-color: #fb7185; }
+  .adc-web { position: absolute; left: 0; right: 0; top: 0; background: rgba(122, 162, 247, 0.2); border: 2px solid #7aa2f7; }
+  .adc-kb {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 92px;
+    background: repeating-linear-gradient(135deg, #22222a, #22222a 8px, #262630 8px, #262630 16px);
+    border-top: 1px solid #2a2a31;
+  }
+  .adc-cap { position: absolute; left: 8px; right: 8px; font-size: 0.58rem; line-height: 1.3; color: #9a9aa6; }
+  .adc-cap.accent { color: #aab0ff; }
+  .adc-cap.bad { color: #fb7185; }
+
+  .adc-notes { flex: 1 1 auto; min-width: 0; font-size: 0.78rem; line-height: 1.4; color: rgb(var(--gray)); }
+  .adc-notes b { color: rgb(var(--gray-dark)); }
+  .adc-m { display: block; margin-top: 0.4rem; color: rgb(var(--gray)); }
+
+  .adc-result {
+    margin-top: 0.8rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--tx-point);
+    border-radius: 0.6rem;
+    background: rgb(var(--white));
+  }
+  .adc-nums {
+    display: flex; flex-wrap: wrap; gap: 1.6rem;
+    font-family: var(--font-family-mono); font-size: 0.8rem;
+    color: rgb(var(--gray-dark));
+  }
+  .adc-nums div span {
+    display: block; margin-bottom: 0.15rem;
+    font-family: inherit; font-size: 0.68rem;
+    color: rgb(var(--gray));
+  }
+
+  @media (max-width: 40rem) {
+    .adc { padding: 0.85rem 0.85rem 1rem; }
+    .adc-panels { flex-direction: column; gap: 0.8rem; }
+    .adc-phone { width: 132px; height: 228px; }
+    .adc-cap { font-size: 0.54rem; }
+    .adc-nums { gap: 1rem; font-size: 0.74rem; }
+  }
+</style>

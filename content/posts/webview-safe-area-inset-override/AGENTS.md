@@ -4,6 +4,14 @@ This post records the iOS measurement behind the safe-area override. The numbers
 in it come from a real simulator, not from a template. If you change the override,
 the probe, or the launcher, the tables go stale until you re-measure.
 
+**Updated 2026-10-15** with the keyboard material — the `ime()` channel, the
+double-count, and `interactive-widget` being a no-op in WebView. That half was
+measured on Gadgetbridge and a Pixel 7 Pro, *not* on the launcher; see
+"Re-measuring the keyboard figures" before touching it. The update also corrects
+the post's original claim that a `setOnApplyWindowInsetsListener` can never do the
+override (it can, on the WebView's parent) — the launcher's
+`InsetAwareWebView` javadoc still carries the old wording.
+
 ## Layout
 
 - `index.mdx` — the post.
@@ -36,6 +44,57 @@ the probe, or the launcher, the tables go stale until you re-measure.
   `input.html` from cache unless the URL carries a changing query parameter. Raise
   the keyboard by tapping the field, whose bounds come from the dump rather than
   from a guessed coordinate.
+
+- `android-ime-passed-through.webp`, `android-ime-zeroed.webp`,
+  `android-interactive-widget.webp`, `android-adjustresize.webp` — the keyboard
+  figures for "The keyboard is a second channel". The first two are the same
+  build, page and override, differing only in whether `InsetAwareWebView`'s
+  override also zeroes `ime()`. All four are OnePlus captures at density 314 with
+  the override `150/40/180/40`, so the page reports `77 21 92 21`.
+
+- The other two diagrams are components now, so no diagram webp is left:
+  `AndroidInsetReport.astro` ("What Android reports, before and after the
+  keyboard") and `AndroidDoubleCount.astro` ("Why the page then sees the keyboard
+  twice"). They were ported from `/tmp/opencode/diagrams/02-insets.html` and
+  `03-double.html`; those files are only the migration path, the components are the
+  source of truth. The phone mocks are drawn, not captured, and stay dark in both
+  themes because they stand in for a device. Titles, sub-lines and closing notes
+  that were baked into the old images now live in the post's prose, so do not
+  reintroduce them inside the components.
+
+- `android-insets-before-after.webp` and `android-keyboard-twice.webp` are gone.
+  The only image left in the keyboard section is `android-consumed-vs-rebuilt.webp`,
+  which uses `class="diagram"`. `img.diagram` is capped at 40rem: at 100% of the
+  column a 1080px capture gets upscaled past its own resolution, which is how that
+  file was rendering at 1136x892.
+
+- The layer-names diagram is a component, not an asset:
+  `src/components/mdx/AndroidLayerNames.astro`. It overlays numbered regions on a
+  real screenshot (`android-screen-anatomy.webp`, OnePlus at density 314,
+  three-button navigation, keyboard open, page theme forced to light) and pairs
+  each region with its legend row on hover or focus. The region percentages are
+  measured off the screenshot: status bar 0-3.42%, ime 70.68-95.73%, nav bar
+  95.73-100%. Re-measure them if the capture is replaced.
+  `android-layer-names.webp` is gone.
+
+- The CONSUMED comparison is a component too:
+  `src/components/mdx/ConsumedVsRebuilt.astro`. Its chain rows, chart and table
+  are hard-coded from the measurement in "Re-measuring the CONSUMED comparison",
+  so they go stale if that is re-run.
+
+- `android-consumed-vs-rebuilt.webp` — the readout pair behind the same section.
+  Two crops of the same page with the keyboard up, stacked with a label strip
+  baked in, so the only visible difference is `visual viewport 842.8px` against
+  `1192.36px` while both read insets `0 0 0 0`. Cropped from the two run captures
+  with `magick ... -crop 1080x360+0+125 -splice 0x64 -append`; re-crop if the
+  captures are redone. Referenced with `class="diagram"`, since it is a landscape
+  figure and `img.shot` would cap its height.
+
+- **A component root needs `width: 100%`.** The site's `.markdown > *` sets
+  `width: 56rem` and clamps it with `max-width: calc(100% - 2rem)`. A component
+  that overrides `max-width` without also resetting `width` stays 704px wide on a
+  phone and overflows the column, which is what `AndroidLayerNames` did until
+  `width: 100%` was added.
 
 ## Re-measuring the runtime-update numbers
 
@@ -189,6 +248,89 @@ are frames extracted from the same recording in `~/Desktop`. Notes for redoing i
 
 **Creating an iPhone Duo.** The device type needs runtime 27.1 or newer. Check
 `xcrun simctl list runtimes -j` for what is actually installed.
+
+**A listener on the WebView's parent works; a listener on the WebView does not.**
+A listener is called *instead of* the view's own `onApplyWindowInsets`, so one set
+on the WebView replaces the handling that feeds `AwContents` and the rebuilt
+insets are returned to the caller, not down into the widget. On the WebView's
+**parent**, the parent's dispatch passes the modified insets to each of its
+children — which is how the app-manager keyboard fix applies its override. The
+launcher still subclasses, which is the more direct route.
+
+## Re-measuring the keyboard figures
+
+The claim is that a host which pads its content by `systemBars()` makes the page
+shrink twice: `systemBars()` carries the keyboard, and the WebView *also* applies
+`ime()`.
+
+**The host is Gadgetbridge, not the launcher.** The launcher never pads, and the
+double could not be reproduced in it in any configuration — targetSdk 33/35/37,
+AppCompat/Material3, with and without the opt-out, with an ActionBar and
+`configChanges`, with the padding listener added, and with `androidx.core`
+1.9.0/1.19.1. Matching Gadgetbridge's settings is *not* sufficient; something
+about the app-manager window differs and that has not been isolated. Do not write
+the launcher into this claim.
+
+To measure it in Gadgetbridge:
+
+1. Instrument `AbstractGBActivity.applyEdgeToEdgeInsets` to log the per-type
+   insets (`statusBars`, `navigationBars`, `captionBar`, `displayCutout`, `ime`)
+   and the content height on every dispatch, and log the WebView's height from an
+   `addOnLayoutChangeListener`. `Log.i("GBINSET", ...)` is enough.
+2. Add a fallback in `AppsManagementActivity.onCreate` so it can be launched
+   without a device extra (first entry of
+   `GBApplication.app().getDeviceManager().getDevices()`), and mark the activity
+   `android:exported="true"` for the run. Point the loaded URL at a
+   `data:text/html` page with a single `<input>` at `top:0;height:15vh` — easy to
+   tap, no scrolling, and the page's own content is irrelevant because the
+   numbers come from the native log.
+3. Build the devtest APK (the `applicationIdSuffix ".devtest"` and provider
+   authority tweaks), `adb install -r`, `am start` the activity, tap the input,
+   and read the log.
+4. Expected with the keyboard up: `content h` unchanged, `navigationBars()` and
+   `ime()` both the keyboard height, and `webview h` down by
+   `ime() - navigationBars_at_rest`.
+
+Undo all of it afterwards. None of it belongs in either repo. Note that `am start`
+races the post-install app restart — wait for the app to settle, then launch.
+
+### Re-measuring the CONSUMED comparison
+
+The figure behind "Zeroing a type without stopping the dispatch". The claim is that
+a parent listener returning `WindowInsetsCompat.CONSUMED` stops the dispatch, so
+the WebView is handed nothing at all and the keyboard never reaches the page.
+
+The harness is **temporary** and lives in the launcher repo. In `MainActivity`,
+read an `inset_mode` extra and, for `parent_rebuilt` or `parent_consumed`, install
+`ViewCompat.setOnApplyWindowInsetsListener` on `webView.getParent()`. For the first
+mode rebuild the insets with `systemBars()` and `displayCutout()` set to
+`Insets.NONE`; for the second return `WindowInsetsCompat.CONSUMED`. Add a
+`WebChromeClient` that logs `onConsoleMessage` under one tag, plus a `Log.i` in
+`InsetAwareWebView.onApplyWindowInsets` so the WebView's own dispatches are
+visible. Revert all of it afterwards; none of it belongs in the repo.
+
+Then, on the OnePlus at density 314, three-button navigation, system in night mode
+and the page theme forced to light:
+
+1. `adb logcat -c`, `am force-stop`, then `am start` with `edge_to_edge true`, the
+   demo page, the mode, and a `javascript` extra that appends a probe element,
+   opens `#sec-kb`, and logs `env()`, `innerHeight` and `visualViewport.height`
+   every 250 ms. Write that script to a file and pass it as `'$JS'`; it must
+   contain no single quotes, or the device shell splits it.
+2. Read the `input=` rect the sampler logs, multiply by 1.9625, and tap that point
+   to raise the keyboard.
+3. Count the `webview.onApplyWindowInsets` lines. Rebuilt: 3. Consumed: 0.
+4. The sampler is the evidence: rebuilt steps `1192.36` to `842.8`, consumed stays
+   flat at `1192.36`. Both read `env=0px,0px,0px,0px`.
+
+Measured 2026-10-15 on the OnePlus 6T, Android 15, WebView 153, dpr 1.96. The
+keyboard height agrees from both sides: 1192.36 - 842.8 = 349.56 css px, and
+`ime()` in the native log is 686 device px, which is 349.55 css px.
+
+Two traps. The podman build signs the debug APK with a fresh debug keystore each
+time, so `install -r` fails with `INSTALL_FAILED_UPDATE_INCOMPATIBLE` and you have
+to uninstall first. And `am start` lands on the running activity, so `force-stop`
+before every run or the extras are ignored.
 
 ## Watch-outs
 
