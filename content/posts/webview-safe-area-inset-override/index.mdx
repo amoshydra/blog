@@ -462,14 +462,15 @@ leaves `ime()` alone misses the keyboard.
 ### What Android reports, before and after the keyboard
 
 Measured on a Pixel 7 Pro (Android 17), in Gadgetbridge's app-manager screen, by
-logging every inset dispatch. Values are device pixels; divide by ~3 for CSS
-pixels.
+logging every inset dispatch. Values are CSS pixels: the raw insets divided by the
+device's 2.975 pixel ratio.
 
 <AndroidInsetReport />
 
-`navigationBars()` grew from `71` to `966`, the height of the keyboard.
-Gadgetbridge pads its content with `getInsets(systemBars() | displayCutout())`, so
-that padding grew by the keyboard too.
+`navigationBars()` grew from `24` to `325` css px. The growth is the keyboard's
+height; the `24` is the navigation bar it replaces. Gadgetbridge pads its content
+with `getInsets(systemBars() | displayCutout())`, so that padding grew by the
+keyboard too.
 
 ### Why the page then sees the keyboard twice
 

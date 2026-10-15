@@ -5,9 +5,10 @@
 // that were baked into that image now live in the post's prose, so this file only
 // carries the two panels and their tables.
 //
-// The numbers are device pixels from the Pixel 7 Pro run (Android 17), logged from
-// Gadgetbridge's app-manager screen. The phone mocks are drawn, not captured, and
-// they stay dark in both themes because they stand in for a device.
+// The numbers are CSS pixels from the Pixel 7 Pro run (Android 17), logged from
+// Gadgetbridge's app-manager screen and divided by the device's 2.975 pixel ratio.
+// The phone mocks are drawn, not captured, and they stay dark in both themes
+// because they stand in for a device.
 ---
 <figure class="air">
   <div class="air-panels">
@@ -17,17 +18,17 @@
         <span class="air-status" aria-hidden="true"></span>
         <span class="air-cut" aria-hidden="true"></span>
         <span class="air-nav" aria-hidden="true"></span>
-        <span class="air-tag" style="top:40px">statusBars() top = 334</span>
-        <span class="air-tag" style="top:58px">displayCutout() top = 144</span>
-        <span class="air-tag" style="bottom:30px">navigationBars() = 71</span>
+        <span class="air-tag" style="top:40px">statusBars() top = 112</span>
+        <span class="air-tag" style="top:58px">displayCutout() top = 48</span>
+        <span class="air-tag" style="bottom:30px">navigationBars() = 24</span>
       </div>
       <table class="air-table">
         <tbody>
-          <tr><td>statusBars() top</td><td>334</td></tr>
-          <tr><td>displayCutout() top</td><td>144</td></tr>
-          <tr><td>navigationBars() bottom</td><td>71</td></tr>
+          <tr><td>statusBars() top</td><td>112</td></tr>
+          <tr><td>displayCutout() top</td><td>48</td></tr>
+          <tr><td>navigationBars() bottom</td><td>24</td></tr>
           <tr><td>ime() bottom</td><td>0</td></tr>
-          <tr class="sum"><td><code>systemBars()</code> = status + nav + caption</td><td>71</td></tr>
+          <tr class="sum"><td><code>systemBars()</code> = status + nav + caption</td><td>24</td></tr>
         </tbody>
       </table>
     </div>
@@ -38,18 +39,18 @@
         <span class="air-status" aria-hidden="true"></span>
         <span class="air-cut" aria-hidden="true"></span>
         <span class="air-nav kb" aria-hidden="true"></span>
-        <span class="air-tag" style="top:40px">statusBars() top = 334</span>
-        <span class="air-tag" style="top:58px">displayCutout() top = 144</span>
-        <span class="air-tag warn" style="bottom:102px">navigationBars() = 966 &larr; the keyboard</span>
+        <span class="air-tag" style="top:40px">statusBars() top = 112</span>
+        <span class="air-tag" style="top:58px">displayCutout() top = 48</span>
+        <span class="air-tag warn" style="bottom:102px">navigationBars() = 325 &larr; the keyboard</span>
         <span class="air-tag warn" style="bottom:8px">IME</span>
       </div>
       <table class="air-table">
         <tbody>
-          <tr><td>statusBars() top</td><td>334</td></tr>
-          <tr><td>displayCutout() top</td><td>144</td></tr>
-          <tr><td>navigationBars() bottom</td><td class="open">966</td></tr>
-          <tr><td>ime() bottom</td><td class="open">966</td></tr>
-          <tr class="sum"><td><code>systemBars()</code> = status + nav + caption</td><td class="open">966</td></tr>
+          <tr><td>statusBars() top</td><td>112</td></tr>
+          <tr><td>displayCutout() top</td><td>48</td></tr>
+          <tr><td>navigationBars() bottom</td><td class="open">325</td></tr>
+          <tr><td>ime() bottom</td><td class="open">325</td></tr>
+          <tr class="sum"><td><code>systemBars()</code> = status + nav + caption</td><td class="open">325</td></tr>
         </tbody>
       </table>
     </div>

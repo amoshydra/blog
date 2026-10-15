@@ -8,6 +8,10 @@
 // while the keyboard was raised. Same build, same page, same device; the only
 // difference between the two runs is the listener's return value.
 //
+// Values are CSS px. The native ime() inset of 686 device px is quoted as 350 here,
+// matching the 349.56 px the page reports as the difference between 1192.36 and
+// 842.8.
+//
 //   rebuilt   -> new WindowInsetsCompat.Builder(insets)
 //                  .setInsets(systemBars(), Insets.NONE)
 //                  .setInsets(displayCutout(), Insets.NONE).build()
@@ -59,7 +63,7 @@ const xZero = x(0).toFixed(1);
       <div class="cvr-chain">
         <span class="cvr-node">parent listener</span>
         <span class="cvr-arrow" aria-hidden="true">&rarr;</span>
-        <span class="cvr-node">WebView gets <code>sysBars 0, ime 686</code></span>
+        <span class="cvr-node">WebView gets <code>sysBars 0, ime 350</code></span>
         <span class="cvr-arrow" aria-hidden="true">&rarr;</span>
         <span class="cvr-node">page: <code>env 0</code>, visual viewport <code>842.8</code></span>
       </div>

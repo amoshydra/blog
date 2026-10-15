@@ -60,7 +60,9 @@ override (it can, on the WebView's parent) — the launcher's
   source of truth. The phone mocks are drawn, not captured, and stay dark in both
   themes because they stand in for a device. Titles, sub-lines and closing notes
   that were baked into the old images now live in the post's prose, so do not
-  reintroduce them inside the components.
+  reintroduce them inside the components. Every figure in the keyboard section
+  quotes **CSS px**, never the raw insets: divide the Pixel 7 Pro's device pixels
+  by 2.975 and the OnePlus's by 1.9625.
 
 - `android-insets-before-after.webp` and `android-keyboard-twice.webp` are gone.
   The only image left in the keyboard section is `android-consumed-vs-rebuilt.webp`,
