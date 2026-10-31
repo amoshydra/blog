@@ -1,0 +1,42 @@
+# Chinese collation types through -u-co-
+# node v26.3.1  icu 78.3  cldr 48.0
+# generated 2026-10-31T22:57:14.110Z
+
+# requested	canonical	resolved	applied	order(20 surnames)
+pinyin	zh-Hant-u-co-pinyin	pinyin	yes	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+stroke	zh-Hant-u-co-stroke	stroke	yes	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
+zhuyin	zh-Hant-u-co-zhuyin	zhuyin	yes	馬李劉林梁羅高郭何胡黃徐周張鄭朱陳孫吳王
+unihan	zh-Hant-u-co-unihan	unihan	yes	何劉吳周孫張徐朱李林梁王羅胡郭鄭陳馬高黃
+big5han	zh-Hant-u-co-big5han	stroke	no	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
+gb2312	zh-Hant-u-co-gb2312	stroke	no	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
+gb2312han	-	-	no (RangeError: Invalid language tag: zh-hant-u-co-gb2312han)	-
+
+# does the requested type change the order? (79 characters, zh-Hant)
+# locale zh default=pinyin
+pinyin	same as default
+stroke	differs
+zhuyin	differs
+unihan	differs
+big5han	same as default
+gb2312	same as default
+gb2312han	unavailable
+
+# locale zh-Hant default=stroke
+pinyin	differs
+stroke	same as default
+zhuyin	differs
+unihan	differs
+big5han	same as default
+gb2312	same as default
+gb2312han	unavailable
+
+# alias reachability (Unicode extension values are 3-8 alphanumerics)
+# long form	length	canonical
+gb2312han	9	rejected, RangeError: Invalid language tag: zh-u-co-gb2312han
+gb2312	6	zh-u-co-gb2312
+traditional	11	rejected, RangeError: Invalid language tag: zh-u-co-traditional
+trad	4	zh-u-co-trad
+dictionary	10	rejected, RangeError: Invalid language tag: zh-u-co-dictionary
+dict	4	zh-u-co-dict
+phonebook	9	rejected, RangeError: Invalid language tag: zh-u-co-phonebook
+phonebk	7	zh-u-co-phonebk

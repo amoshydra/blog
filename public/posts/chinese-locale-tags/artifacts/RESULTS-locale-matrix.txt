@@ -1,0 +1,99 @@
+# Chinese locale matrix
+# node v26.3.1  icu 78.3  cldr 48.0
+# instant 2026-01-15T04:05:06.000Z  zone Asia/Taipei
+
+## 1. resolution
+# tag	canonical	script	region	maximize()	week_start	hour_cycle	default_tz
+zh	zh			zh-Hans-CN	1	h23	
+zh-Hans	zh-Hans	Hans		zh-Hans-CN	1	h23	
+zh-Hant	zh-Hant	Hant		zh-Hant-TW	7	h12	
+zh-CN	zh-CN		CN	zh-Hans-CN	1	h23	(2 zones)
+zh-TW	zh-TW		TW	zh-Hant-TW	7	h12	Asia/Taipei
+zh-HK	zh-HK		HK	zh-Hant-HK	7	h12	Asia/Hong_Kong
+zh-MO	zh-MO		MO	zh-Hant-MO	7	h12	Asia/Macau
+zh-SG	zh-SG		SG	zh-Hans-SG	7	h12	Asia/Singapore
+zh-MY	zh-MY		MY	zh-Hans-MY	1	h12	(2 zones)
+zh-Hant-TW	zh-Hant-TW	Hant	TW	zh-Hant-TW	7	h12	Asia/Taipei
+zh-Hant-HK	zh-Hant-HK	Hant	HK	zh-Hant-HK	7	h12	Asia/Hong_Kong
+zh-Hant-MO	zh-Hant-MO	Hant	MO	zh-Hant-MO	7	h12	Asia/Macau
+zh-Hans-SG	zh-Hans-SG	Hans	SG	zh-Hans-SG	7	h12	Asia/Singapore
+zh-Hans-HK	zh-Hans-HK	Hans	HK	zh-Hans-HK	7	h12	Asia/Hong_Kong
+zh-US	zh-US		US	zh-Hant-US	7	h23	(29 zones)
+zh-GB	zh-GB		GB	zh-Hant-GB	1	h23	Europe/London
+zh-CA	zh-CA		CA	zh-Hans-CA	7	h23	(23 zones)
+yue	yue			yue-Hant-HK	7	h12	
+yue-Hans-CN	yue-Hans-CN	Hans	CN	yue-Hans-CN	1	h23	(2 zones)
+cmn	zh			zh-Hans-CN	1	h23	
+nan	nan			nan-Hans-CN	1	h12	
+dng	dng			dng-Cyrl-KG	1	h12	
+zh-Latn	zh-Latn	Latn		zh-Latn-CN	1	h23	
+zh-Bopo	zh-Bopo	Bopo		zh-Bopo-TW	7	h23	
+
+## 2. formatting
+# tag	1e12	HKD	TWD	metre	mile	date	time	roc_calendar	yesterday	list	sort(20 names)
+zh	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-Hans	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-Hant	1兆	12.50␣港幣	12.50␣新台幣	1␣公尺	1␣英里	2026年1月15日␣星期四	中午12:05:06	民國115年1月15日	昨天	甲、乙和丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
+zh-CN	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-TW	1兆	12.50␣港幣	12.50␣新台幣	1␣公尺	1␣英里	2026年1月15日␣星期四	中午12:05:06	民國115年1月15日	昨天	甲、乙和丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
+zh-HK	1T	12.50␣港元	12.50␣新台幣	1␣米	1␣哩	2026年1月15日星期四	下午12:05:06	民國115年1月15日	昨日	甲、乙及丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
+zh-MO	1T	12.50␣港元	12.50␣新台幣	1␣米	1␣哩	2026年1月15日星期四	下午12:05:06	民國115年1月15日	昨日	甲、乙及丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
+zh-SG	1万亿	12.50␣港元	12.50␣新台币	1米	1英里	2026年1月15日星期四	下午12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-MY	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	下午12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-Hant-TW	1兆	12.50␣港幣	12.50␣新台幣	1␣公尺	1␣英里	2026年1月15日␣星期四	中午12:05:06	民國115年1月15日	昨天	甲、乙和丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
+zh-Hant-HK	1T	12.50␣港元	12.50␣新台幣	1␣米	1␣哩	2026年1月15日星期四	下午12:05:06	民國115年1月15日	昨日	甲、乙及丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
+zh-Hant-MO	1T	12.50␣港元	12.50␣新台幣	1␣米	1␣哩	2026年1月15日星期四	下午12:05:06	民國115年1月15日	昨日	甲、乙及丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
+zh-Hans-SG	1万亿	12.50␣港元	12.50␣新台币	1米	1英里	2026年1月15日星期四	下午12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-Hans-HK	1万亿	12.50␣港元	12.50␣新台币	1米	1英里	2026年1月15日星期四	下午12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-US	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-GB	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-CA	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+yue	1兆	12.50␣港幣	12.50␣新台幣	1␣米	1␣英里	2026年1月15日␣星期四	下晝12:05:06	民國115年1月15日	尋日	甲、乙同丙	何劉吳周孫張徐朱李林梁王羅胡郭鄭陳馬高黃
+yue-Hans-CN	1兆	12.50␣港币	12.50␣新台币	1␣米	1␣英里	2026年1月15日␣星期四	12:05:06	民国115年1月15日	寻日	甲、乙同丙	何劉吳周孫張徐朱李林梁王羅胡郭鄭陳馬高黃
+cmn	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+nan	1T	12.50␣Hong␣Kong␣dollars	12.50␣New␣Taiwan␣dollars	1␣meter	1␣mile	Thursday,␣January␣15,␣2026	12:05:06␣PM	January␣15,␣115␣Minguo	yesterday	甲,␣乙,␣and␣丙	何劉吳周孫張徐朱李林梁王羅胡郭鄭陳馬高黃
+dng	1T	12.50␣Hong␣Kong␣dollars	12.50␣New␣Taiwan␣dollars	1␣meter	1␣mile	Thursday,␣January␣15,␣2026	12:05:06␣PM	January␣15,␣115␣Minguo	yesterday	甲,␣乙,␣and␣丙	何劉吳周孫張徐朱李林梁王羅胡郭鄭陳馬高黃
+zh-Latn	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-Bopo	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+
+## 3. tag validity
+# input	canonical	maximize()
+zh-TW	zh-TW	zh-Hant-TW
+zh-Hant-HK	zh-Hant-HK	zh-Hant-HK
+zh-Latn-pinyin	zh-Latn-pinyin	zh-Latn-CN-pinyin
+zh-x-private	zh-x-private	zh-Hans-CN-x-private
+zh-yue	ERR:RangeError	ERR:RangeError
+zh-min-nan	ERR:RangeError	ERR:RangeError
+zh-CHS	ERR:RangeError	ERR:RangeError
+zh-CHT	ERR:RangeError	ERR:RangeError
+zh-HK-Hant	ERR:RangeError	ERR:RangeError
+
+## 4. are region tags and script+region tags the same locale?
+# pair	identical formatting
+zh-HK vs zh-Hant-HK	yes
+zh-MO vs zh-Hant-MO	yes
+zh-TW vs zh-Hant-TW	yes
+zh-SG vs zh-Hans-SG	yes
+
+## 5. extension probes
+# tag	collation	123	1e12
+zh-Hant	stroke	123	1兆
+zh-Hant-u-co-pinyin	pinyin	123	1兆
+zh-Hant-u-co-zhuyin	zhuyin	123	1兆
+zh-Hant-u-co-unihan	unihan	123	1兆
+zh-Hans-u-nu-hanidec	pinyin	一二三	一万亿
+zh-Hant-TW-u-ca-roc	stroke	123	1兆
+
+## 6. maximize and minimize
+# tag	maximize()	minimize()
+zh	zh-Hans-CN	zh
+zh-Hans	zh-Hans-CN	zh
+zh-Hant	zh-Hant-TW	zh-TW
+zh-Hans-CN	zh-Hans-CN	zh
+zh-Hant-TW	zh-Hant-TW	zh-TW
+zh-HK	zh-Hant-HK	zh-HK
+zh-Hant-HK	zh-Hant-HK	zh-HK
+zh-Hans-HK	zh-Hans-HK	zh-Hans-HK
+zh-SG	zh-Hans-SG	zh-SG
+yue	yue-Hant-HK	yue
+
