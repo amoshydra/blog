@@ -1,6 +1,6 @@
 ---
 title: "Overriding `env(safe-area-inset-*)` in a WebView: Android and iOS"
-description: "How do you make a WebView report safe-area insets the device doesn't have? Android overrides `onApplyWindowInsets`; iOS overrides the `safeAreaInsets` getter. Both work, both are silent when they fail, both can be changed while the page is loaded, and iOS has a WebKit timing bug that will convince you it doesn't work at all. With before/after screenshots on both platforms, plus the second inset channel, the keyboard, and the double-count it causes in a host that pads for the system bars."
+description: "How do you make a WebView report safe-area insets the device doesn't have? Android overrides `onApplyWindowInsets`; iOS overrides the `safeAreaInsets` getter. Both work, and both fail silently. iOS also has a WebKit timing bug that makes a working override look broken — I read `0px` and wrote it up as 'the override does not work on iOS'. With before/after screenshots on both platforms, plus the keyboard: the second inset channel, and the double-count it causes when a host already pads for the system bars."
 pubDate: "2026-09-30"
 updatedDate: "2026-10-15"
 heroImage: "./hero.webp"
@@ -19,12 +19,11 @@ there.
 
 Since this post went up, the case I keep running into is the opposite one: a host
 needs to *remove* an inset the device really has, because the app has already
-handled it. Gadgetbridge's Bangle.js app manager is one. On Android 15 the app is
-edge-to-edge, so the platform hands its WebView the real status-bar and
-navigation-bar insets, and the app's own native title bar has already made room for
-them. The page pads for a safe area that is already padded, and sits one status bar
-too low. The host's fix is to stop passing those insets down, which is the override
-this post is about.
+handled it. Gadgetbridge's Bangle.js app manager is one. On Android 15 the app is edge-to-edge, so the platform hands its WebView the
+real status-bar and navigation-bar insets — but the app's own native title bar
+already made room for them. That's the case I keep hitting. The page pads for a safe area that is already
+padded, so it sits one status bar too low. The host's fix is to stop passing
+those insets down. That is the override this post is about.
 
 The figure below is a reference for the Android terms this post uses. iOS has a
 single safe area and no equivalent names, so it is Android-only.
@@ -62,11 +61,9 @@ override replaced it. The blue overlay labels track the change.
 | --- | --- |
 | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-before.webp" alt="Android before the override: insets read 41 0 0 0, the real device values" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-after.webp" alt="Android after the override: insets read 77 21 92 21, converted from the requested device pixels at dpr 1.96" /> |
 
-`41 0 0 0` → `77 21 92 21`. **Note the unit difference.** Android's override is
-in *physical pixels* and CSS sees the result divided by `dpr` (1.96 here:
-150/1.96 ≈ 77). iOS's override is in *points*, which already are CSS pixels, so
-`150` in, `150px` out. If you port an override value between platforms you must
-multiply by `dpr` on the Android side.
+`41 0 0 0` → `77 21 92 21`. **Watch the units here.** Android's override is in *physical pixels*, and CSS
+sees the result divided by `dpr` (1.96 here: 150/1.96 ≈ 77). iOS's override is in
+*points*, which are already CSS pixels, so `150` in, `150px` out. If you port an override value between platforms, you have to multiply by `dpr` on the Android side.
 
 ## Android: the mechanism
 
@@ -114,47 +111,43 @@ Condensed from
 [`InsetAwareWebView.java`](https://github.com/amoshydra/android-webview-launcher/blob/63980eecfd92f33f9ca698cdf0d7e7b10cdee591/app/src/main/java/com/amoshydra/androidapp/InsetAwareWebView.java#L70-L100);
 that class is 101 lines and this is all of it that matters.
 
-One line in that excerpt is out of date. The gate reads `VERSION_CODES.R`, which
+One line in that excerpt is already out of date. The gate reads `VERSION_CODES.R`, which
 is API 30, and the floor is really 31, for the dispatch-order reason given below.
 
-Three things that each cost someone a day:
+Three things cost me a day each.
 
-**A listener *on the WebView* cannot do this.** A listener is called instead of
-the view's own `onApplyWindowInsets`, so one set on the WebView replaces the
-handling that feeds `AwContents`: the rebuilt insets go back to the caller, not
-down into the widget. Overriding `onApplyWindowInsets` works because
+**I tried a listener *on the WebView* first, and it cannot work.** A listener is
+called *instead of* the view's own `onApplyWindowInsets`. That replaces the handling that feeds
+`AwContents`, so the rebuilt insets go back to the caller instead of down into the
+widget. Overriding `onApplyWindowInsets` works because
 `ViewGroup.dispatchApplyWindowInsets` passes its return value down to children,
 and `AwContents` is one.
 
-A listener on the WebView's parent also works, for the same reason in reverse: the
-parent's dispatch hands the modified insets to each of its children. The keyboard
+A listener on the WebView's *parent* also works, for the same reason in reverse:
+the parent's dispatch hands the modified insets to each of its children. The keyboard
 fix later in this post uses that.
 
 *Correction:* the first version of this post said a listener could never do this.
 That is only true when the listener is on the WebView itself.
 
-**Every edge must be set on every type in the mask.** `getInsets(mask)` returns
-the per-edge *maximum* across the mask. Overriding only `navigationBars()` leaves
-a non-zero bottom wherever a display cutout also contributes one.
+**You have to set every edge on every type in the mask.** `getInsets(mask)` returns the
+per-edge *maximum* across the mask. Override only `navigationBars()` and you still get a
+non-zero bottom wherever a display cutout contributes one.
 
-**Requires API 31+**, and only works in edge-to-edge mode, because otherwise the
-framework consumes the insets before the WebView sees them. In that mode the
-status bar stays visible but transparent; hiding it zeroes the `statusBars()`
-inset, which leaves the page with a top inset of zero and hides the cutout from
-it.
+**This needs API 31+, and only in edge-to-edge mode.** Otherwise the framework
+consumes the insets before the WebView sees them. In that mode the status bar stays visible but transparent. Hiding it zeroes the
+`statusBars()` inset, which leaves the page with a top inset of zero and hides the cutout
+from it.
 
-The floor is 31 rather than 30 because of who gets to consume the dispatch. On
-API 28 to 30 the WebView provider installs its own `OnApplyWindowInsetsListener`
-on the container view that wraps your `WebView`, and Android stops delivering
-insets as soon as a listener consumes them, so the `onApplyWindowInsets` you
-overrode is never reached. From API 31 the provider hooks `onApplyWindowInsets`
-on a view inside the WebView instead, which sits below yours, so yours runs
-first. There is no API 28 to 30 device in the matrix below, so that part rests
-on the code path rather than on a measurement.
+The floor is 31 rather than 30 because of who gets to consume the dispatch. On API 28 to 30 the WebView provider installs its own `OnApplyWindowInsetsListener` on the container view
+that wraps your `WebView`. Android stops delivering insets as soon as a listener
+consumes them, so the `onApplyWindowInsets` you overrode never runs. From API 31 the provider hooks `onApplyWindowInsets` on a view inside the WebView instead, which
+sits below yours — so yours runs first, as far as I can tell from the code. I had no API 28 to 30 device for the matrix, so that part rests on the code
+path, not a measurement.
 
 ## iOS: the mechanism
 
-Much smaller, because there is no interception layer to hook. WebKit derives the
+This one is much smaller, because there is no interception layer to hook. WebKit derives the
 page's `env(safe-area-inset-*)` from the **receiving view's** `safeAreaInsets`, so
 overriding that one getter is the whole mechanism:
 
@@ -211,15 +204,15 @@ struct InsetOverride: Equatable {
 
 Condensed from
 [`InsetOverrideWebView.swift`](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/InsetOverrideWebView.swift#L17-L58).
-The comment above `insetOverride` is the same one, and it is worth reading in
-place: UIKit memoises safe-area geometry per layout pass, so an override that is
-not read after something invalidates that cache silently does nothing.
+The comment above `insetOverride` is the same one, and worth reading in place. UIKit
+memoises safe-area geometry per layout pass, so an override that nothing
+re-reads after the cache is invalidated silently does nothing.
 
 `nil` per edge means "use the real system value". Values are deliberately not
 clamped, so a value larger than the real inset pushes content further in, which
 is the point when you're inflating a fake inset.
 
-Verified per-edge independence on iOS 27.0, with only `top` overridden:
+I checked per-edge independence on iOS 27.0, with only `top` overridden:
 
 | Config | `webView.safeAreaInsets` | page `env()` |
 | --- | --- | --- |
@@ -251,10 +244,9 @@ four back.
 ## Three iOS conditions
 
 Each one fails in its own way, and only the first fails loudly. Miss
-`viewport-fit=cover` and every edge reads `0px` with no error. Miss the
-adjustment behaviour and the page reports the right numbers from the wrong
-viewport, which is harder to catch than zeros because nothing looks broken until
-the layout is compared against something. The third one, ordering, fails by
+`viewport-fit=cover` and every edge reads `0px` with no error. If you miss the adjustment behaviour, the page reports the right numbers from the
+wrong viewport. That is harder to catch than zeros, because nothing looks broken
+until you compare the layout. The third one, ordering, fails by
 leaving the page briefly correct against the wrong insets.
 
 **1. `viewport-fit=cover` in the document.**
@@ -264,9 +256,8 @@ leaving the page briefly correct against the wrong insets.
 ```
 
 WebKit reports `0` for every `env(safe-area-inset-*)` without it, and no native
-change can alter that. It's the same rule Safari follows. This is the one real
-behavioural gap versus Android, whose WebView M136+ populates the values from
-`WindowInsets` with no opt-in. **The page must cooperate.**
+change can alter that. It's the same rule Safari follows. That's the one real behavioural gap versus Android, whose WebView M136+
+populates the values from `WindowInsets` with no opt-in. **The page has to cooperate.**
 
 **2. `contentInsetAdjustmentBehavior = .never`.**
 
@@ -275,8 +266,7 @@ webView.scrollView.contentInsetAdjustmentBehavior = .never
 ```
 
 Any other value lets UIKit inset the scroll view by the safe area, and the page
-ends up inside an already-inset viewport. That is the failure, and it is not
-zeros. Measured on iOS 18.6 and again on 26.5, iPhone 17 Pro, override applied in
+ends up inside an already-inset viewport. That's the failure, and it isn't zeros. Measured on iOS 18.6 and again on 26.5, iPhone 17 Pro, override applied in
 `makeUIView`, sampled every animation frame. `env()` is identical in every row,
 so the readout will not warn you:
 
@@ -291,13 +281,12 @@ The height arithmetic is the same in every row that insets: 874 minus the 150 to
 and 180 bottom override is 544. Width only goes under `.always`, where 402 minus
 the 40 left and 40 right is 322.
 
-Neither of the middle two is a safe compromise. They keep the width and still cost
-the page 330 points of height, which is the part a document is least likely to
-notice has gone.
+Neither of the middle two is a safe compromise. They keep the width but still
+cost the page 330 points of height — the part a document is least likely to
+notice is gone.
 
-The consequence is a double inset. A page that pads its body by `env()` gets the
-safe area applied twice, once by UIKit shrinking the layout viewport and once by
-the page's own padding. The demo page's scroll range shows it: 797 under `.never`,
+The consequence is a double inset. A page that pads its body by `env()` gets the safe area applied twice: once when
+UIKit shrinks the layout viewport, once by the page's own padding. The demo page's scroll range shows it: 797 under `.never`,
 1286 under `.always`.
 
 <div class="shot-pair-wrap">
@@ -338,12 +327,11 @@ Straight from
 **3. Set the override before the first layout pass**, in `makeUIView` and not from a
 later callback. It is one of the first lines of
 [`makeUIView`](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/WebViewScreen.swift#L122-L139),
-and the Android host orders it the same way, before `setContentView` rather than
-after.
+and the Android host orders it the same way — before `setContentView`, not after.
 
-Setting it late does not zero the reporting. It leaves the page laid out against
-the real safe area until something invalidates the geometry UIKit has memoised,
-and then it converges on the override without a reload. Same page, two runs, the
+Setting it late does not zero the reporting, though. The page stays laid out
+against the real safe area until something invalidates the geometry UIKit has
+memoised, and then it converges on the override without a reload. Same page, two runs, the
 only difference being when the assignment happens:
 
 | Override assigned | First reading | Then |
@@ -351,9 +339,9 @@ only difference being when the assignment happens:
 | In `makeUIView`, before the first layout pass | `150 40 180 40` | stays there |
 | 1.0s later, from a callback | `62 0 34 0` | `150 40 180 40` at 562 ms |
 
-The 562 ms is the `didSet` reaching a layout pass. If you go looking for the
-symptom the post used to promise, zeros, you will not find it: the page is
-briefly correct against the wrong insets instead.
+The 562 ms is the `didSet` reaching a layout pass. If you go looking for the symptom
+the post used to promise — zeros — you will not find it. The page is briefly
+correct against the wrong insets instead.
 
 That is about the first value only. Changing the override later, with the page
 already loaded, reaches the page on both platforms.
@@ -361,9 +349,8 @@ already loaded, reaches the page on both platforms.
 ## Changing the override while the page is loaded
 
 Both mechanisms can be re-applied after the page has loaded, and on every runtime
-measured here the page followed without a reload. What changes is the extra step:
-setting the value is no longer enough, because something has to make the platform
-read it again.
+measured here the page followed without a reload. What changes is the extra step: setting the value is no longer enough —
+something has to make the platform read it again.
 
 On Android the override is applied inside `onApplyWindowInsets`, so a new value
 does nothing until insets are dispatched again. Either call works:
@@ -375,15 +362,13 @@ webView.dispatchApplyWindowInsets(webView.getRootWindowInsets());
 webView.getRootView().requestApplyInsets();
 ```
 
-Both produced the same numbers on the OnePlus and both reached the page on the
-next animation frame. Prefer `requestApplyInsets()`: it travels the hierarchy the
-way a real insets change does, so it cannot skip a parent that consumes them,
-which is the same mechanism that puts the Android floor at API 31.
+Both gave the same numbers on the OnePlus, and both reached the page on the next
+animation frame. I'd use `requestApplyInsets()`. It travels the hierarchy the way a real insets change does, so it
+cannot skip a parent that consumes them — the same mechanism that puts the
+Android floor at API 31.
 
-On iOS there is no dispatch to trigger. Assigning the property is the whole
-update, because its `didSet` calls `setNeedsLayout()` and
-`invalidateIntrinsicContentSize()`, which is what invalidates the safe-area
-geometry UIKit has memoised.
+On iOS there is no dispatch to trigger. Assigning the property is the whole update, because its `didSet` calls `setNeedsLayout()` and `invalidateIntrinsicContentSize()`.
+That is what invalidates the safe-area geometry UIKit has memoised.
 
 Sampled every animation frame, so "second frame" means the frame after the first
 one that drew:
@@ -400,51 +385,48 @@ one that drew:
 The Android row is the same two requests as the iOS rows, reported in CSS px
 after the division by dpr.
 
-Those are single runs, and the runtime is not the whole story: 18.6 gave 463 ms on
-one simulator and 847 ms on another, which is the same non-determinism the sampled
-table below records.
+Those are single runs, so don't read them as a per-runtime constant. 18.6 gave
+463 ms on one simulator and 847 ms on another — the same non-determinism the
+sampled table below records.
 
 `nil` still means the real system value after a change, not only at load.
 Requesting `300` on the top edge alone gave the page `300 0 34 0` on every runtime,
 with the untouched bottom edge reporting its real 34pt.
 
-Neither launcher exposes this today. Android reads its overrides once in
-`onCreate` and the settings screen finishes by starting a second
-`MainActivity`, which reloads the page; on iOS the values live in the settings
-screen, so changing them means leaving the page. The useful shape is a test loop:
-run one page and walk it through no inset, a home bar, a notch and back, rather
-than relaunching with different intent extras each time. After changing a value,
-confirm the page moved, because from the native side a change that never reached
-the page looks exactly like one that did.
+Neither launcher exposes this today. Android reads its overrides once in `onCreate`,
+and the settings screen finishes by starting a second `MainActivity`, which reloads the
+page. On iOS the values live in the settings screen, so changing them means
+leaving the page. What I actually want is a test loop: run one page and walk it
+through no inset, a home bar, a notch and back, rather than relaunching with
+different intent extras each time. And after you change a value, confirm the
+page moved — from the native side, a change that never reached the page looks
+exactly like one that did.
 
 ## The keyboard takes the bottom edge
 
 While a text field has focus, Android hands the bottom of the screen to the IME
-and the page's bottom inset goes to zero, whatever the host asked for. The page
-below requested 180px, which is 92 CSS px at dpr 1.96, and the blue band is the
-safe area it was given:
+and the page's bottom inset goes to zero, whatever the host asked for. The page below requested 180px, which is 92 CSS px at dpr 1.96. The blue band is
+the safe area it was given:
 
 | Keyboard closed | Keyboard open |
 | --- | --- |
 | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/keyboard-closed.webp" alt="A page reading 77 21 92 21, with a blue band along all four edges, above a text field" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/keyboard-open.webp" alt="The same page reading 77 21 0 21 with the keyboard up: the top, left and right bands are unchanged and the bottom band is gone" /> |
 
-`77 21 92 21` becomes `77 21 0 21`, and the other three edges are untouched. The
-override is still set throughout and the value returns when the IME closes, so
-nothing reports a problem.
+`77 21 92 21` becomes `77 21 0 21`, and the other three edges are untouched. The override is still set throughout, and the value returns when the IME closes.
+So nothing reports a problem.
 
-This matters most for the inflating case. A kiosk page that inflates its
+This matters most when you're inflating an inset. A kiosk page that inflates its
 bottom inset to clear a home bar the device does not have loses exactly that
-margin the moment an input takes focus. The keyboard really does occupy that
-space, so read it as the platform handing the edge back rather than as the
-override failing, and do not build a layout that needs the bottom inset to
-survive a keyboard. iOS was not measured: raising the software keyboard needs
-Simulator.app, which this run did not have.
+margin the moment an input takes focus. The keyboard really does occupy that space, so read it as the platform handing
+the edge back, not as the override failing. And don't build a layout that needs
+the bottom inset to survive a keyboard. I did not measure iOS here — raising the software keyboard needs Simulator.app,
+which this run did not have.
 
 ## The keyboard is a second channel
 
 The keyboard arrives through Android's inset types, so this section is
-Android-only. iOS has a single safe area and reports the keyboard only as a
-`visualViewport` resize, with no inset type to override.
+Android-only. iOS has a single safe area and reports the keyboard only as a `visualViewport` resize — no
+inset type to override.
 
 `env(safe-area-inset-*)` is only one of the two things a WebView reads out of the
 same `WindowInsets`. Chromium's [WebView insets documentation](https://chromium.googlesource.com/chromium/src/+/main/android_webview/docs/insets.md)
@@ -483,11 +465,10 @@ viewport shrinks because the WebView applied `ime()`. The keyboard is subtracted
 twice, and the page is left with a band of empty, scrollable space between its
 content and the keyboard.
 
-The double-count needs a host that pads by `systemBars()` on a device where that
-mask carries the keyboard. The launcher this post uses elsewhere does not pad, so
-it does not show this; I could not reproduce it there in any configuration,
-including matching Gadgetbridge's target SDK, theme, soft-input mode and content
-padding.
+The double-count needs a host that pads by `systemBars()` on a device where that mask
+carries the keyboard. That is why I could not reproduce it in the launcher. The launcher this post uses elsewhere does not pad, so it never showed this. I
+could not reproduce it there in any configuration, including matching
+Gadgetbridge's target SDK, theme, soft-input mode and content padding.
 
 ### Which of the two to remove
 
@@ -498,8 +479,7 @@ keyboard; they differ by one line, whether the override zeroes `ime()` as well.
 | --- | --- |
 | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-ime-passed-through.webp" alt="The debug page with the keyboard up, reading innerHeight 1192px and visualViewport 842.8px, with the input focused above the keyboard" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-ime-zeroed.webp" alt="The same page and keyboard, now reading innerHeight 1192px and visualViewport 1192.36px — the page never shrank, and the keyboard covers the lower part of it" /> |
 
-Read the keyboard card rather than the inset bands; the bands read `77 21 92 21`
-in both:
+Read the keyboard card, not the inset bands — the bands read `77 21 92 21` in both:
 
 | | `ime()` passed through | `ime()` zeroed |
 | --- | --- | --- |
@@ -507,11 +487,11 @@ in both:
 | `visualViewport.height` | `842.8` | `1192.36` |
 | keyboard | up | up |
 
-Passing it through, the visual viewport sits 349.2px below the layout viewport,
-which is the keyboard height, and the page can scroll the focused field into view.
-Zeroing it, the WebView gets no `ime()` inset: the visual viewport stays at the
-layout viewport, and anything laid out against the bottom of the viewport is behind
-the keyboard with no event to say so. Chromium warns about exactly this in the same
+Pass it through, and the visual viewport sits 349.2px below the layout viewport,
+which is the keyboard height, so the page can scroll the focused field into
+view. If you zero it, the WebView gets no `ime()` inset. The visual viewport stays at the
+layout viewport, and anything laid out against the bottom of the viewport is
+behind the keyboard, with no event to say so. Chromium warns about exactly this in the same
 document:
 
 > If you decide to opt out, some features may not work as expected. The keyboard
@@ -520,11 +500,10 @@ document:
 
 ### Zeroing a type without stopping the dispatch
 
-There is a second way to get this wrong, and it is the tempting one. A host that
-removes the insets by returning `WindowInsetsCompat.CONSUMED` from a listener on
-the WebView's parent is not replacing the values, it is stopping the dispatch.
-`ViewGroup.dispatchApplyWindowInsets` skips its children once the insets come back
-consumed, so the WebView is never handed anything at all, `ime()` included.
+There is a second way to get this wrong, and it is the tempting one. A host that removes the insets by returning `WindowInsetsCompat.CONSUMED` from a listener on the WebView's
+parent is not replacing the values. It is stopping the dispatch.
+`ViewGroup.dispatchApplyWindowInsets` skips its children once the insets come back consumed. So the WebView is
+never handed anything at all, `ime()` included.
 
 The two runs below are the same build, page and device, with the listener's return
 value as the only difference:
@@ -537,10 +516,9 @@ screenshot:
 <img class="diagram" src="/blog/posts/webview-safe-area-inset-override/android-consumed-vs-rebuilt.webp" width="1080" height="848" alt="Two crops of the same page with the keyboard up. The rebuilt run reads visual viewport 842.8px, the CONSUMED run reads 1192.36px, and both read insets 0 0 0 0" />
 
 What separates them is the keyboard. The rebuilt run steps the visual viewport down
-by the keyboard's height; the consumed run does not move. A page that lays out
-against the bottom of the viewport ends up behind the keyboard, with the same
-missing event as zeroing `ime()` directly, except that nothing in the page's
-`env()` values hints at it.
+by the keyboard's height; the consumed run does not move at all. A page that lays out against the bottom of the viewport ends up behind the
+keyboard, with the same missing event as zeroing `ime()` directly. The difference is
+that nothing in the page's `env()` values hints at it.
 
 ### `interactive-widget` cannot help from the page
 
@@ -563,9 +541,8 @@ The Android app is responsible for sizing the WebView and can implement either m
 via `windowSoftInputMode`"*, and its compatibility table reads `Android Chrome: OK · iOS Safari: OK · iOS WKWebView: OK · Android Firefox:
 OK (>= 132.0) · **Android WebView: FAIL**`.
 
-Blink does parse it: `ViewportDescription.virtual_keyboard_mode` is populated from
-the meta and forwarded to the browser process, and the embedder does not act on
-it. The capture below declares `overlays-content`; the page reports it, and nothing
+Blink does parse it: `ViewportDescription.virtual_keyboard_mode` is populated from the meta and forwarded to the browser
+process. The embedder never acts on it. The capture below declares `overlays-content`; the page reports it, and nothing
 else moves:
 
 | declared `overlays-content` |
@@ -578,8 +555,8 @@ property were absent.
 
 ## Reading what the page sees
 
-The page's `env()` values are the only evidence that any of this worked, and the
-obvious way to read them reports a working override as broken. Every table above
+The page's `env()` values are the only evidence that any of this worked. The obvious
+way to read them reports a working override as broken. Every table above
 comes from a page that samples on a timer or on a frame rather than once. A
 single read from the same pages at load would have reported zeros.
 
@@ -599,7 +576,7 @@ non-deterministic it is "very hard to work around manually". Measuring in
 guaranteed to be zero.
 
 I hit this. My first test read once on `didFinish`, got `0px` on all four edges,
-and I wrote it up as "the override does not work on iOS". It does work. Sampling
+and I wrote it up as 'the override does not work on iOS'. It does work. Sampling
 12 times over 6s and recording the history:
 
 ```text
@@ -636,16 +613,16 @@ over time rather than for counting.
 The same iPhone 17 Pro needed two samples on 27.0 and one on 26.5. Any test of
 this has to sample over time; a single read is a coin flip.
 
-Android reads zero at the same moments and recovers faster. On the OnePlus the
-page reported `0 0 0 0` while its script ran, at the `load` event, and on the
-first animation frame, then `77 21 92 21` on the second frame about 40 ms later.
+Android reads zero at the same moments and recovers faster. On the OnePlus the page reported `0 0 0 0` while its script ran, at the `load` event, and
+on the first animation frame. Then it read `77 21 92 21` on the second frame, about 40 ms
+later.
 So the rule is the same on both platforms and the reason differs. Android needs
 one frame; iOS needs a wait that is not predictable.
 
 ### Resolving env() through a probe element
 
-`env()` has no JavaScript API, so the only way to observe what a page sees is to
-resolve it through a probe element and read the computed style:
+`env()` has no JavaScript API, so the only way to see what a page sees is to resolve
+it through a probe element and read the computed style:
 
 ```js
 var p = document.createElement('div');
@@ -656,9 +633,9 @@ var cs = getComputedStyle(p);
 cs.paddingTop; // "150px"
 ```
 
-Sample it per animation frame rather than once. One read can land in the zero
-window, and a per-frame sampler both avoids that and shows you when the value
-arrived. That is how the runtime section above was measured.
+Sample it per animation frame rather than once. A single read can land in the
+zero window, and a per-frame sampler both avoids that and shows you when the
+value arrived. That is how the runtime section above was measured.
 
 This is the probe from
 [`EnvProbe.readEnv`](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/EnvProbe.swift#L12-L31),
@@ -670,8 +647,7 @@ Three guards make a reading trustworthy:
 
 **Prove `env()` is supported.** Read it with a fallback. If
 `env(safe-area-inset-top, 77px)` returns `77px`, `env()` is unsupported and every
-other number is void. Reading `0px` proves it resolved to a genuine zero. Pick a
-fallback no override is likely to produce, because a sentinel that collides with
+other number is void. Reading `0px` proves it resolved to a genuine zero. Pick a fallback no override is likely to produce. A sentinel that collides with
 a real value reports a working `env()` as unsupported. The `viewport-fit=cover`
 half of that guard is
 [`readViewportFit` in the same file](https://github.com/amoshydra/ios-webview-launcher/blob/4f48bd40f7e3f08d7cdb5219ee51a8aaf8822957/Sources/EnvProbe.swift#L33-L40).
@@ -686,11 +662,10 @@ let window = webView.window?.safeAreaInsets // t:62  r:0  b:34  l:0
 If they diverge, the override never reached `env()`. If they agree and the page
 still reads zero, the reading is what is wrong, not the override.
 
-Agreement is necessary but not sufficient, and condition 2 is the case that proves
-it. There, `safeAreaInsets` and `env()` matched exactly while the page was laid
-out in the wrong viewport. So a check that only compares inset numbers passes on
-a page that is visibly broken. Pair it with the geometry, which is the one reading
-that caught it:
+Agreement is necessary but not sufficient, and condition 2 is what proves it:
+there, `safeAreaInsets` and `env()` matched exactly while the page was laid out in the wrong
+viewport. So a check that only compares inset numbers passes on a page that is
+visibly broken. Pair it with the geometry — that is the reading that caught it:
 
 ```js
 [document.documentElement.clientWidth, document.documentElement.clientHeight];
@@ -702,7 +677,7 @@ that caught it:
 iOS, all Simulator, Xcode 27.0 (27A266a), deployment target iOS 17.0. The device
 names are the ones the run used. On a current Xcode the device set differs, so
 "iPhone 18 Pro" is a 27.2 device there and 27.0 offers iPhone 18 Pro Max instead.
-Match on the runtime and the reported insets, not on the device name:
+Match on the runtime and the reported insets, not the device name:
 
 | Runtime | Device | Overrides | Blank → real | Condition 2 |
 | --- | --- | --- | --- | --- |
@@ -723,7 +698,7 @@ Android, physical device on Android 15 (API 35), WebView 153.0.8010.36, dpr 1.96
 
 Both hosts expose the same controls: a URL, optional JavaScript, an edge-to-edge
 switch, and one field per edge. The Android build is captured with **edge-to-edge
-off**, which is its default. That is why the four inset fields are greyed out.
+off**, which is its default. That's why the four inset fields are greyed out.
 The iOS build is captured with it **on** and `150 / 40 / 180 / 40` entered.
 
 | Android, edge-to-edge off (default) | iOS, edge-to-edge on, override entered |
@@ -777,20 +752,21 @@ foldable, announced 9 September 2026, a 5.4" outer display (1398×2034) that ope
 to a 7.6" inner one (1878×2670). It ships with **iOS 27.1**, which is also the
 floor the simulator enforces for the device type.
 
-Worth a look because its safe area is a different shape from every Pro model, and
-it changes shape twice over. No override set, edge-to-edge on, all four
+Worth a look, because its safe area is a different shape from every Pro model,
+and it changes shape twice over. No override set, edge-to-edge on, all four
 poses, measured on both SDKs:
 
 ### The SDK decides whether you get edge-to-edge at all
 
 Start with **Xcode 27.0**, because the number that comes back is not the display
-size. The Duo's inner panel is 951 points wide, and an app built with the iOS 27.0
-SDK does not get it: iOS gives the app a window of 871 points and leaves the
+size. The Duo's inner panel is 951 points wide, and an app built with the iOS 27.0 SDK
+does not get it. iOS hands the app a window of 871 points and leaves the
 remaining 80 in a black rail, so the page never learns the extra space exists.
 
 The status bar is a vertical bar on the Duo, occupying a reserved region at the
-outer edge. Whether an app may extend underneath it is decided by the SDK it is
-built against, not by anything in the app:
+outer edge. Whether an app may extend underneath it is decided by the SDK it is built
+against, not by anything in the app. Same app, same code, same page, same pose —
+only the SDK differs:
 
 | Built against | Outer display | Inner display |
 | --- | --- | --- |
@@ -811,27 +787,26 @@ orientation, the 27.0 build on the left and the 27.1 build on the right:
 Read the readouts across each row and one number dominates: the rail is **80 points
 in all four**, on both displays, in both orientations. `386` is `466` less 80.
 `678 × 386` is `678 × 466` less 80. `871` is `951` less 80. `669 × 871` is
-`669 × 951` less 80. It is a fixed deduction, not a proportion of the display, which
-is why the outer display loses a quarter of its width while the inner one loses less
-than a tenth of its height.
+`669 × 951` less 80. It is a fixed deduction, not a proportion of the display. That is why the outer
+display loses a quarter of its width while the inner one loses less than a tenth
+of its height.
 
-The other number that matters is the **84**, and it is the status bar's real
-reserved region — but it moves. It is on the right in outer portrait (`0 84 34 0`),
+The other number that matters is the **84**. It is the status bar's real
+reserved region, and it moves. It is on the right in outer portrait (`0 84 34 0`),
 on the left in outer landscape (`0 0 34 84`, the edge with the camera cutout), on the
 right in inner landscape (`0 84 34 0`), and along the top in inner portrait
-(`82 0 34 0`). It follows the hardware, so a page cannot hardcode which edge it
-lands on; it has to read `env()` every layout.
+(`82 0 34 0`). It follows the hardware, so a page cannot hardcode which edge it lands on. It
+has to read `env()` every layout.
 
-That 34pt on a 27.0 build is the trap: it is the letterbox boundary being reported
-as if it were a safe area, not a system inset. A 27.1 build reports 0 there and
-instead gives a real 84pt for the status bar, which is the inset a page can
-actually lay out against.
+That 34pt on a 27.0 build is the trap. It is the letterbox boundary being
+reported as if it were a safe area, not a system inset. A 27.1 build reports 0 there and instead gives a real 84pt for the status bar.
+That is the inset a page can actually lay out against.
 
 ### Snapped to a side, unfolded
 
-Split the inner display and the letterbox stops being a fixed 80pt deduction from
-a known display size — it comes out of whatever region iOS actually grants the app,
-and the page is told about it in a way that no longer adds up.
+Split the inner display and the letterbox stops being a fixed 80pt deduction
+from a known display size. It comes out of whatever region iOS actually grants
+the app, and the page is told about it in a way that no longer adds up.
 
 | Unfolded, split | Xcode 27.0 | Xcode 27.1 |
 | --- | --- | --- |
@@ -848,30 +823,27 @@ full-width case. It is not a fixed margin around the display; it is subtracted f
 whatever the app was given, so the narrower the region, the more of it the rail
 consumes.
 
-**Snapped left, 27.0 loses nothing.** It reports the same 469 points as 27.1, which
-is what makes the bug easy to miss: a build can look correct in one arrangement and
-be 80 points short in another, with no change in code.
+**Snapped left, 27.0 loses nothing.** It reports the same 469 points as 27.1, which is what makes the bug easy to
+miss. A build can look correct in one arrangement and be 80 points short in
+another, with no change in code.
 
 **The reported inset is wrong by 50pt exactly where it matters.** Snapped right on
-27.0 the page reads `0 34 20 34`. It needs 84 — that is the status bar's real
-reserve, as the 27.1 build on the same row reports. So a page that pads its content
-by `env(safe-area-inset-right)` pads 34 against a real requirement of 84 and
-under-pads by half. The override does not help here: it can only add insets, and
-the value it would be correcting is one the page believes.
+27.0 the page reads `0 34 20 34`. It needs 84. That is the status bar's real reserve, as the 27.1 build on the
+same row reports. So a page that pads its content by `env(safe-area-inset-right)` pads 34 against a real requirement of 84.
+It under-pads by half. The override does not help here. It can only add insets, and the value it would
+be correcting is one the page believes.
 
 **Relaunch before you measure.** Rotating the Duo out of split view does not
-re-apply the letterbox. Snap the app to one side, turn the device to portrait, and
-the window comes back at the full `669 × 951` even on a 27.0 build — no rail, and
-the readout looks exactly like a 27.1 result. Hiding and reopening the app puts the
-`669 × 871` rail straight back. So a 27.0 window that looks edge-to-edge is stale
-geometry carried over from the split view rather than a change in behaviour, and a
-measurement taken in that state records a full-size window that no clean launch of
-that build will ever produce.
+re-apply the letterbox. Snap the app to one side, turn the device to portrait, and the window comes back
+at the full `669 × 951` even on a 27.0 build. No rail, and the readout looks exactly
+like a 27.1 result. Hiding and reopening the app puts the
+`669 × 871` rail straight back. So a 27.0 window that looks edge-to-edge is stale geometry carried over from the
+split view, not a change in behaviour. A measurement taken in that state records a full-size window. No clean launch of
+that build will ever produce it.
 
-This matters for the override. The `left` and `right` insets it writes are
-per-edge, so it still works either way — but on a 27.0 build it is writing into a
-window the system already cropped, and any page compensating for
-`env(safe-area-inset-right)` is compensating for a boundary that would not exist on
+This matters for the override. The `left` and `right` insets it writes are per-edge, so it still works either way. But
+on a 27.0 build it is writing into a window the system already cropped, and any
+page compensating for `env(safe-area-inset-right)` is compensating for a boundary that would not exist on
 a 27.1 build. **For the Duo, use Xcode 27.1 or later.** Getting there is only
 `DEVELOPER_DIR`:
 
@@ -881,22 +853,20 @@ DEVELOPER_DIR=/path/to/Xcode-27.1.app/Contents/Developer \
   -sdk iphonesimulator build CODE_SIGNING_ALLOWED=NO
 ```
 
-Note that the *runtime* is not the *SDK*. A 27.1 simulator runtime is enough to
-create the device and run on it, which is how the two SDKs can be compared on the
-same pose, but the app still compiles against whatever SDK the selected Xcode
-ships.
+Note that the *runtime* is not the *SDK*. A 27.1 simulator runtime is enough to create the device and run on it, which is
+how the two SDKs can be compared on the same pose. The app still compiles
+against whatever SDK the selected Xcode ships, though.
 
 Two things fall out of that.
-**No top inset, ever.** Compare the Pro models at `62 0 34 0`: the outer display
-has no notch and, in the simulator, no status-bar inset, so the top is 0 in all
-three states. A 150pt top override here is not restating an existing value the way
-it is on a Pro, it is manufacturing an inset the hardware does not have, which is
-the case where the override is most useful and hardest to test against real
-hardware.
+**No top inset, ever.** Compare the Pro models at `62 0 34 0`. The outer display has no
+notch and, in the simulator, no status-bar inset, so the top is 0 in all three
+states. A 150pt top override here is not restating an existing value the way it is on a
+Pro. It is manufacturing an inset the hardware does not have — the case where
+the override is most useful and hardest to test against real hardware.
 
 **The insets move with orientation and fold.** In portrait the whole 34pt is at
-the bottom, for the home indicator. Rotate to landscape, or open the inner
-display, and it splits: 34pt on each side, 20pt at the bottom. Anything that
+the bottom, for the home indicator. Rotate to landscape, or open the inner display, and it splits: 34pt on each
+side, 20pt at the bottom. Anything that
 hard-codes `env(safe-area-inset-bottom)` to size a footer is wrong in two of these
 three states, and nothing in CSS warns you.
 
