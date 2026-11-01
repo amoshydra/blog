@@ -1,0 +1,332 @@
+# Apple voice selection for Chinese and Cantonese tags
+# generated 2026-11-01T16:34:02Z
+# probe: scripts/apple-voice-probe.swift, run unchanged in each environment
+# macOS 27.0.1 (26A434) and iOS simulator runtimes 18.6, 26.5, 27.0, 27.1, 27.2
+
+## macOS 27.0.1
+== os
+Version 27.0.1 (Build 26A434)
+== preferredLanguages
+["en-US"]
+== maximalIdentifier
+zh-HK -> zh-Hant-HK
+zh-Hant-HK -> zh-Hant-HK
+yue -> yue-Hant-HK
+yue-Hant-HK -> yue-Hant-HK
+zh-Hant -> zh-Hant-TW
+zh-Hans-HK -> zh-Hans-HK
+== installed zh/yue voices
+com.apple.voice.compact.zh-TW.Meijia | Meijia | zh-TW
+com.apple.voice.compact.zh-HK.Sinji | Sinji | yue-HK
+com.apple.voice.compact.zh-CN.Tingting | Tingting | zh-CN
+com.apple.eloquence.zh-CN.Eddy | Eddy | zh-CN
+com.apple.eloquence.zh-TW.Eddy | Eddy | zh-TW
+com.apple.eloquence.zh-CN.Flo | Flo | zh-CN
+com.apple.eloquence.zh-TW.Flo | Flo | zh-TW
+com.apple.eloquence.zh-CN.Grandma | Grandma | zh-CN
+com.apple.eloquence.zh-TW.Grandma | Grandma | zh-TW
+com.apple.eloquence.zh-CN.Grandpa | Grandpa | zh-CN
+com.apple.eloquence.zh-TW.Grandpa | Grandpa | zh-TW
+com.apple.eloquence.zh-CN.Reed | Reed | zh-CN
+com.apple.eloquence.zh-TW.Reed | Reed | zh-TW
+com.apple.eloquence.zh-CN.Rocko | Rocko | zh-CN
+com.apple.eloquence.zh-TW.Rocko | Rocko | zh-TW
+com.apple.eloquence.zh-CN.Sandy | Sandy | zh-CN
+com.apple.eloquence.zh-TW.Sandy | Sandy | zh-TW
+com.apple.eloquence.zh-CN.Shelley | Shelley | zh-CN
+com.apple.eloquence.zh-TW.Shelley | Shelley | zh-TW
+== resolve by language tag
+yue -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+yue-Hant-HK -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+yue-Hans-CN -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+yue-CN -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+yue-Hans-HK -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+zh -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hans -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-HK -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-Hant-HK -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-Hans-HK -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-MO -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-Hant-MO -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-Hans-MO -> Sinji | yue-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-TW -> Meijia | zh-TW | com.apple.voice.compact.zh-TW.Meijia
+zh-Hant-TW -> Meijia | zh-TW | com.apple.voice.compact.zh-TW.Meijia
+zh-Hans-TW -> Meijia | zh-TW | com.apple.voice.compact.zh-TW.Meijia
+zh-CN -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-CN -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-SG -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hans-SG -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-SG -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-MY -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-AU -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-GB -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-US -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-CA -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-PH -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-TH -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-VN -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-ID -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-001 -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hans-MY -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-MY -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+
+## iOS 18.6
+== os
+Version 18.6 (Build 22G86)
+== preferredLanguages
+["en-US"]
+== maximalIdentifier
+zh-HK -> zh-Hant-HK
+zh-Hant-HK -> zh-Hant-HK
+yue -> yue-Hant-HK
+yue-Hant-HK -> yue-Hant-HK
+zh-Hant -> zh-Hant-TW
+zh-Hans-HK -> zh-Hans-HK
+== installed zh/yue voices
+com.apple.voice.compact.zh-CN.Tingting | Tingting | zh-CN
+com.apple.voice.compact.zh-HK.Sinji | Sinji | zh-HK
+com.apple.voice.compact.zh-TW.Meijia | Meijia | zh-TW
+== resolve by language tag
+yue -> Sinji | zh-HK | com.apple.voice.compact.zh-HK.Sinji
+yue-Hant-HK -> nil
+yue-Hans-CN -> nil
+yue-CN -> nil
+yue-Hans-HK -> nil
+zh -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant -> Meijia | zh-TW | com.apple.voice.compact.zh-TW.Meijia
+zh-Hans -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-HK -> Sinji | zh-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-Hant-HK -> Sinji | zh-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-Hans-HK -> Sinji | zh-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-MO -> Sinji | zh-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-Hant-MO -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hans-MO -> Sinji | zh-HK | com.apple.voice.compact.zh-HK.Sinji
+zh-TW -> Meijia | zh-TW | com.apple.voice.compact.zh-TW.Meijia
+zh-Hant-TW -> Meijia | zh-TW | com.apple.voice.compact.zh-TW.Meijia
+zh-Hans-TW -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-CN -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-CN -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-SG -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hans-SG -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-SG -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-MY -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-AU -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-GB -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-US -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-CA -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-PH -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-TH -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-VN -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-ID -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hant-001 -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-Hans-MY -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+zh-MY -> Tingting | zh-CN | com.apple.voice.compact.zh-CN.Tingting
+
+## iOS 26.5
+== os
+Version 26.5 (Build 23F77)
+== preferredLanguages
+["en-US"]
+== maximalIdentifier
+zh-HK -> zh-Hant-HK
+zh-Hant-HK -> zh-Hant-HK
+yue -> yue-Hant-HK
+yue-Hant-HK -> yue-Hant-HK
+zh-Hant -> zh-Hant-TW
+zh-Hans-HK -> zh-Hans-HK
+== installed zh/yue voices
+com.apple.voice.super-compact.zh-TW.Meijia | Meijia | zh-TW
+com.apple.voice.super-compact.zh-HK.Sinji | Sinji | yue-HK
+com.apple.voice.super-compact.zh-CN.Tingting | Tingting | zh-CN
+== resolve by language tag
+yue -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hant-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hans-CN -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-CN -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hans-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hant-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hans-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hant-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hans-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-Hant-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-Hans-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-CN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-CN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-AU -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-GB -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-US -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-CA -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-PH -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-TH -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-VN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-ID -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-001 -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+
+## iOS 27.0
+== os
+Version 27.0 (Build 24A434)
+== preferredLanguages
+["en-US"]
+== maximalIdentifier
+zh-HK -> zh-Hant-HK
+zh-Hant-HK -> zh-Hant-HK
+yue -> yue-Hant-HK
+yue-Hant-HK -> yue-Hant-HK
+zh-Hant -> zh-Hant-TW
+zh-Hans-HK -> zh-Hans-HK
+== installed zh/yue voices
+com.apple.voice.super-compact.zh-TW.Meijia | Meijia | zh-TW
+com.apple.voice.super-compact.zh-HK.Sinji | Sinji | yue-HK
+com.apple.voice.super-compact.zh-CN.Tingting | Tingting | zh-CN
+== resolve by language tag
+yue -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hant-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hans-CN -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-CN -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hans-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hant-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hans-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hant-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hans-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-Hant-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-Hans-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-CN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-CN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-AU -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-GB -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-US -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-CA -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-PH -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-TH -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-VN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-ID -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-001 -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+
+## iOS 27.1
+== os
+Version 27.1 (Build 24A94401)
+== preferredLanguages
+["en-US"]
+== maximalIdentifier
+zh-HK -> zh-Hant-HK
+zh-Hant-HK -> zh-Hant-HK
+yue -> yue-Hant-HK
+yue-Hant-HK -> yue-Hant-HK
+zh-Hant -> zh-Hant-TW
+zh-Hans-HK -> zh-Hans-HK
+== installed zh/yue voices
+com.apple.voice.super-compact.zh-TW.Meijia | Meijia | zh-TW
+com.apple.voice.super-compact.zh-HK.Sinji | Sinji | yue-HK
+com.apple.voice.super-compact.zh-CN.Tingting | Tingting | zh-CN
+== resolve by language tag
+yue -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hant-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hans-CN -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-CN -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hans-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hant-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hans-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hant-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hans-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-Hant-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-Hans-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-CN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-CN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-AU -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-GB -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-US -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-CA -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-PH -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-TH -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-VN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-ID -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-001 -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+
+## iOS 27.2
+== os
+Version 27.2 (Build 24B5089g)
+== preferredLanguages
+["en-US"]
+== maximalIdentifier
+zh-HK -> zh-Hant-HK
+zh-Hant-HK -> zh-Hant-HK
+yue -> yue-Hant-HK
+yue-Hant-HK -> yue-Hant-HK
+zh-Hant -> zh-Hant-TW
+zh-Hans-HK -> zh-Hans-HK
+== installed zh/yue voices
+com.apple.voice.super-compact.zh-TW.Meijia | Meijia | zh-TW
+com.apple.voice.super-compact.zh-HK.Sinji | Sinji | yue-HK
+com.apple.voice.super-compact.zh-CN.Tingting | Tingting | zh-CN
+== resolve by language tag
+yue -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hant-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hans-CN -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-CN -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+yue-Hans-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hant-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hans-HK -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hant-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-Hans-MO -> Sinji | yue-HK | com.apple.voice.super-compact.zh-HK.Sinji
+zh-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-Hant-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-Hans-TW -> Meijia | zh-TW | com.apple.voice.super-compact.zh-TW.Meijia
+zh-CN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-CN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-SG -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-AU -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-GB -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-US -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-CA -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-PH -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-TH -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-VN -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-ID -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hant-001 -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-Hans-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
+zh-MY -> Tingting | zh-CN | com.apple.voice.super-compact.zh-CN.Tingting
