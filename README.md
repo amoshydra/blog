@@ -32,6 +32,55 @@ pnpm i
 pnpm dev
 ```
 
+### Pull request previews
+
+Every pull request builds the site, and once a maintainer adds the `preview`
+label it deploys to
+`https://pr-<number>.amoshydra-github-io-blog-preview.pages.dev`. The link is
+posted as a single comment on the PR and updates on every push, so it keeps
+pointing at the latest commit.
+
+A preview is only deployed when **both** hold:
+
+- the opener is a collaborator (or `OWNER`/`MEMBER`), or is listed in
+  [`.github/preview-allowlist.txt`](./.github/preview-allowlist.txt), which is
+  read from the default branch so a PR cannot approve itself; and
+- a maintainer added the `preview` label. Labels survive new pushes, so an
+  approved PR keeps its preview while the contributor iterates.
+
+The build runs with no secrets. Only `.github/workflows/preview-deploy.yml`
+can read the Cloudflare token, and it never executes anything from the PR — it
+downloads the build artifact and uploads the static files.
+
+One-time setup, all under repository settings:
+
+| Kind | Name | Value |
+| --- | --- | --- |
+| Variable | `CLOUDFLARE_ACCOUNT_ID` | your Cloudflare account ID (environment `preview`) |
+| Variable | `PREVIEW_HOST` | `amoshydra-github-io-blog-preview.pages.dev` (repository) |
+| Environment secret | `preview` → `CLOUDFLARE_API_TOKEN` | a custom token with **Account → Cloudflare Pages → Edit** only |
+
+`PREVIEW_HOST` has to be a repository variable, not an environment variable:
+the build job deliberately does not enter the `preview` environment, so it
+cannot read environment-scoped variables.
+
+There is nothing to click in the Pages dashboard. Do **not** use *Create
+application → Connect GitHub*: that sets up a Workers Build, which builds from
+a GitHub App and cannot gate on who opened the pull request. The deploy job is a
+direct upload that creates the `amoshydra-github-io-blog-preview` project on
+first run.
+
+Keep that Pages project on `pages.dev` with no custom domain. A leaked token
+can then only publish junk to a throwaway subdomain, and previews are sent with
+`X-Robots-Tag: noindex`.
+
+Previews are not deleted automatically. To remove one:
+
+```bash
+npx wrangler pages deployment list --project-name=amoshydra-github-io-blog-preview
+npx wrangler pages deployment delete <deployment-id>
+```
+
 <br /><br /><br /><br />
 
 

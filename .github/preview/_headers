@@ -1,0 +1,9 @@
+# Cloudflare Pages reads this when the preview is uploaded and does not serve
+# it. It is copied into dist/ by .github/workflows/preview-build.yml only, so
+# production is unaffected.
+#
+# Preview URLs are built from unmerged pull request branches. They should not
+# end up in a search index, and a stale one outliving its PR is worse than
+# useless.
+/*
+  X-Robots-Tag: noindex

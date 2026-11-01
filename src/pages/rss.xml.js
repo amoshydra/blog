@@ -36,7 +36,7 @@ export async function GET(context) {
       title: post.data.title,
       description: post.data.description,
       pubDate: post.data.pubDate,
-      link: `/blog/posts/${post.id}/`,
+      link: `${base}/posts/${post.id}/`,
     })),
   });
 }

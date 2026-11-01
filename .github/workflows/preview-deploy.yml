@@ -1,0 +1,170 @@
+# Deploys a preview built by preview-build.yml.
+#
+# Triggered by workflow_run rather than pull_request_target for two reasons:
+# this job always runs the copy of the file on the default branch, so a PR
+# cannot rewrite the approval gate, and the PR's code never executes while
+# CLOUDFLARE_API_TOKEN is in the environment. Only static files cross the
+# boundary between the two workflows.
+name: Preview deploy
+
+on:
+  workflow_run:
+    workflows: ["Preview build"]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read        # download-artifact from the triggering run
+  pull-requests: write
+  issues: write        # PR comments are created through the issues API
+
+jobs:
+  deploy:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    # Environment-scoped secret. Only jobs that ask for this environment can
+    # read CLOUDFLARE_API_TOKEN, so no other workflow can borrow it.
+    environment: preview
+    # Serialise deploys for one branch instead of keying on the run id, so two
+    # pushes in quick succession cannot finish out of order and leave the
+    # preview showing the older commit. cancel-in-progress stays false for the
+    # same reason: the later run must win by running last, not by cancelling.
+    concurrency:
+      group: preview-deploy-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+      cancel-in-progress: false
+    steps:
+      - name: Resolve the pull request and check the approval gate
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+
+          # Match on the head SHA rather than owner:branch: branch names with
+          # slashes need no encoding this way, and a run that finished after the
+          # contributor pushed again is dropped instead of racing the newer one.
+          number=$(gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" --paginate \
+            --jq ".[] | select(.head.sha == \"$HEAD_SHA\") | .number" | head -n1)
+          if [ -z "$number" ]; then
+            echo "No open pull request at $HEAD_SHA; nothing to deploy."
+            exit 0
+          fi
+
+          pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$number" \
+            --jq '{author: .user.login, association: .author_association, labels: [.labels[].name]}')
+          author=$(jq -r .author <<<"$pr")
+          association=$(jq -r .association <<<"$pr")
+          echo "PR #$number by $author ($association)"
+
+          trusted=0
+          case "$association" in
+            OWNER|MEMBER|COLLABORATOR) trusted=1 ;;
+          esac
+
+          # The allowlist is read from the default branch, never from the PR's
+          # own checkout, or a PR could approve itself by editing the file.
+          if [ "$trusted" -eq 0 ]; then
+            allowlist=$(gh api \
+              "repos/$GITHUB_REPOSITORY/contents/.github/preview-allowlist.txt?ref=$DEFAULT_BRANCH" \
+              --jq .content 2>/dev/null | base64 -d || true)
+            approved=$(awk 'NF && $1 !~ /^#/ {print tolower($1)}' <<<"$allowlist")
+            if grep -qxF "$(tr '[:upper:]' '[:lower:]' <<<"$author")" <<<"$approved"; then
+              trusted=1
+            fi
+          fi
+
+          # A maintainer labelling the PR is the per-PR opt-in, and it is
+          # required even for collaborators. Labels survive new pushes, so an
+          # approved PR keeps its preview while the contributor iterates. Delete
+          # this block to make trust alone sufficient.
+          if ! jq -e '.labels | index("preview")' >/dev/null <<<"$pr"; then
+            echo "No 'preview' label on #$number; skipping."
+            exit 0
+          fi
+
+          if [ "$trusted" -ne 1 ]; then
+            echo "$author is neither a collaborator nor on the allowlist; skipping."
+            exit 0
+          fi
+
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+          echo "deploy=true" >> "$GITHUB_OUTPUT"
+
+      - name: Download the built site
+        if: steps.gate.outputs.deploy == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: preview
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: dist
+
+      # Brand-new accounts have no Pages project, and `pages deploy` will not
+      # create one non-interactively, so do it explicitly. This is idempotent:
+      # after the first PR the create fails with "already exists", which is the
+      # normal case. Any real credential problem still fails loudly on the
+      # deploy below, so swallowing this exit code is safe.
+      #
+      # The production branch is deliberately one that never builds, so a
+      # preview can never land in the project's production environment.
+      - name: Ensure the Pages project exists
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: >-
+          npx --yes wrangler@4 pages project create amoshydra-github-io-blog-preview
+          --production-branch=production || true
+
+      # --branch is what creates the preview: Cloudflare publishes the upload
+      # under a branch alias instead of production. The alias is stable across
+      # pushes, so one link per PR always shows the latest commit.
+      - name: Deploy to Cloudflare Pages
+        if: steps.gate.outputs.deploy == 'true'
+        id: deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy dist
+            --project-name=amoshydra-github-io-blog-preview
+            --branch=pr-${{ steps.gate.outputs.number }}
+            --commit-dirty=true
+
+      - name: Point the pull request at the preview
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ steps.gate.outputs.number }}
+          ALIAS_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          # The action only reports the alias on recent Wrangler versions. Fall
+          # back to the documented alias format rather than posting an empty
+          # link if it ever comes back blank.
+          url="${ALIAS_URL:-}"
+          if [ -z "$url" ]; then
+            url="https://pr-$NUMBER.${{ vars.PREVIEW_HOST || 'amoshydra-github-io-blog-preview.pages.dev' }}"
+          fi
+
+          body=$(printf '<!-- preview-url -->\n**Preview:** %s\n\n`%s`\n' \
+            "$url" "${HEAD_SHA:0:7}")
+
+          # One sticky comment that gets edited in place, so a PR with twenty
+          # pushes still has one link at the top rather than twenty.
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$NUMBER/comments" --paginate \
+            --jq '.[] | select(.body | contains("<!-- preview-url -->")) | .id' | head -n1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" \
+              -f body="$body" --silent
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$NUMBER/comments" \
+              -f body="$body" --silent
+          fi

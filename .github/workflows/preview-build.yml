@@ -1,0 +1,70 @@
+# Builds the site for a pull request and hands the static output to
+# preview-deploy.yml.
+#
+# This job runs the PR's own code (postinstall scripts, astro config, MDX
+# components), so it deliberately gets no secrets and a read-only token. A fork
+# PR that rewrites astro.config.mjs has nothing here worth stealing. The
+# Cloudflare token only ever exists in preview-deploy.yml, which never runs
+# anything from the PR.
+#
+# Every PR gets a build, approved or not; the gate is applied at deploy time.
+# That keeps the approval logic in one place instead of duplicated here, where
+# it could drift.
+name: Preview build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-build-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # pnpm is not on a stock runner. Pinned to match the packageManager field.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm i --frozen-lockfile
+
+      # The pages.dev host serves the site from its root, not from /blog. Every
+      # internal link goes through withBase(), so moving the base is the whole
+      # job. site has to move too, otherwise canonical and og:url point at
+      # /blog/... URLs that do not exist on the preview host.
+      #
+      # PREVIEW_HOST is a repo variable because Cloudflare appends a suffix when
+      # the project subdomain is already taken globally. preview-deploy.yml
+      # takes the real host from the deploy output, so a wrong value here only
+      # makes the canonical tag slightly wrong, never the link we post.
+      - name: Build preview
+        env:
+          PREVIEW_BUILD: "1"
+          BASE_PATH: /
+          SITE_URL: https://pr-${{ github.event.pull_request.number }}.${{ vars.PREVIEW_HOST || 'amoshydra-github-io-blog-preview.pages.dev' }}
+        run: pnpm build
+
+      # Cloudflare consumes _headers at upload time and does not serve it, so it
+      # has to be inside the uploaded directory. It lives outside public/ so it
+      # never ships to production.
+      - name: Mark the preview as unindexable
+        run: cp .github/preview/_headers dist/_headers
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preview
+          path: dist
+          # dist can contain .well-known/ and other dotfiles.
+          include-hidden-files: true
+          retention-days: 7

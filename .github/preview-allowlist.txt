@@ -1,0 +1,11 @@
+# Contributors who get a preview without being made a repository collaborator.
+# Only read from the default branch, so a pull request cannot approve itself by
+# editing this file.
+#
+# Removing someone here does not take down a preview that is already deployed;
+# see the "Pull request previews" section in the README.
+#
+# One GitHub username per line, case-insensitive. Lines starting with # are
+# ignored.
+#
+# example-contributor
