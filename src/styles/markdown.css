@@ -125,6 +125,12 @@
     font-weight: bold;
   }
 
+  /* Row headers carry the label for screen readers; keep them visually
+     identical to the body cells they replaced. */
+  tbody th {
+    font-weight: inherit;
+  }
+
   tbody tr:nth-child(odd) {
     background-color: rgba(var(--gray-light), 0.1);
   }
