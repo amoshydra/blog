@@ -88,7 +88,7 @@ new Intl.Locale("zh-HK").maximize().toString();   // "zh-Hant-HK"
 
 The second row is the one that matters. There is no region-neutral Traditional Chinese. Ask for "Traditional" and you get Taiwan: Taiwan's `兆`, Taiwan's `公尺`, Taiwan's stroke order, and a space before `星期四`.
 
-For regions outside Greater China, CLDR keeps a hand-written list. Every explicit `zh-<region>` entry maps to Traditional, and there is no explicit Hans entry at all:
+For regions outside Greater China, CLDR 48 keeps a hand-written list. Every explicit `zh-<region>` entry maps to Traditional, and there is no explicit Hans entry at all:
 
 ```
 zh-AU -> zh-Hant-AU    zh-GB -> zh-Hant-GB    zh-MO -> zh-Hant-MO
@@ -97,6 +97,8 @@ zh-ID -> zh-Hant-ID    zh-HK -> zh-Hant-HK    zh-PF -> zh-Hant-PF
 zh-PH -> zh-Hant-PH    zh-SR -> zh-Hant-SR    zh-TH -> zh-Hant-TH
 zh-TW -> zh-Hant-TW    zh-US -> zh-Hant-US    zh-VN -> zh-Hant-VN
 ```
+
+The other three explicit keys are script forms rather than regions: `zh-Hant` (the Traditional default), `zh-Bopo` and `zh-Hanb`, and all three resolve to Taiwan.[^subtags]
 
 Everything not on the list falls back to bare `zh`, which is `zh-Hans-CN`, and keeps the region. Singapore, Malaysia, Canada and New Zealand are not on it. Suriname, Panama and French Guiana are. Whatever produced that list, it is not a description of where Chinese speakers live in 2026, and it is the list that ships.
 
@@ -358,6 +360,8 @@ Measured on Node 26.3.1, ICU 78.3, CLDR 48.0, eSpeak NG 1.52.0. Browsers ship di
 [^rfc]: BCP 47 (RFC 5646) §2.1 defines `langtag = language ["-" script] ["-" region]`, in that order. https://www.rfc-editor.org/rfc/rfc5646#section-2.1
 
 [^likely]: UTS #35 Part 1, "Likely Subtags", defines Add Likely Subtags and Remove Likely Subtags, including the `favorScript` and `favorRegion` options. ECMA-402's `Intl.Locale.prototype.maximize` invokes the same algorithm. https://unicode.org/reports/tr35/tr35.html#Likely_Subtags
+
+[^subtags]: CLDR 48.0.0, `common/supplemental/likelySubtags.json`. The file has 19 `zh`-prefixed keys: bare `zh`, 15 `zh-<region>` keys, and three script keys. All 15 region keys resolve to a `Hant` locale; the script keys resolve to `zh-Hant-TW`, `zh-Bopo-TW` and `zh-Hanb-TW`. No `zh-Hans*` key exists. https://github.com/unicode-org/cldr-json/blob/48.0.0/cldr-json/cldr-core/supplemental/likelySubtags.json
 
 [^alias]: CLDR `common/supplemental/aliases.json`, `languageAlias`, maps `cmn` to `zh` with reason `macrolanguage`. The IANA registry keeps `cmn` as a distinct language, so the collapse is CLDR's choice, not BCP 47's. https://github.com/unicode-org/cldr/blob/main/common/supplemental/aliases.json
 

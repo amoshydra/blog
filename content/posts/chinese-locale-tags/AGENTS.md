@@ -44,9 +44,14 @@ The third shells out to `espeak-ng` and skips that section when it is missing.
 - `maximize()` and `minimize()` are not inverses as strings, only as locales.
   `minimize()` favours the region (`zh-Hant-TW` → `zh-TW`); CLDR's `favorScript`
   mode is not exposed by `Intl`.
-- The likely-subtags list has 18 explicit `zh-*` entries, all regional ones
-  mapping to Hant, with no explicit Hans entry. The post calls it editorial;
-  keep that, because the list is not a demographic claim.
+- The likely-subtags list in CLDR 48.0.0 has 19 `zh`-prefixed keys: bare
+  `zh`, 15 `zh-<region>` keys, and three script keys (`zh-Hant`, `zh-Bopo`,
+  `zh-Hanb`). Every region key maps to `Hant`; there is no `zh-Hans*` key. The
+  post calls the list editorial; keep that, because it is not a demographic
+  claim. Version-pin it, since a new CLDR release can change it. Checked
+  against CLDR 49.0.0 (released 2026-10-21): identical 19 keys and identical
+  values, so the list still holds after 48. CLDR 50 is not released;
+  `unicode.org/Public/cldr/50/` only holds a "future release" placeholder.
 - `cmn` canonicalises to `zh`; `yue` does not. This is CLDR's alias table, not
   BCP 47.
 - `zh` defaults to `pinyin` collation, `zh-Hant` to `stroke`.
