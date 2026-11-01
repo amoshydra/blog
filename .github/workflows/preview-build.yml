@@ -14,7 +14,10 @@ name: Preview build
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    # `labeled` is here so that applying the preview label produces a preview.
+    # Without it, labelling a PR does nothing until the next push, which reads
+    # as a broken gate.
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: read
@@ -25,6 +28,9 @@ concurrency:
 
 jobs:
   build:
+    # Only the preview label is worth a rebuild; a triage label would otherwise
+    # build the whole site for nothing.
+    if: github.event.action != 'labeled' || github.event.label.name == 'preview'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
