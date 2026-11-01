@@ -1,0 +1,42 @@
+# How other tools read a Chinese tag
+# node v26.3.1  icu 78.3  cldr 48.0
+
+## plural categories (Intl.PluralRules, then ICU MessageFormat uses the same data)
+# locale	0	1	2	10
+en	other	one	other	other
+zh	other	other	other	other
+zh-Hant	other	other	other	other
+zh-HK	other	other	other	other
+yue	other	other	other	other
+
+## does collation equate variant characters? (sensitivity: base)
+# pair	zh	zh-Hant	note
+台/臺	-1	-1	different at primary weight
+里/裡	-1	-1	different at primary weight
+后/後	-1	-1	different at primary weight
+面/麵	-1	-1	different at primary weight
+干/乾	-1	-1	different at primary weight
+
+## Unicode normalization does not convert script
+後	NFC=unchanged	NFKC=unchanged
+后	NFC=unchanged	NFKC=unchanged
+ＡＢＣ	NFC=unchanged	NFKC=ABC
+㈱	NFC=unchanged	NFKC=(株)
+Ⅻ	NFC=unchanged	NFKC=XII
+ｶﾀｶﾅ	NFC=unchanged	NFKC=カタカナ
+
+## text-to-speech voice selected by tag (eSpeak NG, phoneme output for 你好)
+# eSpeak NG text-to-speech: 1.52.0  Data at: /usr/share/espeak-ng-data
+# tag	phonemes
+zh	ni35X'Au214_|
+zh-CN	ni35X'Au214_|
+zh-TW	ni35X'Au214_|
+zh-HK	ni35X'Au214_|
+zh-Hant	ni35X'Au214_|
+zh-Hant-HK	ni35X'Au214_|
+zh-Hans	ni35X'Au214_|
+cmn	ni35X'Au214_|
+yue	n'ei5_| h'ou2_|
+yue-Hant-HK	n'ei5_| h'ou2_|
+zh-yue	n'ei5_| h'ou2_|
+
