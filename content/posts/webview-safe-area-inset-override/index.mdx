@@ -51,7 +51,7 @@ Both platforms, same page, same requested insets. Overrides requested were
 
 | No override | Override `150/40/180/40` |
 | --- | --- |
-| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/ios-before.webp" alt="iOS before the override: insets read 62 0 34 0, the real device values" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/ios-after.webp" alt="iOS after the override: insets read 150 40 180 40, with the page's own overlays drawn at the overridden positions" /> |
+| <img class="shot" src="ios-before.webp" alt="iOS before the override: insets read 62 0 34 0, the real device values" /> | <img class="shot" src="ios-after.webp" alt="iOS after the override: insets read 150 40 180 40, with the page's own overlays drawn at the overridden positions" /> |
 
 `62 0 34 0` → `150 40 180 40`. The real top inset is 62pt (the notch); the
 override replaced it. The blue overlay labels track the change.
@@ -60,7 +60,7 @@ override replaced it. The blue overlay labels track the change.
 
 | No override | Override `150/40/180/40` |
 | --- | --- |
-| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-before.webp" alt="Android before the override: insets read 41 0 0 0, the real device values" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-after.webp" alt="Android after the override: insets read 77 21 92 21, converted from the requested device pixels at dpr 1.96" /> |
+| <img class="shot" src="android-before.webp" alt="Android before the override: insets read 41 0 0 0, the real device values" /> | <img class="shot" src="android-after.webp" alt="Android after the override: insets read 77 21 92 21, converted from the requested device pixels at dpr 1.96" /> |
 
 `41 0 0 0` → `77 21 92 21`. **Note the unit difference.** Android's override is
 in *physical pixels* and CSS sees the result divided by `dpr` (1.96 here:
@@ -303,14 +303,14 @@ the page's own padding. The demo page's scroll range shows it: 797 under `.never
 <div class="shot-pair-wrap">
   <img
     class="shot shot-pair"
-    src="/blog/posts/webview-safe-area-inset-override/ios-adjust-never.webp"
+    src="ios-adjust-never.webp"
     alt="The demo page under .never, spanning the full 402 point width with insets reading 150 40 180 40"
     width="322"
     height="700"
   />
   <img
     class="shot shot-pair"
-    src="/blog/posts/webview-safe-area-inset-override/ios-adjust-always.webp"
+    src="ios-adjust-always.webp"
     alt="The same page under .always, still reading insets 150 40 180 40 but confined to 322 points of width, with its content pushed down by the top inset a second time"
     width="322"
     height="700"
@@ -426,7 +426,7 @@ safe area it was given:
 
 | Keyboard closed | Keyboard open |
 | --- | --- |
-| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/keyboard-closed.webp" alt="A page reading 77 21 92 21, with a blue band along all four edges, above a text field" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/keyboard-open.webp" alt="The same page reading 77 21 0 21 with the keyboard up: the top, left and right bands are unchanged and the bottom band is gone" /> |
+| <img class="shot" src="keyboard-closed.webp" alt="A page reading 77 21 92 21, with a blue band along all four edges, above a text field" /> | <img class="shot" src="keyboard-open.webp" alt="The same page reading 77 21 0 21 with the keyboard up: the top, left and right bands are unchanged and the bottom band is gone" /> |
 
 `77 21 92 21` becomes `77 21 0 21`, and the other three edges are untouched. The
 override is still set throughout and the value returns when the IME closes, so
@@ -496,7 +496,7 @@ keyboard; they differ by one line, whether the override zeroes `ime()` as well.
 
 | `ime()` passed through | `ime()` zeroed |
 | --- | --- |
-| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-ime-passed-through.webp" alt="The debug page with the keyboard up, reading innerHeight 1192px and visualViewport 842.8px, with the input focused above the keyboard" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-ime-zeroed.webp" alt="The same page and keyboard, now reading innerHeight 1192px and visualViewport 1192.36px — the page never shrank, and the keyboard covers the lower part of it" /> |
+| <img class="shot" src="android-ime-passed-through.webp" alt="The debug page with the keyboard up, reading innerHeight 1192px and visualViewport 842.8px, with the input focused above the keyboard" /> | <img class="shot" src="android-ime-zeroed.webp" alt="The same page and keyboard, now reading innerHeight 1192px and visualViewport 1192.36px — the page never shrank, and the keyboard covers the lower part of it" /> |
 
 Read the keyboard card rather than the inset bands; the bands read `77 21 92 21`
 in both:
@@ -534,7 +534,7 @@ value as the only difference:
 Both runs leave the page reading `0 0 0 0`, so both look like a fix in a
 screenshot:
 
-<img class="diagram" src="/blog/posts/webview-safe-area-inset-override/android-consumed-vs-rebuilt.webp" width="1080" height="848" alt="Two crops of the same page with the keyboard up. The rebuilt run reads visual viewport 842.8px, the CONSUMED run reads 1192.36px, and both read insets 0 0 0 0" />
+<img class="diagram" src="android-consumed-vs-rebuilt.webp" width="1080" height="848" alt="Two crops of the same page with the keyboard up. The rebuilt run reads visual viewport 842.8px, the CONSUMED run reads 1192.36px, and both read insets 0 0 0 0" />
 
 What separates them is the keyboard. The rebuilt run steps the visual viewport down
 by the keyboard's height; the consumed run does not move. A page that lays out
@@ -570,7 +570,7 @@ else moves:
 
 | declared `overlays-content` |
 | --- |
-| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-interactive-widget.webp" alt="The same page declaring interactive-widget=overlays-content, shown in green in the keyboard card, still reading innerHeight 1192px and visualViewport 842.8px" /> |
+| <img class="shot" src="android-interactive-widget.webp" alt="The same page declaring interactive-widget=overlays-content, shown in green in the keyboard card, still reading innerHeight 1192px and visualViewport 842.8px" /> |
 
 `innerHeight 1192`, `visualViewport 842.8`, the same two numbers as the
 `ime()`-passed-through capture: the keyboard resized the visual viewport as if the
@@ -728,7 +728,7 @@ The iOS build is captured with it **on** and `150 / 40 / 180 / 40` entered.
 
 | Android, edge-to-edge off (default) | iOS, edge-to-edge on, override entered |
 | --- | --- |
-| <img class="shot" src="/blog/posts/webview-safe-area-inset-override/android-launcher.webp" alt="The Android launcher with edge-to-edge off: the four safe-area inset fields are greyed out and the label says the override needs edge-to-edge, WebView M136+ and Android 11 or newer" /> | <img class="shot" src="/blog/posts/webview-safe-area-inset-override/ios-launcher.webp" alt="The iOS launcher with edge to edge on and the values 150, 40 and 180 entered in the per-edge inset override fields" /> |
+| <img class="shot" src="android-launcher.webp" alt="The Android launcher with edge-to-edge off: the four safe-area inset fields are greyed out and the label says the override needs edge-to-edge, WebView M136+ and Android 11 or newer" /> | <img class="shot" src="ios-launcher.webp" alt="The iOS launcher with edge to edge on and the values 150, 40 and 180 entered in the per-edge inset override fields" /> |
 
 Configurations used for every screenshot in this post:
 
@@ -803,10 +803,10 @@ orientation, the 27.0 build on the left and the 27.1 build on the right:
 
 | Pose | Xcode 27.0 — letterboxed | Xcode 27.1 — edge to edge |
 | --- | --- | --- |
-| Outer, portrait | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-outer-portrait-sdk27-0.webp" alt="Outer display in portrait, built with Xcode 27.0: the page reports a 386 by 678 viewport and insets 0 0 34 0, with a black rail carrying the status bar down the right" width="300" height="407" /> | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-outer-portrait-sdk27-1.webp" alt="Outer display in portrait, built with Xcode 27.1: the same page now reports 466 by 678 and insets 0 84 34 0, filling the width with the status bar as a real 84 point inset" width="300" height="407" /> |
-| Outer, landscape | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-outer-landscape-sdk27-0.webp" alt="Outer display in landscape, built with Xcode 27.0: the page reports 678 by 386 rather than the panel's 678 by 466, letterboxed by the same 80 points, and the insets read 0 34 20 34" width="300" height="216" /> | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-outer-landscape-sdk27-1.webp" alt="Outer display in landscape, built with Xcode 27.1: the page reports the full 678 by 466 and insets 0 0 34 84, with the status bar's 84 point reserved region on the left where the camera cutout is" width="300" height="216" /> |
-| Inner, landscape | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-inner-landscape-sdk27-0.webp" alt="Inner display in landscape, built with Xcode 27.0: the page reports 871 by 669 rather than the panel's 951, with a black rail at the right" width="300" height="214" /> | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-inner-landscape-sdk27-1.webp" alt="Inner display in landscape, built with Xcode 27.1: the page reports the full 951 by 669 and insets 0 84 34 0" width="300" height="214" /> |
-| Inner, portrait | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-inner-portrait-sdk27-0.webp" alt="Inner display in portrait, built with Xcode 27.0, showing the letterbox down one side" width="300" height="398" /> | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-inner-portrait-sdk27-1.webp" alt="Inner display in portrait, built with Xcode 27.1, edge to edge" width="300" height="398" /> |
+| Outer, portrait | <img class="shot shot-pair" src="duo-outer-portrait-sdk27-0.webp" alt="Outer display in portrait, built with Xcode 27.0: the page reports a 386 by 678 viewport and insets 0 0 34 0, with a black rail carrying the status bar down the right" width="300" height="407" /> | <img class="shot shot-pair" src="duo-outer-portrait-sdk27-1.webp" alt="Outer display in portrait, built with Xcode 27.1: the same page now reports 466 by 678 and insets 0 84 34 0, filling the width with the status bar as a real 84 point inset" width="300" height="407" /> |
+| Outer, landscape | <img class="shot shot-pair" src="duo-outer-landscape-sdk27-0.webp" alt="Outer display in landscape, built with Xcode 27.0: the page reports 678 by 386 rather than the panel's 678 by 466, letterboxed by the same 80 points, and the insets read 0 34 20 34" width="300" height="216" /> | <img class="shot shot-pair" src="duo-outer-landscape-sdk27-1.webp" alt="Outer display in landscape, built with Xcode 27.1: the page reports the full 678 by 466 and insets 0 0 34 84, with the status bar's 84 point reserved region on the left where the camera cutout is" width="300" height="216" /> |
+| Inner, landscape | <img class="shot shot-pair" src="duo-inner-landscape-sdk27-0.webp" alt="Inner display in landscape, built with Xcode 27.0: the page reports 871 by 669 rather than the panel's 951, with a black rail at the right" width="300" height="214" /> | <img class="shot shot-pair" src="duo-inner-landscape-sdk27-1.webp" alt="Inner display in landscape, built with Xcode 27.1: the page reports the full 951 by 669 and insets 0 84 34 0" width="300" height="214" /> |
+| Inner, portrait | <img class="shot shot-pair" src="duo-inner-portrait-sdk27-0.webp" alt="Inner display in portrait, built with Xcode 27.0, showing the letterbox down one side" width="300" height="398" /> | <img class="shot shot-pair" src="duo-inner-portrait-sdk27-1.webp" alt="Inner display in portrait, built with Xcode 27.1, edge to edge" width="300" height="398" /> |
 
 Read the readouts across each row and one number dominates: the rail is **80 points
 in all four**, on both displays, in both orientations. `386` is `466` less 80.
@@ -835,8 +835,8 @@ and the page is told about it in a way that no longer adds up.
 
 | Unfolded, split | Xcode 27.0 | Xcode 27.1 |
 | --- | --- | --- |
-| Snapped left | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-snap-left-sdk27-0.webp" alt="Unfolded with the app snapped to the left half, built with Xcode 27.0: the page reports a 469 by 669 window and insets 0 34 20 34, matching the 27.1 window width" width="300" height="214" /> | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-snap-left-sdk27-1.webp" alt="The same arrangement built with Xcode 27.1: the window is an identical 469 by 669, and the insets change to 0 0 34 0 because the status bar's reserved region no longer abuts the app" width="300" height="214" /> |
-| Snapped right | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-snap-right-sdk27-0.webp" alt="Unfolded with the app snapped to the right half, built with Xcode 27.0: the window shrinks to 389 by 669 and the insets stay 0 34 20 34, with a black rail carrying the status bar down the right" width="300" height="214" /> | <img class="shot shot-pair" src="/blog/posts/webview-safe-area-inset-override/duo-snap-right-sdk27-1.webp" alt="The same arrangement built with Xcode 27.1: the window is 469 by 669, and the insets are 0 84 34 0 because the status bar's 84 point reserved region now sits inside the app's own half" width="300" height="214" /> |
+| Snapped left | <img class="shot shot-pair" src="duo-snap-left-sdk27-0.webp" alt="Unfolded with the app snapped to the left half, built with Xcode 27.0: the page reports a 469 by 669 window and insets 0 34 20 34, matching the 27.1 window width" width="300" height="214" /> | <img class="shot shot-pair" src="duo-snap-left-sdk27-1.webp" alt="The same arrangement built with Xcode 27.1: the window is an identical 469 by 669, and the insets change to 0 0 34 0 because the status bar's reserved region no longer abuts the app" width="300" height="214" /> |
+| Snapped right | <img class="shot shot-pair" src="duo-snap-right-sdk27-0.webp" alt="Unfolded with the app snapped to the right half, built with Xcode 27.0: the window shrinks to 389 by 669 and the insets stay 0 34 20 34, with a black rail carrying the status bar down the right" width="300" height="214" /> | <img class="shot shot-pair" src="duo-snap-right-sdk27-1.webp" alt="The same arrangement built with Xcode 27.1: the window is 469 by 669, and the insets are 0 84 34 0 because the status bar's 84 point reserved region now sits inside the app's own half" width="300" height="214" /> |
 | Window | `469 × 669` → `389 × 669` | `469 × 669` either way |
 | Insets | `0 34 20 34` either way | `0 0 34 0` → `0 84 34 0` |
 

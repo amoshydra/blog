@@ -41,50 +41,6 @@ function rehypeResponsiveTables() {
 const site = process.env.SITE_URL ?? "https://amoshydra.github.io";
 const base = process.env.BASE_PATH ?? "/blog";
 
-// Post content links to its own assets with the production base baked in
-// ("/blog/posts/foo/bar.webp"), because that is the path authors see on the live
-// site. A preview build is mounted at a different base, so rewrite those paths
-// to whatever base this build actually uses. Absolute URLs are left alone: a
-// link to the published site should keep pointing at the published site.
-function rehypeRebaseContent() {
-  const prefix = "/blog";
-  const rebased = base.replace(/\/$/, "");
-  // Production already uses the prefix; rewriting would be a no-op.
-  if (rebased === prefix) return () => {};
-
-  return (tree) => {
-    const rebase = (value) =>
-      typeof value === "string" &&
-      (value === prefix || value.startsWith(prefix + "/"))
-        ? rebased + value.slice(prefix.length)
-        : value;
-
-    const walk = (node) => {
-      if (!node) return;
-
-      // Standard hast elements, produced by markdown syntax (![](..), [](..)).
-      if (node.properties) {
-        for (const key of ["href", "src"]) {
-          node.properties[key] = rebase(node.properties[key]);
-        }
-      }
-
-      // Raw HTML inside MDX survives as JSX nodes, which keep their attributes
-      // in an array instead of a properties object.
-      if (Array.isArray(node.attributes)) {
-        for (const attr of node.attributes) {
-          if (attr.name === "href" || attr.name === "src") {
-            attr.value = rebase(attr.value);
-          }
-        }
-      }
-
-      if (Array.isArray(node.children)) node.children.forEach(walk);
-    };
-    walk(tree);
-  };
-}
-
 // https://astro.build/config
 export default defineConfig({
   site,
@@ -92,7 +48,6 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [ [remarkToc, { heading: "contents"} ] ],
     rehypePlugins: [
-      rehypeRebaseContent,
       rehypeResponsiveTables,
       rehypeSlug,
       [rehypeAutolinkHeadings, { behavior: 'prepend' }],

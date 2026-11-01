@@ -28,8 +28,10 @@ override (it can, on the WebView's parent) — the launcher's
   `/tmp/opencode/sa_photo_cover.py`; move it into the repo if the hero is ever
   rebuilt.
 - `public/posts/webview-safe-area-inset-override/` — the in-body screenshots,
-  referenced with absolute `/blog/posts/...` paths because the site base is
-  `/blog`. Scaled with `sips -Z 1400` (fits within 1400px, preserves aspect
+  referenced with paths relative to the post (`duo-inner-portrait-sdk27-0.webp`),
+  not `/blog/posts/...`. The site is mounted at `/blog` in production but at the
+  root on the pull request previews, so an absolute path resolves on only one of
+  the two hosts. Scaled with `sips -Z 1400` (fits within 1400px, preserves aspect
   ratio) and encoded with `cwebp -q 84`. Do **not** crop them: the top and bottom
   inset bands are the evidence, and cropping to a fixed pixel height stretched the
   1080x2340 Android shots when forced to iOS's 1206px width.
