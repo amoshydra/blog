@@ -1,0 +1,236 @@
+---
+// Timeline of the `zh-<region>` likely-subtag keys, from the CLDR history
+// research. Two panels: key count over time, then a presence strip per key.
+// Dates are release dates from https://cldr.unicode.org/index/downloads.
+
+const W = 960;
+const H = 690;
+const labelX = 104;
+const x0 = 124;
+const x1 = 936;
+
+const start = Date.UTC(2007, 0, 1);
+const end = Date.UTC(2027, 0, 1);
+const px = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return x0 + ((Date.UTC(y, m - 1, d) - start) / (end - start)) * (x1 - x0);
+};
+const regions = [
+  { key: "HK", from: "2007-12-21", to: null as string | null },
+  { key: "MO", from: "2007-12-21", to: null },
+  { key: "TW", from: "2007-12-21", to: null },
+  { key: "AU", from: "2013-03-15", to: null },
+  { key: "BN", from: "2013-03-15", to: null },
+  { key: "GB", from: "2013-03-15", to: null },
+  { key: "GF", from: "2013-03-15", to: null },
+  { key: "ID", from: "2013-03-15", to: null },
+  { key: "MY", from: "2013-03-15", to: "2020-10-28" },
+  { key: "PA", from: "2013-03-15", to: null },
+  { key: "PF", from: "2013-03-15", to: null },
+  { key: "PH", from: "2013-03-15", to: null },
+  { key: "SR", from: "2013-03-15", to: null },
+  { key: "TH", from: "2013-03-15", to: null },
+  { key: "US", from: "2013-03-15", to: null },
+  { key: "VN", from: "2013-03-15", to: null },
+];
+
+// Count panel geometry.
+const countTop = 70;
+const countBase = 200;
+const maxCount = 17;
+const cy = (n: number) => countBase - (n / maxCount) * (countBase - countTop);
+
+const steps: Array<[string, number]> = [
+  ["2007-01-01", 0],
+  ["2007-12-21", 3],
+  ["2013-03-15", 16],
+  ["2020-10-28", 15],
+  ["2027-01-01", 15],
+];
+
+// A step line: hold the previous value until the release date, then jump.
+const stepPoints: Array<[number, number]> = [[px(steps[0][0]), cy(steps[0][1])]];
+for (let i = 1; i < steps.length; i++) {
+  const [date, value] = steps[i];
+  const prev = steps[i - 1][1];
+  stepPoints.push([px(date), cy(prev)], [px(date), cy(value)]);
+}
+const stepPath = stepPoints
+  .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`)
+  .join(" ");
+const areaPath =
+  `M${stepPoints[0][0].toFixed(1)},${countBase} ` +
+  stepPoints.map(([x, y]) => `L${x.toFixed(1)},${y.toFixed(1)}`).join(" ") +
+  ` L${stepPoints[stepPoints.length - 1][0].toFixed(1)},${countBase} Z`;
+
+// Presence panel geometry.
+const rowTop = 300;
+const rowH = 20;
+const rowY = (i: number) => rowTop + i * rowH;
+const rowBase = rowTop + regions.length * rowH;
+
+const years = ["2008", "2012", "2016", "2020", "2024"];
+const markers = [
+  { at: "2007-12-21", v: "1.5.1" },
+  { at: "2013-03-15", v: "23" },
+  { at: "2020-10-28", v: "38" },
+];
+---
+
+<figure class="tz">
+  <div class="tz__scroll">
+  <svg
+    viewBox={`0 0 ${W} ${H}`}
+    role="img"
+    aria-labelledby="tz-title"
+  >
+    <title id="tz-title">Region keys in CLDR's Chinese likely subtags</title>
+    <desc id="tz-desc">
+      The count rises from zero to three in CLDR 1.5.1 in 2007, jumps to
+      sixteen in CLDR 23 in 2013, and drops to fifteen when zh_MY is removed in
+      CLDR 38 in 2020. The presence strip shows Hong Kong, Macao and Taiwan
+      from 2007, thirteen more from 2013 (twelve that remain plus Malaysia), and
+      Malaysia only until 2020.
+    </desc>
+
+    <!-- count panel grid -->
+    {[0, 5, 10, 15].map((n) => (
+      <g>
+        <line class="grid" x1={x0} x2={x1} y1={cy(n)} y2={cy(n)} />
+        <text class="tick" x={x0 - 8} y={cy(n) + 4} text-anchor="end">
+          {n}
+        </text>
+      </g>
+    ))}
+
+    <!-- count step -->
+    <path class="area" d={areaPath} />
+    <path class="step" d={stepPath} />
+
+    <!-- annotations -->
+    <text class="note" x={px("2007-12-21") + 8} y={cy(3) - 10}>
+      3 keys
+    </text>
+    <text class="note" x={px("2013-03-15") + 8} y={cy(16) + 24}>
+      16 keys
+    </text>
+    <text class="note" x={px("2020-10-28") + 8} y={cy(15) + 20}>
+      15 keys
+    </text>
+
+    <!-- presence rows -->
+    {regions.map((r, i) => {
+      const x = px(r.from);
+      const w = px(r.to ?? "2027-01-01") - x;
+      const y = rowY(i) + 5;
+      return (
+        <g>
+          <rect
+            class={r.to ? "bar removed" : "bar"}
+            x={x.toFixed(1)}
+            y={y}
+            width={Math.max(w, 1).toFixed(1)}
+            height="10"
+            rx="3"
+          />
+          <text class="label" x={labelX} y={y + 9} text-anchor="end">
+            {r.key}
+          </text>
+        </g>
+      );
+    })}
+
+    <!-- vertical release markers -->
+    {markers.map((m) => (
+      <g>
+        <line class="marker" x1={px(m.at)} x2={px(m.at)} y1={countTop} y2={rowBase} />
+        <text class="tick" x={px(m.at)} y={countTop - 10} text-anchor="middle">
+          {m.v}
+        </text>
+      </g>
+    ))}
+
+    <!-- x axis -->
+    <line class="axis" x1={x0} x2={x1} y1={rowBase + 18} y2={rowBase + 18} />
+    {years.map((y) => (
+      <text class="tick" x={px(`${y}-01-01`)} y={rowBase + 40} text-anchor="middle">
+        {y}
+      </text>
+    ))}
+  </svg>
+  </div>
+
+  <figcaption>
+    Region keys by CLDR release. Hong Kong, Macao and Taiwan shipped in 1.5.1
+    (2007). Thirteen more arrived together in CLDR 23 (2013), the twelve that
+    remain plus Malaysia, when the file became generated. Malaysia's key was
+    removed in CLDR 38 (2020) after its population row changed. A 2008
+    add-and-revert of four keys never reached a release.
+  </figcaption>
+</figure>
+
+<style>
+  .tz {
+    margin: 1.5rem auto 2.5rem;
+  }
+  .tz__scroll {
+    overflow-x: auto;
+  }
+  .tz svg {
+    display: block;
+    width: 100%;
+    min-width: 900px;
+    height: auto;
+  }
+  .tz figcaption {
+    margin-top: 0.5rem;
+    color: rgb(var(--gray));
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .grid {
+    stroke: var(--border-subtle);
+    stroke-width: 1;
+  }
+  .axis {
+    stroke: var(--border-subtle);
+    stroke-width: 1;
+  }
+  .marker {
+    stroke: rgb(var(--gray));
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+    opacity: 0.35;
+  }
+  .step {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+  }
+  .area {
+    fill: var(--accent);
+    opacity: 0.12;
+  }
+  .bar {
+    fill: var(--accent);
+    opacity: 0.75;
+  }
+  .bar.removed {
+    fill: #d97757;
+    opacity: 0.85;
+  }
+  .label {
+    fill: rgb(var(--gray-dark));
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+  }
+  .tick {
+    fill: rgb(var(--gray));
+    font-size: 11px;
+  }
+  .note {
+    fill: rgb(var(--gray-dark));
+    font-size: 12px;
+    font-weight: 600;
+  }
+</style>
