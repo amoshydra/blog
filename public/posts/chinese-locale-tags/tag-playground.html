@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chinese tag playground</title>
+    <!-- Resolve the theme before first paint. Same-origin, so the parent's
+         resolved scheme is readable here; standalone tabs fall back to the OS
+         through `color-scheme: light dark`. -->
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var t = new URLSearchParams(location.search).get("theme");
+        if (t !== "dark" && t !== "light") {
+          try {
+            t = window.parent.document.documentElement.dataset.colorScheme;
+          } catch (e) {
+            // cross-origin: leave it to the OS preference
+          }
+        }
+        if (t === "dark" || t === "light") root.dataset.theme = t;
+      })();
+    </script>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #fff;
+        --ink: #0f1219;
+        --muted: #60739f;
+        --line: rgba(0, 0, 0, 0.12);
+        --field: #fff;
+        --field-line: #d6d2e2;
+        --accent: #2337ff;
+        --panel: #f7f5fc;
+        --warn-bg: #fff3e6;
+        --warn-ink: #9a4a12;
+        --err-bg: #fef2f2;
+        --err-ink: #b91c1c;
+        --sp-bg: rgba(35, 55, 255, 0.14);
+        --dash: #b9b5c6;
+      }
+      @supports (color: light-dark(#fff, #000)) {
+        :root {
+          color-scheme: light dark;
+          --bg: light-dark(#fff, #0f1219);
+          --ink: light-dark(#0f1219, #e5e9f0);
+          --muted: light-dark(#60739f, #96a5c8);
+          --line: light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.12));
+          --field: light-dark(#fff, #171b26);
+          --field-line: light-dark(#d6d2e2, rgba(255, 255, 255, 0.18));
+          --accent: light-dark(#2337ff, #8094ff);
+          --panel: light-dark(#f7f5fc, #2d3342);
+          --warn-bg: light-dark(#fff3e6, rgba(251, 191, 36, 0.16));
+          --warn-ink: light-dark(#9a4a12, #fbbf24);
+          --err-bg: light-dark(#fef2f2, rgba(248, 113, 113, 0.12));
+          --err-ink: light-dark(#b91c1c, #fca5a5);
+          --sp-bg: light-dark(rgba(35, 55, 255, 0.14), rgba(128, 148, 255, 0.24));
+          --dash: light-dark(#b9b5c6, #6b7890);
+        }
+      }
+      :root[data-theme="light"] { color-scheme: light; }
+      :root[data-theme="dark"] { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+        padding: 16px;
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 4px;
+      }
+      label {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      input {
+        font: 15px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        color: var(--ink);
+        background: var(--field);
+        border: 1px solid var(--field-line);
+        border-radius: 8px;
+        padding: 7px 10px;
+        width: 230px;
+        max-width: 100%;
+      }
+      input:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+        border-color: var(--accent);
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 12.5px;
+        margin: 0 0 14px;
+      }
+      .hint code { font-size: 12.5px; }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      .err {
+        margin: 0 0 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: var(--err-bg);
+        color: var(--err-ink);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(120px, max-content) 1fr;
+        gap: 0 18px;
+        border-top: 1px solid var(--line);
+      }
+      .row { display: contents; }
+      .row > dt, .row > dd {
+        margin: 0;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      dt {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      dd {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 14px;
+        overflow-wrap: anywhere;
+      }
+      .wide {
+        grid-column: 1 / -1;
+        padding: 10px 0 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .wide > dt, .wide > dd { margin: 0; }
+      .wide dt { padding-bottom: 4px; }
+      .sp {
+        background: var(--sp-bg);
+        border-radius: 2px;
+      }
+      .chip {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: var(--warn-bg);
+        color: var(--warn-ink);
+        font-family: system-ui, sans-serif;
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        vertical-align: 1px;
+      }
+      .dash { color: var(--dash); }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      footer {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      @media (max-width: 460px) {
+        .grid { grid-template-columns: 1fr; }
+        .row > dt { border-bottom: 0; padding-bottom: 0; }
+        .row > dd { padding-top: 2px; }
+      }
+    </style>
+  </head>
+  <body>
+    <form class="bar" id="form">
+      <label for="tag">Tag</label>
+      <input
+        id="tag"
+        name="tag"
+        value="zh"
+        list="tags"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        aria-describedby="hint"
+      />
+      <datalist id="tags">
+        <option value="zh"></option>
+        <option value="zh-Hans"></option>
+        <option value="zh-Hant"></option>
+        <option value="zh-CN"></option>
+        <option value="zh-TW"></option>
+        <option value="zh-HK"></option>
+        <option value="zh-Hans-HK"></option>
+        <option value="zh-Hant-HK"></option>
+        <option value="zh-SG"></option>
+        <option value="zh-MY"></option>
+        <option value="yue"></option>
+        <option value="yue-Hant-HK"></option>
+        <option value="zh-Hant-u-co-pinyin"></option>
+        <option value="zh-Hant-u-co-big5han"></option>
+      </datalist>
+    </form>
+    <p class="hint" id="hint">
+      Type a tag. Values come from this browser's ICU, so they can differ from
+      the Node baseline in the post. Spaces in output are highlighted.
+    </p>
+
+    <p class="err" id="err" role="alert" aria-atomic="true" hidden></p>
+    <p class="sr" id="status" aria-live="polite"></p>
+    <dl class="grid" id="out"></dl>
+
+    <footer id="env"></footer>
+
+    <script>
+      (function () {
+        const input = document.getElementById("tag");
+        const out = document.getElementById("out");
+        const err = document.getElementById("err");
+        const status = document.getElementById("status");
+        const env = document.getElementById("env");
+        const form = document.getElementById("form");
+
+        const NAMES = [..."王李張陳劉黃吳周徐孫馬朱胡郭何林高羅鄭梁"];
+        const INSTANT = new Date(Date.UTC(2026, 0, 15, 4, 5, 6));
+        const ZONE = "Asia/Hong_Kong";
+        const DAYS = ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+        const esc = (s) =>
+          String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+        // ASCII spaces are part of the answer here (currency and unit
+        // separators differ by region), so show them instead of hiding them.
+        const visible = (s) => esc(s).replace(/ /g, '<span class="sp"> </span>');
+
+        const call = (fn, fallback = '<span class="dash">not available</span>') => {
+          try {
+            const v = fn();
+            return v === "" || v == null ? fallback : v;
+          } catch (e) {
+            return '<span class="dash">' + esc(e.name) + "</span>";
+          }
+        };
+
+        const df = (tag, opts) =>
+          new Intl.DateTimeFormat(tag, { timeZone: ZONE, ...opts }).format(INSTANT);
+
+        function rows(loc) {
+          const tag = loc.toString();
+          const requested = loc.collation || "";
+          const applied = new Intl.Collator(tag).resolvedOptions().collation;
+          const week = typeof loc.getWeekInfo === "function" ? loc.getWeekInfo() : null;
+          const max = loc.maximize().toString();
+          const min = loc.minimize().toString();
+
+          const collCell =
+            visible(applied) +
+            (requested && requested !== applied
+              ? '<span class="chip">asked ' + esc(requested) + "</span>"
+              : "");
+
+          const table = [
+            ["maximize()", visible(max)],
+            ["minimize()", visible(min)],
+            ["script", loc.script ? visible(loc.script) : '<span class="dash">not set</span>'],
+            ["region", loc.region ? visible(loc.region) : '<span class="dash">not set</span>'],
+            ["one trillion", visible(call(() => new Intl.NumberFormat(tag, { notation: "compact" }).format(1e12)))],
+            ["HKD name", visible(call(() => new Intl.NumberFormat(tag, { style: "currency", currency: "HKD", currencyDisplay: "name" }).format(12.5)))],
+            ["metre", visible(call(() => new Intl.NumberFormat(tag, { style: "unit", unit: "meter", unitDisplay: "long" }).format(1)))],
+            ["mile", visible(call(() => new Intl.NumberFormat(tag, { style: "unit", unit: "mile", unitDisplay: "long" }).format(1)))],
+            ["full date", visible(call(() => df(tag, { dateStyle: "full" })))],
+            ["time", visible(call(() => df(tag, { timeStyle: "medium" })))],
+            ["yesterday", visible(call(() => new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(-1, "day")))],
+            ["list", visible(call(() => new Intl.ListFormat(tag, { type: "conjunction" }).format(["甲", "乙", "丙"])))],
+            ["week starts", week ? DAYS[week.firstDay] : '<span class="dash">not available</span>'],
+            ["hour cycle", visible(call(() => new Intl.DateTimeFormat(tag, { hour: "numeric" }).resolvedOptions().hourCycle))],
+            ["collation", collCell],
+          ];
+
+          const html = table
+            .map(([k, v]) => '<div class="row"><dt>' + k + "</dt><dd>" + v + "</dd></div>")
+            .join("");
+
+          const sort = call(() => [...NAMES].sort(new Intl.Collator(tag).compare).join(""));
+
+          return (
+            html +
+            '<div class="wide"><dt>sort (20 surnames)</dt><dd>' +
+            visible(sort) +
+            "</dd></div>"
+          );
+        }
+
+        function resize() {
+          requestAnimationFrame(() => {
+            const h = document.documentElement.scrollHeight;
+            if (parent !== window) parent.postMessage({ type: "zh-playground-height", height: h }, "*");
+          });
+        }
+
+        function explain(raw, e) {
+          const t = raw.toLowerCase();
+          if (t.includes("zh-chs")) return "zh-CHS is an old Windows code. Use zh-Hans.";
+          if (t.includes("zh-cht")) return "zh-CHT is an old Windows code. Use zh-Hant.";
+          if (t.includes("zh-yue")) return "Intl rejects zh-yue. Use yue or yue-Hant-HK.";
+          if (/^zh-(hk|tw|mo)-hant$/.test(t)) return "Script comes before region. Try zh-Hant-HK.";
+          return e.name + ": " + e.message;
+        }
+
+        function render() {
+          const raw = input.value.trim();
+          if (!raw) {
+            out.innerHTML = "";
+            err.hidden = true;
+            resize();
+            return;
+          }
+          try {
+            const loc = new Intl.Locale(raw);
+            out.innerHTML = rows(loc);
+            err.hidden = true;
+          } catch (e) {
+            out.innerHTML = "";
+            err.hidden = false;
+            err.textContent = explain(raw, e);
+          }
+          resize();
+        }
+
+        env.textContent =
+          "This browser reports " +
+          (navigator.languages ? navigator.languages.join(", ") : navigator.language) +
+          " · the post's tables were measured on Node 26.3.1 / ICU 78.3 / CLDR 48.0";
+
+        form.addEventListener("submit", (e) => e.preventDefault());
+        input.addEventListener("input", render);
+        input.addEventListener("change", () => {
+          const t = input.value.trim();
+          status.textContent = t ? `Results for ${t} updated` : "";
+        });
+        window.addEventListener("resize", resize);
+
+        // The parent sends its resolved scheme when the post's toggle changes.
+        window.addEventListener("message", (e) => {
+          if (!e.data || e.data.type !== "zh-playground-theme") return;
+          const t = e.data.theme;
+          if (t === "dark" || t === "light") document.documentElement.dataset.theme = t;
+        });
+
+        render();
+      })();
+    </script>
+  </body>
+</html>

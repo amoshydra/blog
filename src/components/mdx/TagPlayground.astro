@@ -1,0 +1,130 @@
+---
+// Same-origin iframe around a plain HTML playground. The frame reports its own
+// height, so the panel never scrolls inside the post.
+interface Props {
+  /** Path under `public/`, e.g. "posts/chinese-locale-tags/tag-playground.html". */
+  page: string;
+  label: string;
+  /** Fallback height before the frame reports one. */
+  height?: number;
+}
+
+const { page, label, height = 560 } = Astro.props;
+
+const base = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+
+const src = `${base}${page.replace(/^\//, "")}`;
+---
+
+<div class="tp">
+  <div class="tp__head">
+    <span class="tp__label">{label}</span>
+    <a class="tp__open" href={src} target="_blank" rel="noopener">
+      Open in a tab <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+  <iframe
+    class="tp__frame"
+    src={src}
+    title={label}
+    height={height}
+    loading="lazy"
+  ></iframe>
+</div>
+
+<script>
+  // Only resize frames that belong to this component, and only from their own
+  // window. The message carries no data we trust beyond a pixel height.
+  const frames = document.querySelectorAll<HTMLIFrameElement>("iframe.tp__frame");
+  const root = document.documentElement;
+
+  function size(frame: HTMLIFrameElement) {
+    try {
+      const doc = frame.contentDocument;
+      if (doc?.documentElement) {
+        frame.style.height = `${doc.documentElement.scrollHeight + 2}px`;
+      }
+    } catch {
+      // cross-origin, leave the fallback height
+    }
+  }
+
+  // The iframe reads `data-color-scheme` itself before first paint (same
+  // origin), and this keeps it in step when the post's toggle changes.
+  function scheme() {
+    if (root.dataset.colorScheme === "dark") return "dark";
+    if (root.dataset.colorScheme === "light") return "light";
+    return root.dataset.theme === "dark" ? "dark" : "light";
+  }
+
+  function sendTheme(frame: HTMLIFrameElement) {
+    frame.contentWindow?.postMessage(
+      { type: "zh-playground-theme", theme: scheme() },
+      "*",
+    );
+  }
+
+  frames.forEach((frame) => {
+    frame.addEventListener("load", () => {
+      size(frame);
+      sendTheme(frame);
+    });
+    if (frame.contentDocument?.readyState === "complete") {
+      size(frame);
+      sendTheme(frame);
+    }
+  });
+
+  new MutationObserver(() => frames.forEach(sendTheme)).observe(root, {
+    attributes: true,
+    attributeFilter: ["data-color-scheme", "data-theme"],
+  });
+
+  window.addEventListener("message", (event) => {
+    if (event.data?.type !== "zh-playground-height") return;
+    for (const frame of frames) {
+      if (event.source === frame.contentWindow) {
+        const h = Number(event.data.height);
+        if (Number.isFinite(h) && h > 0) frame.style.height = `${h}px`;
+      }
+    }
+  });
+</script>
+
+<style>
+  .tp {
+    margin: 1.5rem auto 2.5rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgb(var(--white));
+  }
+  .tp__head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--border-subtle);
+    background: rgb(var(--gray-light));
+  }
+  .tp__label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: rgb(var(--gray));
+    text-transform: uppercase;
+  }
+  .tp__open {
+    margin-left: auto;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .tp__frame {
+    display: block;
+    width: 100%;
+    border: none;
+    background: rgb(var(--white));
+  }
+</style>
