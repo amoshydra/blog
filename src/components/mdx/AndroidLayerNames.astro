@@ -1,4 +1,6 @@
 ---
+import { withBase } from "../../utils/basePath";
+
 // Android-only anatomy figure for "Overriding env(safe-area-inset-*) in a WebView".
 //
 // The base is a real screenshot: OnePlus 6T, Android 15, WebView 153, density 314,
@@ -35,7 +37,7 @@
     <div class="aln-screen">
       <img
         class="aln-shot"
-        src="/blog/posts/webview-safe-area-inset-override/android-screen-anatomy.webp"
+        src={withBase("/posts/webview-safe-area-inset-override/android-screen-anatomy.webp")}
         width="1080"
         height="2340"
         alt="A real Android screen: the status bar across the top, the page in the middle, the keyboard above the navigation bar at the bottom"
