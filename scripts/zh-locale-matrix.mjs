@@ -13,7 +13,7 @@ const OUT =
 
 const TAGS = [
   "zh", "zh-Hans", "zh-Hant",
-  "zh-CN", "zh-TW", "zh-HK", "zh-MO", "zh-SG", "zh-MY",
+  "zh-CN", "zh-Hans-CN", "zh-TW", "zh-HK", "zh-MO", "zh-SG", "zh-MY",
   "zh-Hant-TW", "zh-Hant-HK", "zh-Hant-MO", "zh-Hans-SG", "zh-Hans-HK",
   "zh-US", "zh-GB", "zh-CA",
   "yue", "yue-Hans-CN", "cmn", "nan", "dng",
@@ -138,9 +138,10 @@ w(
     ].join("\t"),
   ),
   "",
-  "## 4. are region tags and script+region tags the same locale?",
+  "## 4. are these tag pairs the same locale?",
   "# pair\tidentical formatting",
   ...[
+    ["zh", "zh-Hans-CN"],
     ["zh-HK", "zh-Hant-HK"],
     ["zh-MO", "zh-Hant-MO"],
     ["zh-TW", "zh-Hant-TW"],

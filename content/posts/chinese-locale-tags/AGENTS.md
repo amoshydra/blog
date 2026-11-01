@@ -14,7 +14,7 @@ disagree. Measurements over definitions.
 - `src/components/mdx/TagPlayground.astro` — same-origin iframe wrapper. The
   frame reports its height with `postMessage`, so the panel never scrolls
   inside the post. `Open in a tab` points at the same page.
-- `public/posts/chinese-locale-tags/artifacts/RESULTS-locale-matrix.txt` — 24
+- `public/posts/chinese-locale-tags/artifacts/RESULTS-locale-matrix.txt` — 25
   tags: resolution, formatting, validity, region-versus-script identity,
   extension probes, and maximize/minimize round trips.
 - `public/posts/chinese-locale-tags/artifacts/RESULTS-collation-types.txt` — the
@@ -36,8 +36,11 @@ The third shells out to `espeak-ng` and skips that section when it is missing.
 
 ## Facts to keep honest if edited
 
-- `zh` is identical to `zh-Hans-CN` in every measured field. That is the whole
-  premise; keep the artifact section that proves it.
+- `zh` is identical to `zh-Hans-CN` for every formatter output, but not as an
+  identifier: `getCanonicalLocales` keeps `zh`, and `getTimeZones()` returns
+  nothing for `zh` and two zones for `zh-Hans-CN`. The artifact's section 4
+  reports `no: tz` for the pair, which is correct. Do not restore a
+  "byte-for-byte" or "every field" claim.
 - `zh-Hant` maximises to `zh-Hant-TW`. There is no neutral Traditional locale.
   Never write "Traditional Chinese" without naming the region in the same
   paragraph.

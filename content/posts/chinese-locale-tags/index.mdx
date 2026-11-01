@@ -1,6 +1,6 @@
 ---
 title: "Why `zh` is not enough for Chinese"
-description: "Most apps ship two locales, `en` and `zh`. The second one means Simplified Chinese in mainland China, and it decides the characters, the sort order, the number suffix and the week start. What each slot in the tag does, how maximize and minimize fill in the ones you omit, and why i18next, browsers, screen readers and normalizers each read the result differently."
+description: "A two-locale app that ships `en` and `zh` gets Simplified Chinese in mainland China from the second tag: characters, sort order, number suffix and week start all follow it. What each slot does, how maximize and minimize fill the gaps, and why i18next, browsers, screen readers and normalizers disagree."
 pubDate: "2026-11-01"
 heroImage: "./hero.webp"
 ---
@@ -13,17 +13,17 @@ If your app supports English and Chinese, your locale list probably looks like t
 ["en", "zh"]
 ```
 
-`en` resolves to `en-Latn-US`, which is why nobody notices it. `zh` resolves to `zh-Hans-CN`, and that one is harder to ignore:
+`en` resolves to `en-Latn-US`, so the default is easy to miss. `zh` resolves to `zh-Hans-CN`, and that one is harder to ignore:
 
 ```js
 new Intl.NumberFormat("zh", { notation: "compact" }).format(1e12); // "1万亿"
 ```
 
-A reader in Taipei expects `1兆`. A reader in Hong Kong expects `1T`. Both of them are reading Chinese on a page that declared Chinese, and both get mainland Simplified conventions instead.
+A reader in Taipei who expects Traditional Chinese looks for `1兆`. A reader in Hong Kong who expects Traditional Chinese looks for `1T`. Both are reading Chinese on a page that declared Chinese, and both get mainland Simplified conventions instead.
 
-The same thing happens in English, just less visibly: `en` gives `1T` and `January 15, 2026`, while `en-GB` gives `1tn` and `15 January 2026`. The script stays the same, so the error is cosmetic. With Chinese, the wrong default changes the characters.
+The same thing happens in English, less visibly: `en` gives `1T` and `January 15, 2026`, while `en-GB` gives `1tn` and `15 January 2026`. The script stays the same, so the error is cosmetic. With Chinese, the wrong default changes the characters.
 
-This post covers the four slots in a Chinese tag, what each one decides, how the missing ones get filled in, and how the tools you already use read the result. Every value is measured with `Intl` on Node 26.3.1, which means ICU 78.3 and CLDR 48.0.[^cldr]
+A Chinese tag has four slots, and CLDR fills in the ones you omit. The fill-in decides the characters, the sort order, the number suffix and the week start, and the tools that read the tag keep different amounts of it. The `Intl` values below are measured on Node 26.3.1 (ICU 78.3, CLDR 48.0); the i18next chain comes from its source, and the eSpeak output from a local run.[^cldr]
 
 ## The four slots
 
@@ -38,7 +38,7 @@ A BCP 47 tag is subtags joined by hyphens in a fixed order: language, script, re
 
 Order matters. `zh-Hant-HK` is valid because script comes before region. `zh-HK-Hant` is not a tag, and `Intl.getCanonicalLocales` throws on it.
 
-Every slot is optional. That is the part that costs people time, because the empty ones get filled in by CLDR, and the fill-in is a choice someone else made.
+Script, region and extension are optional. CLDR fills in the missing script and region, and you did not make that choice. That is the part that costs people time.
 
 ## Try a tag
 
@@ -46,11 +46,11 @@ Type any tag from this post and the panel resolves it with this browser's ICU:
 
 <TagPlayground page="posts/chinese-locale-tags/tag-playground.html" label="Chinese tag playground" />
 
-The numbers and dates can differ from the tables below, which were measured on Node. That gap is real, not a bug in the panel.
+The numbers and dates can differ from the tables below. The panel runs this browser's ICU; the tables used Node's.
 
 ## What you get when you only write `zh`
 
-`zh` is not a neutral "Chinese". It is byte-for-byte identical to `zh-Hans-CN` in every field I measured. Put the three common tags side by side:
+`zh` is not a neutral "Chinese". Every formatter output I measured is identical under `zh` and `zh-Hans-CN`. The tags differ as identifiers: `getCanonicalLocales` keeps `zh`, and `getTimeZones()` returns nothing until a region is present. Put the three common tags side by side:
 
 | dimension | `zh` | `zh-Hant-TW` | `zh-Hant-HK` |
 | --- | --- | --- | --- |
@@ -65,7 +65,7 @@ The numbers and dates can differ from the tables below, which were measured on N
 | sort order | pinyin | stroke | stroke |
 | week starts | Monday | Sunday | Sunday |
 
-Most of these are decisions a reader will notice. `1T` and `1兆` in the same product is the kind of inconsistency that gets reported as a bug in the number formatter, when the real cause is the tag at the top of the file.
+These are visible differences. When `1T` and `1兆` appear in the same product, a reader reports a number-formatter bug; the tag at the top of the file is the cause.
 
 ## Missing slots get filled in: maximize
 
@@ -86,9 +86,9 @@ new Intl.Locale("zh-HK").maximize().toString();   // "zh-Hant-HK"
 | `zh-HK` | `zh-Hant-HK` |
 | `zh-SG` | `zh-Hans-SG` |
 
-The second row is the one that matters. There is no region-neutral Traditional Chinese. Ask for "Traditional" and you get Taiwan: Taiwan's `兆`, Taiwan's `公尺`, Taiwan's stroke order, and a space before `星期四`.
+The `zh-Hant` row is the one that matters. CLDR has no region-neutral Traditional likely-subtags default. Ask for "Traditional" and you get Taiwan: Taiwan's `兆`, Taiwan's `公尺`, Taiwan's stroke order, and a space before `星期四`.
 
-For regions outside Greater China, CLDR 48 keeps a hand-written list. Every explicit `zh-<region>` entry maps to Traditional, and there is no explicit Hans entry at all:
+CLDR 48 ships a fixed table of 15 explicit `zh-<region>` keys. They cover Hong Kong, Macao and Taiwan, plus 12 other regions; every one maps to Traditional, and none maps to Hans:
 
 ```
 zh-AU -> zh-Hant-AU    zh-GB -> zh-Hant-GB    zh-MO -> zh-Hant-MO
@@ -98,9 +98,9 @@ zh-PH -> zh-Hant-PH    zh-SR -> zh-Hant-SR    zh-TH -> zh-Hant-TH
 zh-TW -> zh-Hant-TW    zh-US -> zh-Hant-US    zh-VN -> zh-Hant-VN
 ```
 
-The other three explicit keys are script forms rather than regions: `zh-Hant` (the Traditional default), `zh-Bopo` and `zh-Hanb`, and all three resolve to Taiwan.[^subtags]
+The other three explicit keys are script forms rather than regions: `zh-Hant` (the Traditional default), `zh-Bopo` and `zh-Hanb`, and all three maximize to a Taiwan locale.[^subtags]
 
-Everything not on the list falls back to bare `zh`, which is `zh-Hans-CN`, and keeps the region. Singapore, Malaysia, Canada and New Zealand are not on it. Suriname, Panama and French Guiana are. Whatever produced that list, it is not a description of where Chinese speakers live in 2026, and it is the list that ships.
+Everything not on the list falls back to bare `zh`, which is `zh-Hans-CN`, and keeps the region. Singapore, Malaysia, Canada and New Zealand are not on it. Suriname, Panama and French Guiana are. The table describes the script CLDR considers likely in a region, not a census of Chinese speakers there.
 
 ## Going the other way: minimize
 
@@ -141,13 +141,13 @@ new Intl.RelativeTimeFormat("yue", { numeric: "auto" }).format(-1, "day"); // "�
 new Intl.ListFormat("yue").format(["甲", "乙", "丙"]); // "甲、乙同丙"
 ```
 
-A menu entry called "Chinese (Hong Kong)" backed by `zh-HK` serves Mandarin in Traditional script with Hong Kong vocabulary. It is not Cantonese. Cantonese is `yue-Hant-HK`.
+A menu entry called "Chinese (Hong Kong)" backed by `zh-HK` gives you Traditional script with Hong Kong vocabulary. The tag does not select Cantonese; Cantonese is `yue-Hant-HK`.
 
-The legacy spellings are rejected outright: `zh-yue`, `zh-min-nan`, `zh-CHS` and `zh-CHT` all throw in `Intl`, so a validator built on `Intl.getCanonicalLocales` will drop traffic from older clients that still send them.
+`Intl` rejects `zh-yue`, `zh-min-nan`, `zh-CHS` and `zh-CHT`, so a validator built on `Intl.getCanonicalLocales` will drop traffic from clients that still send them. The first two are valid BCP 47 forms; the last two are old Windows codes.
 
 ### Script: characters and sort order
 
-`zh-Hans` and `zh-Hant` differ in characters, which everyone expects: 万 and 萬, 后 and 後. They also differ in the default collation. `zh` uses pinyin, `zh-Hant` uses stroke.[^defaults] Sorting the same 20 surnames gives two entirely different orders, and neither is a tie-break: the primary sort key changes.
+`zh-Hans` and `zh-Hant` differ in characters, as you would expect: 万 and 萬, 后 and 後. They also differ in the default collation. `zh` uses pinyin, `zh-Hant` uses stroke.[^defaults] Sorting the same 20 surnames gives two different orders, and neither is a tie-break: the primary sort key changes.
 
 Overriding is possible, and it is the only way to get pinyin order on Traditional text:
 
@@ -173,9 +173,9 @@ The region is not decoration on top of the script. Same script, different region
 | list of three | `甲、乙和丙` | `甲、乙及丙` |
 | 12:05:06 | `中午12:05:06` | `下午12:05:06` |
 
-Some are vocabulary (`公尺` vs `米`; `哩` is the Cantonese-colloquial mile). Some are formatting: the space before `星期四` exists in Taiwan and not in Hong Kong. Some are data granularity: Taiwan splits noon into `中午`, Hong Kong merges it into `下午`.
+Some are vocabulary (`公尺` vs `米`; `哩` is the Hong Kong written form of "mile"). Some are formatting: the space before `星期四` exists in Taiwan and not in Hong Kong. Some are time patterns: Taiwan's `zh-Hant` uses the flexible day-period marker `B`, which picks `中午` at 12:05; Hong Kong's `zh-Hant-HK` uses `a`, which gives `下午`.
 
-The region also moves things unrelated to Chinese. `zh-SG` starts the week on Sunday and uses a 12-hour clock. `zh-MY` starts on Monday. `zh-CN` uses a 24-hour clock. Neighbouring countries, opposite calendars.
+The region also moves things unrelated to Chinese. `zh-SG` starts the week on Sunday and uses a 12-hour clock. `zh-MY` starts on Monday. `zh-CN` uses a 24-hour clock.
 
 ### The tag that shows both slots: `zh-Hans-HK`
 
@@ -184,7 +184,7 @@ CLDR ships a `zh-Hans-HK` locale, and IANA has registered the tag since 2005 as 
 | dimension | `zh-Hans-CN` | `zh-Hans-HK` | `zh-Hant-HK` |
 | --- | --- | --- | --- |
 | one trillion | `1万亿` | `1万亿` | `1T` |
-| HKD name | `12.50港元` | `12.50 港元` | `12.50 港元` |
+| HKD 12.50 | `12.50港元` | `12.50 港元` | `12.50 港元` |
 | mile | `1英里` | `1英里` | `1 哩` |
 | 12:05:06 | `12:05:06` | `下午12:05:06` | `下午12:05:06` |
 | yesterday | `昨天` | `昨天` | `昨日` |
@@ -194,13 +194,13 @@ Which slot wins depends on the field, not on a rule. Formats that CLDR keys by r
 
 The number suffix follows the script too, which is why `zh-Hans-HK` prints `1万亿`. The `1T` pattern lives in the Hant-HK numbers data, not in Hong Kong. "Hong Kong uses `1T`" is only true in Traditional.
 
-`zh-Hans-HK` is also one of the few tags with no short form. `minimize()` returns it unchanged:
+`zh-Hans-HK` has no shorter form. `minimize()` returns it unchanged:
 
 ```js
 new Intl.Locale("zh-Hans-HK").minimize().toString(); // "zh-Hans-HK"
 ```
 
-Dropping `Hans` would imply `Hant` in Hong Kong, and dropping `HK` would imply `CN` for Simplified. Neither removal keeps the meaning, so the tag keeps both.
+Dropping `Hans` would imply `Hant` in Hong Kong, and dropping `HK` would imply `CN` for Simplified. Neither removal keeps the meaning, so you have to keep both.
 
 Use it when you mean Simplified text aimed at Hong Kong readers. It is not a synonym for `zh-HK`.
 
@@ -209,15 +209,17 @@ Use it when you mean Simplified text aimed at Hong Kong readers. It is not a syn
 Extensions carry per-request overrides:
 
 ```js
-new Intl.DateTimeFormat("zh-Hant-TW-u-ca-roc", { dateStyle: "long" })
-  .format(new Date("2026-01-15"));                       // "民國115年1月15日"
+new Intl.DateTimeFormat("zh-Hant-TW-u-ca-roc", {
+  dateStyle: "long",
+  timeZone: "Asia/Taipei",
+}).format(new Date("2026-01-15"));                        // "民國115年1月15日"
 
 new Intl.NumberFormat("zh-Hans-u-nu-hanidec").format(123); // "一二三"
 
 new Intl.Collator("zh-Hant-u-co-zhuyin").resolvedOptions().collation; // "zhuyin"
 ```
 
-The collation one is where names stop being trustworthy. CLDR's registry lists six Chinese collation types: `pinyin`, `stroke`, `zhuyin`, `unihan`, `big5han` and `gb2312`.[^co] Four of them change the order on ICU 78.3. Two parse and do nothing:
+Collation is where the resolved type can differ from the requested one. CLDR's registry lists six Chinese collation types: `pinyin`, `stroke`, `zhuyin`, `unihan`, `big5han` and `gb2312`.[^co] Four of them change the order on ICU 78.3. Two parse and do nothing:
 
 | requested | resolved | order changed? |
 | --- | --- | --- |
@@ -228,7 +230,7 @@ The collation one is where names stop being trustworthy. CLDR's registry lists s
 | `big5han` | `stroke` | no |
 | `gb2312` | `stroke` | no |
 
-Both no-ops are marked deprecated, and CLDR defines the fallback: a missing type means the locale default.[^fallback] No error, no warning. The usual test passes, because the constructor succeeds.
+Both no-ops are marked deprecated, and CLDR defines the fallback: a requested type with no data means the locale default.[^fallback] There is no error and no warning, so a test that only checks the constructor passes.
 
 There is a second trap. The alias for `gb2312` is `gb2312han`, and extension values are `alphanum{3,8}`.[^grammar] Nine characters, so it cannot be parsed:
 
@@ -257,15 +259,15 @@ The same string lands in different tools, and each one keeps a different amount 
 
 ### Intl and the formatters
 
-Every example above is CLDR data through ICU. Chrome, Firefox and Node all format through ICU, so they agree on the data and disagree on the version. A browser on an older ICU can apply a collation type that Node does not, or fill in a likely subtag differently.
+The `Intl` examples above are CLDR data through ICU. Chrome, Firefox and Node run their number, date and collation formatters on ICU, so they agree on the data and disagree on the version. A browser on an older ICU can apply a collation type that Node does not, or fill in a likely subtag differently.
 
 ### i18next
 
 i18next does not use likely subtags. It truncates on hyphens, then checks its supported list. With the default `load: "all"`, a tag of `zh-Hant-HK` is looked up as `zh-Hant-HK`, then `zh-Hant`, then `zh`, then `fallbackLng`.[^i18next]
 
-That last step is where a two-locale app breaks. If your resources are `en.json` and `zh.json`, a Hong Kong reader walks `zh-Hant-HK` → `zh-Hant` → `zh`, misses both, and lands on your Simplified bundle. The fallback chain does not know that `zh-Hant` is not just "less specific Chinese", it is Taiwan.
+That last step is where a two-locale app breaks. If your resources are `en.json` and `zh.json`, a Hong Kong reader walks `zh-Hant-HK` → `zh-Hant` → `zh`, misses both, and lands on your Simplified bundle. The chain treats `zh-Hant` as less specific Chinese. In CLDR it means Taiwan.
 
-`nonExplicitSupportedLngs: true` makes this worse in a quiet way, because it treats a variant as supported as soon as the base language is, so `zh-Hant-HK` counts as covered by `zh`.
+`nonExplicitSupportedLngs: true` hides the gap: it treats a variant as supported as soon as the base language is, so `zh-Hant-HK` counts as covered by `zh`.
 
 ### Plural rules and message formats
 
@@ -275,7 +277,7 @@ If your translation pipeline is keyed on plural suffixes, check that the Chinese
 
 ### Screen readers and text-to-speech
 
-A screen reader picks a voice from the language tag. I ran the same word through eSpeak NG 1.52.0 with each tag:
+A speech synthesizer picks a voice from the language tag. I ran the same word through eSpeak NG 1.52.0 with each tag:
 
 ```
 zh            ni35X'Au214_|
@@ -290,13 +292,13 @@ yue           n'ei5_| h'ou2_|
 zh-yue        n'ei5_| h'ou2_|
 ```
 
-Eight different tags, one Mandarin reading of 你好. Only the `yue` tags changed the phonemes, and `zh-yue` still selects the Cantonese voice even though `Intl` rejects that tag. An engine that ships regional voices can use them, but a page marked `lang="zh"` gives it nothing to pick with.
+Eight different tags, one Mandarin reading of 你好. Only the tags that ask for Cantonese changed the phonemes, and `zh-yue` still selects the Cantonese voice even though `Intl` rejects that tag. An engine that ships regional voices can use them, but a page marked `lang="zh"` gives it nothing to pick with.
 
-The practical version: if your Cantonese page says `lang="zh"`, it will be read in Mandarin.
+The practical version: a Cantonese page marked `lang="zh"` can be read in Mandarin.
 
 ### HTML `lang` and fonts
 
-Browsers use the tag for font-language glyph selection, hyphenation, spellcheck and `:lang()` matching. For Han characters, the script decides which glyph variant a font draws through the OpenType `locl` feature, so `lang="zh-Hant"` and `lang="zh-Hans"` can render the same codepoint with different strokes.[^locl] The region does not matter for the glyph, but it is what the browser sends upstream in `Accept-Language`.
+Browsers use the tag for font-language glyph selection, hyphenation, spellcheck and `:lang()` matching. For Han characters, the script usually decides which glyph variant a font draws through the OpenType `locl` feature, so `lang="zh-Hant"` and `lang="zh-Hans"` can render the same codepoint with different strokes.[^locl] A font can also carry Hong Kong and Macao glyphs under the `ZHH` and `ZHTM` language systems, so the region matters when the font supports them. Browsers send the region too: `Accept-Language` normally carries the full tag.[^accept]
 
 ### Normalization
 
@@ -335,7 +337,7 @@ const got = new Intl.Collator(`zh-Hant-u-co-${want}`).resolvedOptions().collatio
 if (got !== want) throw new Error(`asked for ${want}, got ${got}`);
 ```
 
-And test with the tags your users actually send. A test suite that only uses `zh` will pass on every stack while all of the differences above go unexercised.
+Test with the tags your users actually send. A test suite that only uses `zh` passes on Node, Chrome and Firefox while the differences above go unexercised.
 
 ## Reproducing the results
 
@@ -351,30 +353,32 @@ node scripts/zh-collation-dump.mjs
 node scripts/zh-tooling-probe.mjs
 ```
 
-The first writes [RESULTS-locale-matrix.txt](/blog/posts/chinese-locale-tags/artifacts/RESULTS-locale-matrix.txt) with resolution, formatting, validity and maximize/minimize for 24 tags. The second writes [RESULTS-collation-types.txt](/blog/posts/chinese-locale-tags/artifacts/RESULTS-collation-types.txt). The third writes [RESULTS-tooling.txt](/blog/posts/chinese-locale-tags/artifacts/RESULTS-tooling.txt) with the plural, collation, normalization and voice probes.
+The first writes [RESULTS-locale-matrix.txt](/blog/posts/chinese-locale-tags/artifacts/RESULTS-locale-matrix.txt) with resolution, formatting, validity and maximize/minimize for 25 tags. The second writes [RESULTS-collation-types.txt](/blog/posts/chinese-locale-tags/artifacts/RESULTS-collation-types.txt). The third writes [RESULTS-tooling.txt](/blog/posts/chinese-locale-tags/artifacts/RESULTS-tooling.txt) with the plural, collation, normalization and voice probes.
 
 Measured on Node 26.3.1, ICU 78.3, CLDR 48.0, eSpeak NG 1.52.0. Browsers ship different ICU versions, and a new CLDR release can change the likely-subtags list, so record the versions next to any number you publish.
 
-[^cldr]: CLDR is the Unicode Consortium's locale data, and ICU is the library that ships it. Node, Chrome and Firefox all format through ICU, so `Intl` output is the CLDR answer for a given release. https://cldr.unicode.org/
+[^cldr]: CLDR is the Unicode Consortium's locale data, and ICU is the library that ships it. Node and Chrome use ICU4C for `Intl`; Firefox uses ICU4C for `Intl.NumberFormat`, `Intl.DateTimeFormat` and `Intl.Collator`, and ICU4X for `Intl.Segmenter` and Temporal. For the formatters in this post, `Intl` output is the CLDR answer for a given release. https://cldr.unicode.org/
 
 [^rfc]: BCP 47 (RFC 5646) §2.1 defines `langtag = language ["-" script] ["-" region]`, in that order. https://www.rfc-editor.org/rfc/rfc5646#section-2.1
 
 [^likely]: UTS #35 Part 1, "Likely Subtags", defines Add Likely Subtags and Remove Likely Subtags, including the `favorScript` and `favorRegion` options. ECMA-402's `Intl.Locale.prototype.maximize` invokes the same algorithm. https://unicode.org/reports/tr35/tr35.html#Likely_Subtags
 
-[^subtags]: CLDR 48.0.0, `common/supplemental/likelySubtags.json`. The file has 19 `zh`-prefixed keys: bare `zh`, 15 `zh-<region>` keys, and three script keys. All 15 region keys resolve to a `Hant` locale; the script keys resolve to `zh-Hant-TW`, `zh-Bopo-TW` and `zh-Hanb-TW`. No `zh-Hans*` key exists. https://github.com/unicode-org/cldr-json/blob/48.0.0/cldr-json/cldr-core/supplemental/likelySubtags.json
+[^subtags]: CLDR 48.0.0, `common/supplemental/likelySubtags.json`, has 19 `zh`-prefixed keys: bare `zh`, 15 `zh-<region>` keys, and `zh-Hant`, `zh-Bopo`, `zh-Hanb`. All 15 region keys resolve to a `Hant` locale; the script keys resolve to `zh-Hant-TW`, `zh-Bopo-TW` and `zh-Hanb-TW`. No `zh-Hans*` key exists. UTS #35 describes the table as heuristically derived from default-content, population and suppress-script data, not hand-written: https://unicode.org/reports/tr35/tr35.html#Likely_Subtags. CLDR 49.0.0 (2026-10-21) has the same 19 keys; CLDR 50 is not released. https://github.com/unicode-org/cldr-json/blob/48.0.0/cldr-json/cldr-core/supplemental/likelySubtags.json
 
-[^alias]: CLDR `common/supplemental/aliases.json`, `languageAlias`, maps `cmn` to `zh` with reason `macrolanguage`. The IANA registry keeps `cmn` as a distinct language, so the collapse is CLDR's choice, not BCP 47's. https://github.com/unicode-org/cldr/blob/main/common/supplemental/aliases.json
+[^alias]: CLDR `common/supplemental/aliases.json`, `languageAlias`, maps `cmn` to `zh` with reason `macrolanguage`. The IANA registry keeps `cmn` as a distinct language, so the collapse is CLDR's choice, not BCP 47's. https://github.com/unicode-org/cldr-json/blob/48.0.0/cldr-json/cldr-core/supplemental/aliases.json
 
 [^defaults]: UTS #35 Part 5, "Collation Types", uses `zh` → `pinyin` and `zh-Hant` → `stroke` as its worked example. https://unicode.org/reports/tr35/tr35-collation.html#Collation_Types
 
 [^co]: CLDR `common/bcp47/collation.xml`, keyword `co`. `big5han` and `gb2312` are marked `deprecated="true"`, and `gb2312` carries `alias="gb2312han"`. https://github.com/unicode-org/cldr/blob/main/common/bcp47/collation.xml
 
-[^fallback]: UTS #35 Part 5, "Collation Type Fallback": missing type means the default type, then `standard`, then the root collation. https://unicode.org/reports/tr35/tr35-collation.html#Collation_Type_Fallback
+[^fallback]: UTS #35 Part 5, "Collation Type Fallback": a requested type with no data means the default type, then `standard`, then the root collation. https://unicode.org/reports/tr35/tr35-collation.html#Collation_Type_Fallback
 
 [^grammar]: UTS #35 Part 1, "Unicode Language and Locale Identifiers": `uvalue = alphanum{3,8}`. https://unicode.org/reports/tr35/tr35.html#Unicode_Language_and_Locale_Identifiers
 
 [^hanshk]: IANA Language Subtag Registry, type `redundant`, `Tag: zh-Hans-HK`, "Hong Kong Chinese in simplified script", added 2005-04-11. CLDR ships matching data under `cldr-dates-full/main/zh-Hans-HK` and `cldr-numbers-full/main/zh-Hans-HK`. https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
 
-[^i18next]: i18next `src/LanguageUtils.js`, `getBestMatchFromCodes()`: it tries the full code, then `getScriptPartFromCode()`, then `getLanguagePartFromCode()`, then `fallbackLng`. The documented `load: "all"` example maps `en-US` to `["en-US", "en", "dev"]`. https://github.com/i18next/i18next/blob/master/src/LanguageUtils.js
+[^i18next]: i18next `src/LanguageUtils.js`: `toResolveHierarchy()` builds the load chain (full code, `getScriptPartFromCode()`, `getLanguagePartFromCode()`, then `fallbackLng`), and `getBestMatchFromCodes()` picks a supported code with the same script/language fallback plus a `supportedLngs.find()` step before `fallbackLng`. Defaults: `load: "all"`, `fallbackLng: ["dev"]`. The documented `load: "all"` example maps `en-US` to `["en-US", "en", "dev"]`. https://github.com/i18next/i18next/blob/master/src/LanguageUtils.js
 
-[^locl]: CSS Fonts 4 §6.4, `locl`, selects language-specific glyphs. Browser language matching uses the `lang` attribute. https://drafts.csswg.org/css-fonts-4/#font-language-override
+[^locl]: CSS Fonts 4 §6.2, "Language-specific display": user agents infer the OpenType language system from the content language, which is what selects `locl`. §6.13 defines `font-language-override`. https://drafts.csswg.org/css-fonts-4/#language-specific-support
+
+[^accept]: MDN, `Accept-Language`: the header generally lists the same locales as `navigator.languages`, including the region, for example `en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7` for `["en-US", "zh-CN"]`. https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language

@@ -1,6 +1,6 @@
 # Chinese collation types through -u-co-
 # node v26.3.1  icu 78.3  cldr 48.0
-# generated 2026-10-31T22:57:14.110Z
+# generated 2026-11-01T06:01:21.122Z
 
 # requested	canonical	resolved	applied	order(20 surnames)
 pinyin	zh-Hant-u-co-pinyin	pinyin	yes	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱

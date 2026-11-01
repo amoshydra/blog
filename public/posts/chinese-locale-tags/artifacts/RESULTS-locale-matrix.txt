@@ -8,6 +8,7 @@ zh	zh			zh-Hans-CN	1	h23
 zh-Hans	zh-Hans	Hans		zh-Hans-CN	1	h23	
 zh-Hant	zh-Hant	Hant		zh-Hant-TW	7	h12	
 zh-CN	zh-CN		CN	zh-Hans-CN	1	h23	(2 zones)
+zh-Hans-CN	zh-Hans-CN	Hans	CN	zh-Hans-CN	1	h23	(2 zones)
 zh-TW	zh-TW		TW	zh-Hant-TW	7	h12	Asia/Taipei
 zh-HK	zh-HK		HK	zh-Hant-HK	7	h12	Asia/Hong_Kong
 zh-MO	zh-MO		MO	zh-Hant-MO	7	h12	Asia/Macau
@@ -35,6 +36,7 @@ zh	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:
 zh-Hans	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
 zh-Hant	1兆	12.50␣港幣	12.50␣新台幣	1␣公尺	1␣英里	2026年1月15日␣星期四	中午12:05:06	民國115年1月15日	昨天	甲、乙和丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
 zh-CN	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
+zh-Hans-CN	1万亿	12.50港元	12.50新台币	1米	1英里	2026年1月15日星期四	12:05:06	民国115年1月15日	昨天	甲、乙和丙	陳高郭何胡黃李梁林劉羅馬孫王吳徐張鄭周朱
 zh-TW	1兆	12.50␣港幣	12.50␣新台幣	1␣公尺	1␣英里	2026年1月15日␣星期四	中午12:05:06	民國115年1月15日	昨天	甲、乙和丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
 zh-HK	1T	12.50␣港元	12.50␣新台幣	1␣米	1␣哩	2026年1月15日星期四	下午12:05:06	民國115年1月15日	昨日	甲、乙及丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
 zh-MO	1T	12.50␣港元	12.50␣新台幣	1␣米	1␣哩	2026年1月15日星期四	下午12:05:06	民國115年1月15日	昨日	甲、乙及丙	王朱何吳李周林胡孫徐馬高張梁郭陳黃劉鄭羅
@@ -68,8 +70,9 @@ zh-CHS	ERR:RangeError	ERR:RangeError
 zh-CHT	ERR:RangeError	ERR:RangeError
 zh-HK-Hant	ERR:RangeError	ERR:RangeError
 
-## 4. are region tags and script+region tags the same locale?
+## 4. are these tag pairs the same locale?
 # pair	identical formatting
+zh vs zh-Hans-CN	no: tz
 zh-HK vs zh-Hant-HK	yes
 zh-MO vs zh-Hant-MO	yes
 zh-TW vs zh-Hant-TW	yes
