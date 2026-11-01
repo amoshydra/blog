@@ -2,6 +2,8 @@
 
 <!-- POSTS:START -->
 
+- 2026-11-02 [The `zh` tag resolves to `zh-Hans-CN`: what each subtag controls](https://amoshydra.github.io/blog/posts/chinese-locale-tags/)
+
 - 2026-09-30 [Overriding `env(safe-area-inset-*)` in a WebView: Android and iOS](https://amoshydra.github.io/blog/posts/webview-safe-area-inset-override/)
 
 - 2026-09-19 [Why `USD123.45` becomes “US dollars” but `SGD123.45` gets spelled out](https://amoshydra.github.io/blog/posts/screen-reader-currency-announcements/)
